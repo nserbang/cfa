@@ -12,13 +12,8 @@ from functools import partial  """
 
 from api.view_includes import *
 from rest_framework.decorators import api_view
-class DistrictViewSet(viewsets.ViewSet):
-    queryset = District.objects.all()
-    serializer_class = DistrictSerializer
-    filter_backends = [SearchFilter]
-    search_fields = ['name']    
+class DistrictViewSet(viewsets.ViewSet):   
     def list(self,request):
-        print(" Entering list::: ")
         try:            
             queryset = District.objects.all()            
         except District.DoesNotExist:

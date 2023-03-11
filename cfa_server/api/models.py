@@ -1,0 +1,150 @@
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+# Create your models here.
+
+cState = (
+        ('pending','Pending'), # Complaint lodged for the first time
+        ('approved','Approved'), # Complaint approved for investigation
+        ('accepted','Accepted'), # Formal case approved
+        ('transferred','Transferred'), # Complaint being transferred from one ps to another
+        ('resolved','Resolved'), # Complaint has been resolved
+        ('info','Info'),    # Police officer requires more information from complainant
+    )
+#Holds list of districts
+class District(models.Model):
+    did = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=20)
+
+# Holds user database
+#username will be the primary key which will be the mobile number of the user
+
+class cUser(AbstractUser):
+    ROLES = (
+        ('user','User'),
+        ('police','Police'),
+        ('Admin','Admin'),
+    )
+    # Role of the user    
+    role = models.CharField(max_length=10, choices=ROLES, default='user')
+    # Address of the user. Optional
+    address = models.TextField(null = True)
+    # Pin code of the user. Optional
+    pincode = models.CharField(max_length=10)
+    otp_code = models.CharField(max_length=6, default=None, null=True, blank=True)    
+
+# Holds list of police stations
+class PoliceStation(models.Model):
+    pid = models.BigAutoField(primary_key=True)
+    # district in which police station is located
+    did = models.ForeignKey(District,to_field="did",db_column="district_did",on_delete=models.CASCADE)
+    # Name of the police station
+    name = models.TextField()
+    # address of the police station
+    address = models.TextField(null=True)
+    # GPS location of the police station
+    lat = models.DecimalField(max_digits=9,decimal_places=6,default=0.0)
+    long = models.DecimalField(max_digits=9,decimal_places=6, default=0.0)
+
+# Holds various contacts in the police station
+class PoliceStationContact(models.Model):
+    cid = models.BigAutoField(primary_key=True)
+    pid = models.ForeignKey(PoliceStation,to_field="pid",db_column="police_station_pid", on_delete=models.CASCADE)
+    # Designation associated with the number
+    contactName = models.CharField(max_length=50, null=True)
+    # Mobile number or phone number
+    number = models.CharField(max_length=15)
+
+class PoliceOfficer(models.Model):
+    RANKS = [
+            {"Rank:":1,"Designation":"Constable"},
+            {"Rank:":2,"Designation":"Head Constable"},
+            {"Rank:":3,"Designation":"Assistant Sub-Inspector"},
+            {"Rank:":4,"Designation":"Sub-Inspector"},
+            {"Rank:":5,"Designation":"Inspector"},
+            {"Rank:":6,"Designation":"DySP"},
+            {"Rank:":7,"Designation":"ASP"},
+            {"Rank:":9,"Designation":"SP"},
+            {"Rank:":10,"Designation":"SSP"},
+            {"Rank:":11,"Designation":"DIGP"},
+            {"Rank:":12,"Designation":"IGP"},
+            {"Rank:":13,"Designation":"ADG"},
+            {"Rank:":14,"Designation":"DGP"}, 
+    ]
+    oState = {"active":"Active",
+              "inactive": "Inactive"}
+    oid = models.BigAutoField(primary_key=True)
+    pid = models.ForeignKey(PoliceStation,to_field="pid",db_column="police_station_pid", on_delete=models.DO_NOTHING)
+    rank = models.CharField(max_length=20, choices=RANKS, default=5)
+    entryDate= models.DateField(auto_now=True)
+    cstate = models.CharField(max_length=10,default="active")
+    mobile = models.CharField(max_length=55, null=True)
+
+
+class Case(models.Model):
+    cType = (
+        ('drug','Drug'), # complaint related to drugs
+        ('vehicle','Vehicle'),
+        ('extortion', 'Extortion'),
+    )
+    cid = models.BigAutoField(primary_key=True)
+    # Police station in which case is lodged
+    pid = models.ForeignKey(PoliceStation, to_field="pid", db_column="police_station_pid", on_delete=models.DO_NOTHING)
+    # Who has lodged complaint
+    user = models.ForeignKey(cUser, to_field="username",db_column="user_username", on_delete=models.DO_NOTHING)
+    # Police officer id
+    oid = models.ForeignKey(PoliceOfficer, to_field="oid",db_column="police_officer_oid",on_delete=models.DO_NOTHING)
+    # complaint type
+    type = models.CharField(max_length=10, choices=cType, default='Drug')
+    # Current state of the case
+    cstate = models.CharField(max_length=15, choices=cState, default='pending')
+    # Date and time when complaint was reported
+    created = models.DateTimeField(auto_now_add=True)
+    lat = models.DecimalField(max_digits=9,decimal_places=6, null=True)
+    long = models.DecimalField(max_digits=9,decimal_places=6, null=True)
+    # Text description of the complaint
+    description = models.TextField(null=True)
+    # Follow me flag
+    follow = models.BooleanField(default=False)
+
+
+class CaseHistory(models.Model):
+    chid = models.BigAutoField(primary_key=True)
+    # which case history 
+    cid = models.ForeignKey(Case, to_field="cid", db_column="case_cid",on_delete=models.DO_NOTHING)
+    # Who has entered this entry
+    user = models.ForeignKey(cUser, to_field="username",db_column="user_username",on_delete=models.DO_NOTHING)
+    # state of the case during this time
+    cstate = models.CharField(max_length=15,choices=cState)
+    # Date and time when complaint was reported
+    created = models.DateTimeField(auto_now_add=True)
+    # Description added 
+    description = models.TextField(null=True)
+
+class Media(models.Model):
+    mid = models.BigAutoField(primary_key=True)
+    chid = models.ForeignKey(CaseHistory, to_field="chid",db_column="case_history_chid",on_delete=models.CASCADE)
+    mtype = (
+        ('video','Video'),
+        ('photo','Photo'),
+        ('audio','Audio'),
+        ('document','Document'),
+    )
+    # media type
+    type = models.CharField(max_length=10,choices=mtype,default="Photo")
+    # media path
+    path = models.CharField(max_length=50,null=True)
+
+class LostVehicle(models.Model):   
+    caseId = models.OneToOneField(Case,to_field="cid",db_column="Case_cid",on_delete=models.DO_NOTHING)
+    RegNumber = models.CharField(max_length=30)
+    chaseNumber = models.CharField(max_length=50, null=True)
+    engineNumber = models.CharField(max_length=50, null=True)
+    make = models.CharField(max_length=50, null=True)
+    model = models.CharField(max_length=50, null=True)
+
+
+    
+
+
+

@@ -57,8 +57,8 @@ class testUserClass:
         self.url = url
     def add(self):
         data = {
-            'username':'9967698979',
-            'first_name':'name_first',
+            'username':'9997698979',
+            'first_name':'name_first11',
             'last_name':'name_last',
             'email':'email@gmail.com',
             'password':'password',

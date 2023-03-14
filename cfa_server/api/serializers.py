@@ -13,15 +13,14 @@ class cUserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PoliceStationContactSerializer(serializers.HyperlinkedModelSerializer):
+class PoliceStationContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = PoliceStationContact
         fields = '__all__'
 
 
-class PoliceStationSerializer(serializers.HyperlinkedModelSerializer):
-    contact = PoliceStationContactSerializer(many=True)
-
+class PoliceStationSerializer(serializers.ModelSerializer):
+   # contact = PoliceStationSerializer(many=True)
     class Meta:
         model = PoliceStation
         fields = '__all__'

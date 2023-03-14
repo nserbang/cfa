@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from geopy.distance import distance
 # Create your models here.
 
 cState = (
@@ -15,6 +15,8 @@ cState = (
 class District(models.Model):
     did = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
+    def __str__(self):
+        return self.name
 
 # Holds user database
 #username will be the primary key which will be the mobile number of the user
@@ -23,7 +25,7 @@ class cUser(AbstractUser):
     ROLES = (
         ('user','User'),
         ('police','Police'),
-        ('Admin','Admin'),
+        ('admin','Admin'),
     )
     # Role of the user    
     role = models.CharField(max_length=10, choices=ROLES, default='user')
@@ -45,10 +47,14 @@ class PoliceStation(models.Model):
     # GPS location of the police station
     lat = models.DecimalField(max_digits=9,decimal_places=6,default=0.0)
     long = models.DecimalField(max_digits=9,decimal_places=6, default=0.0)
+    distance = models.DecimalField(max_digits=9, decimal_places=2, null = True)
+
+    def __str__(self):
+        return self.name
 
 # Holds various contacts in the police station
 class PoliceStationContact(models.Model):
-    cid = models.BigAutoField(primary_key=True)
+    ps_cid = models.BigAutoField(primary_key=True)
     pid = models.ForeignKey(PoliceStation,to_field="pid",db_column="police_station_pid", on_delete=models.CASCADE)
     # Designation associated with the number
     contactName = models.CharField(max_length=50, null=True)

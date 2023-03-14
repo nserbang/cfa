@@ -24,7 +24,7 @@ class DistrictViewSet(viewsets.ViewSet):
         if name:           
             queryset = queryset.filter(Q(name__icontains=name))
         serialized = DistrictSerializer(queryset,many= True)
-        return JsonResponse(serialized.data, safe=False, status =HTTPStatus.OK) 
+        return JsonResponse(serialized.data, safe=False, status =HTTPStatus.OK)
 
     def create(self, request):        
         serializer = DistrictSerializer(data=json.loads(request.data))
@@ -35,7 +35,8 @@ class DistrictViewSet(viewsets.ViewSet):
             return JsonResponse(serialized.data, status = HTTPStatus.OK)
         return JsonResponse({"message": "District not saved"}, status=HTTPStatus.BAD_REQUEST)
     
-    def update(self, request, did):     
+    def update(self, request, pk = None):
+        did = pk
         try:
             district = District.objects.get(pk = did)            
         except District.DoesNotExist:
@@ -44,13 +45,28 @@ class DistrictViewSet(viewsets.ViewSet):
             return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)            
         serializer = DistrictSerializer(district, data= json.loads(request.data), partial = True)
         if serializer.is_valid():
-            #district = serializer.data
+            serializer.save()
+            serialized = DistrictSerializer(district)
+            return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
+        return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
+
+    def partial_update(self, request, pk = None):
+        did = pk     
+        try:
+            district = District.objects.get(pk = did)            
+        except District.DoesNotExist:
+            return JsonResponse({"message": "District not found"}, status=HTTPStatus.NOT_FOUND)
+        except ValidationError:
+            return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)            
+        serializer = DistrictSerializer(district, data= json.loads(request.data), partial = True)
+        if serializer.is_valid():
             serializer.save()
             serialized = DistrictSerializer(district)
             return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
-    def delete(self, request, did):
+    def destroy(self, request, pk = None):
+        did = pk
         try:
             district = District.objects.get(pk=did)
             district.delete()
@@ -60,9 +76,9 @@ class DistrictViewSet(viewsets.ViewSet):
             return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)
         return JsonResponse({"message": "District deleted"}, status=HTTPStatus.OK)
     
-    def retrieve(self, request, did):
+    def retrieve(self, request, pk=None):
         try:
-            district = District.objects.get(pk=did)
+            district = District.objects.get(did=pk)
         except District.DoesNotExist:
             return JsonResponse({"message": "District not found"}, status=HTTPStatus.NOT_FOUND)
         except ValidationError:

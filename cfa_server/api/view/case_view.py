@@ -26,7 +26,8 @@ class CaseViewSet(viewsets.ViewSet):
             return JsonResponse(serialized.data, status = HTTPStatus.OK)
         return JsonResponse({"message": "Case not saved"}, status=HTTPStatus.BAD_REQUEST)
     
-    def update(self, request, cid):     
+    def update(self, request, pk = None):     
+        cid = pk
         try:
             cs = Case.objects.get(pk = cid)            
         except Case.DoesNotExist:
@@ -40,9 +41,10 @@ class CaseViewSet(viewsets.ViewSet):
             return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
-    def delete(self, request, did):
+    def destroy(self, request, pk = None):
+        cid = pk
         try:
-            cs = Case.objects.get(pk=did)
+            cs = Case.objects.get(pk=cid)
             cs.delete()
         except Case.DoesNotExist:
             return JsonResponse({"message": "Case not found"}, status=HTTPStatus.NOT_FOUND)
@@ -50,7 +52,8 @@ class CaseViewSet(viewsets.ViewSet):
             return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)
         return JsonResponse({"message": "Case deleted"}, status=HTTPStatus.OK)
     
-    def retrieve(self, request, did):
+    def retrieve(self, request, pk = None):
+        cid = pk
         try:
             cs = Case.objects.get(pk=did)
         except Case.DoesNotExist:
@@ -80,7 +83,8 @@ class CaseHistoryViewSet(viewsets.ViewSet):
             return JsonResponse(serialized.data, status = HTTPStatus.OK)
         return JsonResponse({"message": "CaseHistory not saved"}, status=HTTPStatus.BAD_REQUEST)
     
-    def update(self, request, chid):     
+    def update(self, request, pk = None): 
+        chid = pk    
         try:
             ch = CaseHistory.objects.get(pk = chid)            
         except CaseHistory.DoesNotExist:
@@ -94,7 +98,23 @@ class CaseHistoryViewSet(viewsets.ViewSet):
             return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
-    def delete(self, request, chid):
+    def partial_update(self, request, pk = None): 
+        chid = pk    
+        try:
+            ch = CaseHistory.objects.get(pk = chid)            
+        except CaseHistory.DoesNotExist:
+            return JsonResponse({"message": "CaseHistory not found"}, status=HTTPStatus.NOT_FOUND)
+        except ValidationError:
+            return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)            
+        serializer = CaseHistorySerializer(ch, data= json.loads(request.data), partial = True)
+        if serializer.is_valid():            
+            serializer.save()
+            serialized = CaseHistorySerializer(ch)
+            return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
+        return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
+    
+    def destroy(self, request, pk = None):
+        chid = pk
         try:
             ch = CaseHistory.objects.get(pk=chid)
             ch.delete()
@@ -104,7 +124,8 @@ class CaseHistoryViewSet(viewsets.ViewSet):
             return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)
         return JsonResponse({"message": "CaseHistory deleted"}, status=HTTPStatus.OK)
     
-    def retrieve(self, request, chid):
+    def retrieve(self, request, pk = None):
+        chid = pk
         try:
             ch = CaseHistory.objects.get(pk=chid)
         except CaseHistory.DoesNotExist:
@@ -134,7 +155,8 @@ class MediaViewSet(viewsets.ViewSet):
             return JsonResponse(serialized.data, status = HTTPStatus.OK)
         return JsonResponse({"message": "Media not saved"}, status=HTTPStatus.BAD_REQUEST)
     
-    def update(self, request, mid):     
+    def update(self, request, pk = None):
+        mid = pk     
         try:
             md = Media.objects.get(pk = mid)            
         except Media.DoesNotExist:
@@ -148,7 +170,8 @@ class MediaViewSet(viewsets.ViewSet):
             return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
-    def delete(self, request, mid):
+    def destroy(self, request, pk = None):
+        mid = pk
         try:
             md = Media.objects.get(pk=mid)
             md.delete()
@@ -158,7 +181,19 @@ class MediaViewSet(viewsets.ViewSet):
             return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)
         return JsonResponse({"message": "Media deleted"}, status=HTTPStatus.OK)
     
-    def retrieve(self, request, mid):
+    def partial_destroy(self, request, pk = None):
+        mid = pk
+        try:
+            md = Media.objects.get(pk=mid)
+            md.delete()
+        except Media.DoesNotExist:
+            return JsonResponse({"message": "Media not found"}, status=HTTPStatus.NOT_FOUND)
+        except ValidationError:
+            return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)
+        return JsonResponse({"message": "Media deleted"}, status=HTTPStatus.OK)
+    
+    def retrieve(self, request, pk):
+        mid = pk
         try:
             md = Media.objects.get(pk=mid)
         except Media.DoesNotExist:
@@ -188,7 +223,8 @@ class LostVehicleViewSet(viewsets.ViewSet):
             return JsonResponse(serialized.data, status = HTTPStatus.OK)
         return JsonResponse({"message": "LostVehicle not saved"}, status=HTTPStatus.BAD_REQUEST)
     
-    def update(self, request, caseId):     
+    def update(self, request, pk = None):
+        caseId  = pk             
         try:
             lv = LostVehicle.objects.get(pk = caseId)            
         except LostVehicle.DoesNotExist:
@@ -202,7 +238,23 @@ class LostVehicleViewSet(viewsets.ViewSet):
             return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
-    def delete(self, request, caseId):
+    def partial_update(self, request, pk = None):
+        caseId  = pk             
+        try:
+            lv = LostVehicle.objects.get(pk = caseId)            
+        except LostVehicle.DoesNotExist:
+            return JsonResponse({"message": "LostVehicle not found"}, status=HTTPStatus.NOT_FOUND)
+        except ValidationError:
+            return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)            
+        serializer = LostVehicleSerializer(lv, data= json.loads(request.data), partial = True)
+        if serializer.is_valid():           
+            serializer.save()
+            serialized = LostVehicleSerializer(lv)
+            return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
+        return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
+    
+    def destroy(self, request, pk = None):
+        caseId  = pk 
         try:
             lv = LostVehicle.objects.get(pk=caseId)
             lv.delete()

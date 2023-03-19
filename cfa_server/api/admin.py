@@ -14,14 +14,7 @@ class cUserModel(admin.ModelAdmin):
     list_display = ['username','first_name','last_name','email','password','is_active', \
                     'is_staff','is_superuser','role','address','pincode','otp_code']
 
-""" @admin.register(PoliceStation)
-class PoliceStationModel(admin.ModelAdmin):
-    def did_name(self, obj):
-        return obj.district.name
-       
-    list_display = ['pid',did_name,'name','address','lat','long'] """
-
-
+    search_fields = ['username']
 
 class PoliceStationAdmin(admin.ModelAdmin):
     def contact(self,obj):
@@ -45,9 +38,6 @@ class PoliceStationAdmin(admin.ModelAdmin):
     list_select_related = ('did',)
     district.admin_order_field = 'did__did'
     search_fields =['name']
-
-
-
 admin.site.register(PoliceStation,PoliceStationAdmin)
 
 class PoliceStationContactAdmin(admin.ModelAdmin):
@@ -65,7 +55,68 @@ class PoliceStationContactAdmin(admin.ModelAdmin):
     list_select_related = ('pid',)
     PoliceStation.admin_order_field = "pid__pid"
     search_fields = ['number__icontains','contactName__icontains','pid__pid__icontains']
-
 admin.site.register(PoliceStationContact, PoliceStationContactAdmin)
  
+class PoliceOfficerAdmin(admin.ModelAdmin):
+    list_display = ['oid','pid','rank','entryDate','mobile','status']
+    search_fields = ['name__icontains','pid__pid__icontains','rank__icontains','entryDate__icontains','^mobile','^status']
+admin.site.register(PoliceOfficer, PoliceOfficerAdmin)
 
+
+class CaseAdmin(admin.ModelAdmin):
+    def PoliceStation(self):
+        return self.pid.name
+    PoliceStation.short_description ="Police Station"
+
+    def contact_id(self):
+        return self.contactName    
+    contact_id.short_description = "Contact Id"
+
+    #fields = [PoliceStation,'contactName','number']
+    list_display = ['contactName',PoliceStation,'number']
+    #ps_cid.short_descrption = 'Contact Id'
+    list_select_related = ('pid',)
+    PoliceStation.admin_order_field = "pid__pid"
+
+    def officer_name(self):
+        #print(" Ranks: ",PoliceOfficer.RANKS)
+        ranks = PoliceOfficer.RANKS   
+        #print("rank at 13 :",ranks[13])
+        dic = {}   
+        for x in ranks:
+            d1 = {k:v for k,v in zip(x[0:],x[1:])}
+            dic = {**dic, **d1}             
+        return  format_html("<span> <b> {} </b> <p> {} </p> </span>", self.oid.user.first_name, dic[self.oid.rank])
+    officer_name.short_description = "Officer Name"
+    officer_name.admin_order_field ="oid__oid"
+    list_select_related = ('pid','oid')
+    #search_fields = ['number__icontains','contactName__icontains','pid__pid__icontains']
+    list_display = ['cid',PoliceStation,'user', officer_name,'type','title','cstate','created','lat','long','description','follow']
+    search_fields =['type__icontains','^cstate','created__icontains']
+admin.site.register(Case, CaseAdmin)
+
+class CaseHistoryAdmin(admin.ModelAdmin):
+    list_display = ['chid','cid','user','cstate','created','description']
+    list_editable = ['cstate']
+    search_fields = ['cid__icontains']
+admin.site.register(CaseHistory, CaseHistoryAdmin)
+
+class MediaAdmin(admin.ModelAdmin):
+    list_display = ['mid','pid','ptype','mtype','path','description']
+    search_fields = ['pid']
+admin.site.register(Media,MediaAdmin)
+
+class LostVehicleAdmin(admin.ModelAdmin):
+    def Id(self):
+        return self.caseId.cid
+    Id.short_description = 'Case ID'
+    #PoliceStation.short_description ="Police Station"
+    list_display=[Id,'regNumber','chasisNumber','engineNumber','make','model']
+admin.site.register(LostVehicle,LostVehicleAdmin)
+
+"""caseId = models.OneToOneField(Case,to_field="cid",db_column="Case_cid",on_delete=models.DO_NOTHING)
+    regNumber = models.CharField(max_length=30)
+    chasisNumber = models.CharField(max_length=50, null=True)
+    engineNumber = models.CharField(max_length=50, null=True)
+    make = models.CharField(max_length=50, null=True)
+    model = models.CharField(max_length=50, null=True) """

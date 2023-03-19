@@ -35,33 +35,33 @@ urlpatterns = [
     #District URL begins --
     path('district-list/', district_list, name= "district-list"),
     path('district-get/<int:pk>', district_get, name= "district-get"),
-    path('district-create/', district_create, name= "district-create"),
-    path('district-delete/<int:pk>', district_delete, name= "district-delete"),
-    path('district-update/<int:pk>', district_update, name= "district-update"),
+    #path('district-create/', district_create, name= "district-create"),
+    #path('district-delete/<int:pk>', district_delete, name= "district-delete"),
+    #path('district-update/<int:pk>', district_update, name= "district-update"),
     #District url ends --
 
     #PoliceStation URL begins --
     path('police-station-list/', policeStation_list, name= "police-station-list"),
     path('police-station-get/<int:pk>', policeStation_get, name= "police-station-get"),
-    path('police-station-create/', policeStation_create, name= "police-station-create"),
-    path('police-station-delete/<int:pk>', policeStation_delete, name= "police-station-delete"),
-    path('polices-station-update/', policeStation_update, name= "police-station-update"),
+    #path('police-station-create/', policeStation_create, name= "police-station-create"),
+    #path('police-station-delete/<int:pk>', policeStation_delete, name= "police-station-delete"),
+    #path('polices-station-update/', policeStation_update, name= "police-station-update"),
     #PoliceStation url ends --
 
         #policeStationContact URL begins --
     path('police-station-contact-list/', policeStationContact_list, name= "police-station-contact-list"),
     path('police-station-contact-get/<int:pk>', policeStationContact_get, name= "police-station-contact-get"),
-    path('police-station-contact-create/', policeStationContact_create, name= "police-station-contact-create"),
-    path('police-station-contact-delete/<int:pk>', policeStationContact_delete, name= "police-station-contact-delete"),
-    path('police-station-contact-update/', policeStationContact_update, name= "police-station-contact-update"),
+    #path('police-station-contact-create/', policeStationContact_create, name= "police-station-contact-create"),
+    #path('police-station-contact-delete/<int:pk>', policeStationContact_delete, name= "police-station-contact-delete"),
+    #path('police-station-contact-update/', policeStationContact_update, name= "police-station-contact-update"),
     #policeStationContact url ends --
 
         #policeOfficer URL begins --
     path('police-officer-list/', policeOfficer_list, name= "police-officer-list"),
     path('police-officer-get/<int:pk>', policeOfficer_get, name= "police-officer-get"),
-    path('police-officer-create/', policeOfficer_create, name= "police-officer-create"),
-    path('police-officer-delete/<int:pk>', policeOfficer_delete, name= "police-officer-delete"),
-    path('police-officer-update/', policeOfficer_update, name= "police-officer-update"),
+    #path('police-officer-create/', policeOfficer_create, name= "police-officer-create"),
+    #path('police-officer-delete/<int:pk>', policeOfficer_delete, name= "police-officer-delete"),
+    #path('police-officer-update/', policeOfficer_update, name= "police-officer-update"),
         #policeOfficer url ends --
 
         #case URL begins --
@@ -69,7 +69,7 @@ urlpatterns = [
     path('case-get/<int:pk>', case_get, name= "case-get"),
     path('case-create/', case_create, name= "case-create"),
     path('case-delete/<int:pk>', case_delete, name= "case-delete"),
-    path('case-update/', case_update, name= "case-update"),
+    path('case-update/<int:pk>', case_update, name= "case-update"),
         #case url ends --
 
      #caseHistory URL begins --
@@ -77,7 +77,7 @@ urlpatterns = [
     path('case-history-get/<int:pk>', caseHistory_get, name= "case-history-get"),
     path('case-history-create/', caseHistory_create, name= "case-history-create"),
     path('case-history-delete/<int:pk>', caseHistory_delete, name= "case-history-delete"),
-    path('case-history-update/', caseHistory_update, name= "case-history-update"),
+    path('case-history-update/<int:pk>', caseHistory_update, name= "case-history-update"),
      #caseHistory url ends --
 
         #media URL begins --
@@ -89,11 +89,11 @@ urlpatterns = [
      #media url ends --
 
         #media URL begins --
-    path('lostVehicle-list/', lostVehicle_list, name= "lostVehicle-list"),
-    path('lostVehicle-get/<int:pk>', lostVehicle_get, name= "lostVehicle-get"),
-    path('lostVehicle-create/', lostVehicle_create, name= "lostVehicle-create"),
-    path('lostVehicle-delete/<int:pk>', lostVehicle_delete, name= "lostVehicle-delete"),
-    path('lostVehicle-update/', lostVehicle_update, name= "lostVehicle-update"),
+    path('lost-vehicle-list/', lostVehicle_list, name= "lostVehicle-list"),
+    path('lost-vehicle-get/<int:pk>', lostVehicle_get, name= "lostVehicle-get"),
+    path('lost-vehicle-create/', lostVehicle_create, name= "lostVehicle-create"),
+    path('lost-vehicle-delete/<int:pk>', lostVehicle_delete, name= "lostVehicle-delete"),
+    path('lost-vehicle-update/<int:pk>', lostVehicle_update, name= "lostVehicle-update"),
      #media url ends --
 ]
 

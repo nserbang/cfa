@@ -1,16 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from geopy.distance import distance
+from api.utl import get_upload_path
 # Create your models here.
 
-cState = (
-        ('pending','Pending'), # Complaint lodged for the first time
-        ('approved','Approved'), # Complaint approved for investigation
-        ('accepted','Accepted'), # Formal case approved
-        ('transferred','Transferred'), # Complaint being transferred from one ps to another
-        ('resolved','Resolved'), # Complaint has been resolved
-        ('info','Info'),    # Police officer requires more information from complainant
-    )
+
 #Holds list of districts
 class District(models.Model):
     did = models.AutoField(primary_key=True)
@@ -62,30 +56,33 @@ class PoliceStationContact(models.Model):
     number = models.CharField(max_length=15)
 
 class PoliceOfficer(models.Model):
-    RANKS = [
-            {"Rank:":1,"Designation":"Constable"},
-            {"Rank:":2,"Designation":"Head Constable"},
-            {"Rank:":3,"Designation":"Assistant Sub-Inspector"},
-            {"Rank:":4,"Designation":"Sub-Inspector"},
-            {"Rank:":5,"Designation":"Inspector"},
-            {"Rank:":6,"Designation":"DySP"},
-            {"Rank:":7,"Designation":"ASP"},
-            {"Rank:":9,"Designation":"SP"},
-            {"Rank:":10,"Designation":"SSP"},
-            {"Rank:":11,"Designation":"DIGP"},
-            {"Rank:":12,"Designation":"IGP"},
-            {"Rank:":13,"Designation":"ADG"},
-            {"Rank:":14,"Designation":"DGP"}, 
-    ]
-    oState = {"active":"Active",
-              "inactive": "Inactive"}
+    RANKS = (
+            ('1','Constable'),
+            ('2','Head Constable'),
+            ('3','ASI'),
+            ('4','SI'),
+            ('5','Inspector'),
+            ('6','DySP'),
+            ('7','ASP'),
+            ('9','SP'),
+            ('10','SSP'),
+            ('11','DIGP'),
+            ('12','IGP'),
+            ('13','ADG'),
+            ('14','DGP'),
+    )
+    oState = (
+        ('active','Active'),
+        ('inactive','Inactive'),
+        )
+    user = models.ForeignKey(cUser,to_field="username",db_column="cuser_username",on_delete=models.DO_NOTHING)
     oid = models.BigAutoField(primary_key=True)
     pid = models.ForeignKey(PoliceStation,to_field="pid",db_column="police_station_pid", on_delete=models.DO_NOTHING)
-    rank = models.CharField(max_length=20, choices=RANKS, default=5)
+    #name = models.CharField(max_length=30,default=None)
+    rank = models.CharField(max_length=10, choices=RANKS, default='Inspector')    
     entryDate= models.DateField(auto_now=True)
-    cstate = models.CharField(max_length=10,default="active")
+    status = models.CharField(max_length=10, choices=oState, default='active')
     mobile = models.CharField(max_length=55, null=True)
-
 
 class Case(models.Model):
     cType = (
@@ -93,15 +90,24 @@ class Case(models.Model):
         ('vehicle','Vehicle'),
         ('extortion', 'Extortion'),
     )
+    cState = (
+        ('pending','Pending'), # Complaint lodged for the first time
+        ('approved','Approved'), # Complaint approved for investigation
+        ('accepted','Accepted'), # Formal case approved
+        ('transferred','Transferred'), # Complaint being transferred from one ps to another
+        ('resolved','Resolved'), # Complaint has been resolved
+        ('info','Info'),    # Police officer requires more information from complainant
+    )
     cid = models.BigAutoField(primary_key=True)
     # Police station in which case is lodged
     pid = models.ForeignKey(PoliceStation, to_field="pid", db_column="police_station_pid", on_delete=models.DO_NOTHING)
     # Who has lodged complaint
-    user = models.ForeignKey(cUser, to_field="username",db_column="user_username", on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(cUser, to_field="username",db_column="cuser_username", on_delete=models.DO_NOTHING)
     # Police officer id
     oid = models.ForeignKey(PoliceOfficer, to_field="oid",db_column="police_officer_oid",on_delete=models.DO_NOTHING)
     # complaint type
-    type = models.CharField(max_length=10, choices=cType, default='Drug')
+    type = models.CharField(max_length=10, choices=cType, default='drug')
+    title = models.CharField(max_length=250,null=True)
     # Current state of the case
     cstate = models.CharField(max_length=15, choices=cState, default='pending')
     # Date and time when complaint was reported
@@ -121,7 +127,7 @@ class CaseHistory(models.Model):
     # Who has entered this entry
     user = models.ForeignKey(cUser, to_field="username",db_column="user_username",on_delete=models.DO_NOTHING)
     # state of the case during this time
-    cstate = models.CharField(max_length=15,choices=cState)
+    cstate = models.CharField(max_length=15,choices= Case.cState)
     # Date and time when complaint was reported
     created = models.DateTimeField(auto_now_add=True)
     # Description added 
@@ -129,7 +135,44 @@ class CaseHistory(models.Model):
 
 class Media(models.Model):
     mid = models.BigAutoField(primary_key=True)
-    chid = models.ForeignKey(CaseHistory, to_field="chid",db_column="case_history_chid",on_delete=models.CASCADE)
+    #chid =  models.ForeignKey(CaseHistory, to_field="chid",db_column="case_history_chid",on_delete=models.CASCADE)
+    pid = models.BigIntegerField(default= 0)
+    Mtype = ( # what kind of media is this
+        ('video','Video'),
+        ('photo','Photo'),
+        ('audio','Audio'),
+        ('document','Document'),
+    )
+    # media type
+    mtype = models.CharField(max_length=10,choices=Mtype,default="Photo")
+    Ptype = ( # 
+        ('case','Case'),
+        ('history','History'),
+        ('comment','Comment'),
+    )
+    ptype = models.CharField(max_length=10, choices=Ptype,default='case')
+    # media path
+    path = models.FileField(upload_to=get_upload_path)
+    
+    description = models.TextField(null= True)
+
+class LostVehicle(models.Model):
+    caseId = models.OneToOneField(Case,to_field="cid",db_column="Case_cid",on_delete=models.DO_NOTHING)
+    regNumber = models.CharField(max_length=30)
+    chasisNumber = models.CharField(max_length=50, null=True, default="N/A")
+    engineNumber = models.CharField(max_length=50, null=True,default="N/A")
+    make = models.CharField(max_length=50, null=True, default="N/A")
+    model = models.CharField(max_length=50, null=True, default="N/A")
+
+class Comments(models.Model):
+    cmtid = models.BigAutoField(primary_key=True)
+    chid = models.ForeignKey(CaseHistory,to_field="chid", db_column="case_history_chid",on_delete= models.CASCADE)
+    content = models.TextField(null=True)
+    user = models.ForeignKey(cUser,to_field="username",db_column="cuser_username",on_delete=models.CASCADE)
+
+class CommentMedia(models.Model):
+    cmmid = models.BigAutoField(primary_key=True)
+    chid = models.ForeignKey(Comments, to_field="cmtid",db_column="comment_cmtid",on_delete=models.CASCADE)
     mtype = (
         ('video','Video'),
         ('photo','Photo'),
@@ -140,16 +183,6 @@ class Media(models.Model):
     type = models.CharField(max_length=10,choices=mtype,default="Photo")
     # media path
     path = models.CharField(max_length=50,null=True)
-
-class LostVehicle(models.Model):   
-    caseId = models.OneToOneField(Case,to_field="cid",db_column="Case_cid",on_delete=models.DO_NOTHING)
-    RegNumber = models.CharField(max_length=30)
-    chaseNumber = models.CharField(max_length=50, null=True)
-    engineNumber = models.CharField(max_length=50, null=True)
-    make = models.CharField(max_length=50, null=True)
-    model = models.CharField(max_length=50, null=True)
-
-
     
 
 

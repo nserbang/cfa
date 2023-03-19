@@ -48,10 +48,7 @@ class cUserViewSet(viewsets.ViewSet):
         log.info("ENTERED")    
         username = pk
         try:
-            user = cUser.objects.get(username = username)            
-            for k, v in vars(user).items():
-                print(k," : ", v)
-            print("\n\n Retrieved user : ",user)  
+            user = cUser.objects.get(username = username)
         except cUser.DoesNotExist:
             log.info("Exiting. User is not found")
             return JsonResponse({"message": "user not found"}, status=HTTPStatus.NOT_FOUND)

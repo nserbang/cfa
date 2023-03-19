@@ -26,34 +26,34 @@ class PoliceStationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PoliceOfficerSerializer(serializers.HyperlinkedModelSerializer):
+class PoliceOfficerSerializer(serializers.ModelSerializer):
     class Meta:
         model = PoliceOfficer
         fields = '__all__'
 
 
-class CaseHistorySerializer(serializers.HyperlinkedModelSerializer):
+class CaseHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CaseHistory
         fields = '__all__'
 
 
-class MediaSerializer(serializers.HyperlinkedModelSerializer):
+class MediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Media
         fields = '__all__'
 
 
-class CaseSerializer(serializers.HyperlinkedModelSerializer):
-    history = CaseHistorySerializer(many=True)
-    media = MediaSerializer(many=True)
+class CaseSerializer(serializers.ModelSerializer):
+    #history = CaseHistorySerializer(many=True)
+    #media = MediaSerializer(many=True)
 
     class Meta:
         model = Case
         fields = '__all__'
 
 
-class LostVehicleSerializer(serializers.HyperlinkedModelSerializer):
+class LostVehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = LostVehicle
         fields = '__all__'

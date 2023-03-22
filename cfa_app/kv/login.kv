@@ -1,0 +1,81 @@
+
+
+<Login_Screen>:
+    name: 'login_scr'
+    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 30
+        spacing: 10
+        canvas.before:
+            Color:
+                rgba: hex('#CDD8DC')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Image:
+            id: logo_wid
+            size_hint_y: .5
+            source: 'images/logo.png'
+            size: self.size
+
+
+        MDTextField:
+            id: phone_box
+            size_hint_x: .7
+            hint_text: "Phone Number"
+            mode: "fill"
+            radius: [10, 10, 10, 10]
+            fill_color: 0, 0, 0, .4
+            multiline: False
+            pos_hint: {"center_x": .5, "center_y": .5}
+            fill_color_normal: 1, 1, 1, 1
+            fill_color_focus: .95, .95, .95, 1
+            hint_text_color_normal: .6, .6, .6, 1
+            text_color_normal: .6, .6, .6, 1
+
+
+
+        MDTextField:
+            id: pass_box
+            password: True
+            size_hint_x: .7
+            hint_text: "Password"
+            mode: "fill"
+            radius: [10, 10, 10, 10]
+            fill_color: 0, 0, 0, .4
+            multiline: False
+            pos_hint: {"center_x": .5, "center_y": .5}
+            fill_color_normal: 1, 1, 1, 1
+            fill_color_focus: .95, .95, .95, 1
+            hint_text_color_normal: .6, .6, .6, 1
+            text_color_normal: .6, .6, .6, 1
+            
+
+
+
+        MDRaisedButton:
+            size_hint_y: None
+            height: '60dp'
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint_x: .7
+            text: "Login"
+            md_bg_color: "#1D96FD"
+            radius: [10, 10, 10, 10]
+            on_release: root.login_clicked()
+
+
+        AnchorLayout:
+            anchor_x: "right"
+            anchor_y: "center"    
+            size_hint_y: .35
+            MDRaisedButton:
+                id: req_box
+                height: '60dp'
+                text: 'Register As New'
+                theme_text_color: "Custom"
+                markup: True
+                bold: True
+                on_release: root.go_to_register_scr()
+

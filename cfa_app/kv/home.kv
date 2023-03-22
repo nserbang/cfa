@@ -1,0 +1,102 @@
+#:import hex kivy.utils.get_color_from_hex
+
+
+
+<ContentNavigationDrawer>
+
+    MDList:
+
+        OneLineListItem:
+            text: "Screen 1"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "scr 1"
+
+        OneLineListItem:
+            text: "Screen 2"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "scr 2"
+
+
+<Home_Screen>:
+    name: 'home_scr'
+
+
+    MDTopAppBar:
+        id: top
+        pos_hint: {"top": 1}
+        elevation: 4
+        title: "Police"
+        left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
+
+    MDNavigationLayout:
+
+        canvas.before:
+            Color:
+                rgba: hex('#FFFFFF')
+            Rectangle:
+                pos: self.pos
+                size: self.width, self.height-top.height
+
+        MDScreenManager:
+            id: screen_manager
+            MDScreen:
+                name: "scr 1"
+                MDLabel:
+                    text: "Profile"
+                    halign: "center"
+
+            MDScreen:
+                name: "scr 2"
+
+                MDLabel:
+                    text: "Password"
+                    halign: "center"
+
+
+        MDNavigationDrawer:
+            id: nav_drawer
+            radius: (0, 16, 16, 0)
+
+            MDNavigationDrawerMenu:
+                screen_manager: screen_manager
+                nav_drawer: nav_drawer
+
+
+                MDNavigationDrawerHeader:
+                    id: header_box
+                    title: "Person Name"
+                    text: "Address"
+                    spacing: "4dp"
+                    padding: "12dp", 0, 0, "56dp"
+
+                MDNavigationDrawerItem
+                    icon: "account"
+                    text: "Edit Profile"
+                    on_press:
+                        nav_drawer.set_state("close")
+                        screen_manager.current = "scr 1"
+
+                MDNavigationDrawerItem
+                    icon: "lock"
+                    text: "Change Password"
+                    on_press:
+                        nav_drawer.set_state("close")
+                        screen_manager.current = "scr 2"
+                        
+                MDNavigationDrawerItem
+                    icon: "note"
+                    text: "Terms"
+
+                MDNavigationDrawerItem
+                    icon: "file-document-outline"
+                    text: "Privacy Policy"
+
+                MDNavigationDrawerItem
+                    icon: "phone"
+                    text: "Contact Us"
+
+                MDNavigationDrawerItem
+                    icon: "logout"
+                    text: "Logout"

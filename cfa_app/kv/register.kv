@@ -1,0 +1,77 @@
+#:import hex kivy.utils.get_color_from_hex
+
+<Register_Screen>:
+    name: 'register_scr'
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        MDTopAppBar:
+            left_action_items: [["arrow-left", lambda x: root.back_clicked()]]
+            md_bg_color: hex('#CDD8DC')
+            
+        GridLayout:
+            cols: 1
+            padding: 30
+            spacing: 50
+
+            canvas.before:
+                Color:
+                    rgba: hex('#CDD8DC')
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+
+            MDLabel:
+                text: 'Register'
+                theme_text_color: "Custom"
+                text_color: "#000000"
+                halign: 'center'
+                valign: 'middle'        
+                text_size: self.size            
+                markup: True
+                font_style: 'H4'
+
+
+
+            MDTextField:
+                id: phone_box
+                size_hint_x: .7
+                hint_text: "Phone Number"
+                mode: "fill"
+                radius: [10, 10, 10, 10]
+                fill_color: 0, 0, 0, .4
+                multiline: False
+                pos_hint: {"center_x": .5, "center_y": .5}
+                fill_color_normal: 1, 1, 1, 1
+                fill_color_focus: .95, .95, .95, 1
+                hint_text_color_normal: .6, .6, .6, 1
+                text_color_normal: .6, .6, .6, 1
+
+
+            MDTextField:
+                id: name_box
+                size_hint_x: .7
+                hint_text: "Password"
+                mode: "fill"
+                radius: [10, 10, 10, 10]
+                fill_color: 0, 0, 0, .4
+                multiline: False
+                pos_hint: {"center_x": .5, "center_y": .5}
+                fill_color_normal: 1, 1, 1, 1
+                fill_color_focus: .95, .95, .95, 1
+                hint_text_color_normal: .6, .6, .6, 1
+                text_color_normal: .6, .6, .6, 1
+                
+
+            MDRaisedButton:
+                size_hint_y: None
+                height: '60dp'
+                pos_hint: {"center_x": .5, "center_y": .5}
+                size_hint_x: .7
+                text: "Register"
+                md_bg_color: "#1D96FD"
+                radius: [10, 10, 10, 10]
+                on_release: root.register_clicked()
+

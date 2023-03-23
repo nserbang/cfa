@@ -1,0 +1,29 @@
+1) Splash Screen *
+2) Login screen *
+3) Registration screen *
+4) OTP verification screen *
+5) Home screen (for general user) *
+5.1) Home screen (when user is police) *
+5.2) Left Menu screen * 
+6) Report Stollen Vehicl screen *
+7) Report Extortion screen *
+7.1) Report Extortion screen with option for adding audio/video *
+7.1.1) Report Extortion screen with option for gallery or camera *
+7.2) Report Extortion screen with Map and marker to select place *
+8) Report Drugs screen *
+8.1) Report Drugs Incident screen with option for adding audio/video *
+8.1.1) Report Drugs Incident screen with option for gallery or camera *
+8.2) Report Drugs Incident with Map and marker screen to select place *
+9) Search screen *
+10) Edit Profile screen *
+11) Change password screen  *
+12) Emergency screen *
+13) Informaction screen *
+14) My Account screen ((shows only own cases or cases assigned to him if user is police) *
+15) Terms and condition screen *
+16) Contact us screen *
+17) Action screen (shows only for Police) *
+18) Driving Direction on Map screen (shows only for Police) *
+19) Privacy Policy *
+20) History
+20.1) History of photo/video album

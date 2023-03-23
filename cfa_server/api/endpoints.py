@@ -72,7 +72,13 @@ lostVehicle_update = LostVehicleViewSet.as_view({"patch":"update"})
 ######################### LostVehicle url name ends##################
 
 
-
+########################## Comment url begins####################
+comment_list = CommentViewSet.as_view({"get":"list"})
+comment_create = CommentViewSet.as_view({"post":"create"})
+comment_get = CommentViewSet.as_view({"get":"retrieve"})
+comment_delete = CommentViewSet.as_view({"delete":"destroy"})
+comment_update = CommentViewSet.as_view({"patch":"update"})
+######################### LostVehicle url name ends##################
 
 
 

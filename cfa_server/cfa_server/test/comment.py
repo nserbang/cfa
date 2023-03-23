@@ -10,21 +10,14 @@ class testCaseClass:
     
     def add(self):
         data = {
-            "pid":"1",
+            "cid":"1",
             "user":"7005698992",
-            "oid":"1",
-            "type":"drug", 
-            "title":"My title 2",    
-            "cstate":"pending",
-            "lat":"34.23", 
-            "long":"23.334",    
-            "description":"description222", 
-            "follow":"False"
+            "content":"This is another content"          
         }
 
         json_data  = json.dumps(data)
         print("\n Creating Case",json_data)
-        url = f"{self.url}/case-create/"
+        url = f"{self.url}/comment-create/"
         r = requests.post(url = url, json=json_data)
         
         for x in r:
@@ -38,12 +31,11 @@ class testCaseClass:
     
     def update(self, pk = None):
         print(" Case Id ",pk)
-        data = {"pid":"3",
-                "oid":"1",
-                "cstate":"resolved",
-                "type":"extortion",
-                "title": "This is updated title",
-                "description":"This is updated description"}
+        data = {
+            "cid":"1",
+            "user":"7005698991",
+            "content":"This is another content"          
+        }
         json_data  = json.dumps(data)
         print("\n Updating Case",json_data)
         url = f"{self.url}/case-update/{pk}"
@@ -59,7 +51,7 @@ def test():
     #t.list()
     #t.get(6)
     t.add()
-    t.update(9)
+    #t.update(9)
     #t.delete(4)
      
 

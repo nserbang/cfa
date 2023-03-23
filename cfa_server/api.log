@@ -14142,3 +14142,525 @@ TypeError: LostVehicleViewSet.retrieve() got an unexpected keyword argument 'pk'
 2023-03-19 01:52:50,496 INFO [run_with_reloader:677] Watching for file changes with StatReloader
 2023-03-19 01:52:52,338 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
 2023-03-19 01:52:53,054 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-19 19:11:22,044 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-19 19:11:28,162 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-19 19:11:48,054 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-19 19:11:49,394 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-19 19:11:54,328 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-19 19:11:55,469 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-19 21:11:46,897 WARNING [log_response:241] Not Found: /service-type
+2023-03-20 00:28:51,704 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:28:53,752 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:29:02,593 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:29:03,668 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:29:09,165 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:29:10,306 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:29:15,811 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:29:16,875 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:29:22,324 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:29:23,368 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:29:33,241 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:29:34,293 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:29:51,326 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:29:52,081 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:30:24,647 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:30:25,412 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:30:28,165 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:30:28,901 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:30:34,869 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:30:35,648 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:30:37,351 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:30:38,072 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:32:08,562 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\serializers.py changed, reloading.
+2023-03-20 00:32:09,285 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:32:11,075 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\serializers.py changed, reloading.
+2023-03-20 00:32:11,774 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:32:19,952 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\serializers.py changed, reloading.
+2023-03-20 00:32:20,619 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:32:27,704 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\serializers.py changed, reloading.
+2023-03-20 00:32:28,401 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:32:42,916 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:32:43,571 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:32:48,528 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:32:49,262 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:32:59,548 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:33:00,249 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:33:02,014 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:33:02,705 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:33:06,587 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:33:07,295 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:33:19,701 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:33:20,476 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:33:23,291 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:33:23,977 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:33:33,261 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:33:33,957 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:33:38,942 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:33:39,658 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:33:45,629 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:33:46,331 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:33:50,219 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:33:50,884 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:09,740 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:10,452 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:12,225 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:12,933 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:15,738 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:16,439 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:27,791 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:28,529 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:37,750 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:38,475 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:41,299 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:41,985 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:44,794 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:45,522 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:50,454 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:51,162 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:52,937 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:53,663 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:34:58,676 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:34:59,396 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:02,178 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:35:02,915 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:04,697 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:35:05,397 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:11,400 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:35:12,079 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:33,047 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:35:33,791 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:37,707 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:35:38,403 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:42,276 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:35:43,000 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:46,551 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:35:47,270 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:49,001 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:35:49,768 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:54,675 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:35:55,393 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:35:57,127 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:35:57,818 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:02,783 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:36:03,490 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:05,198 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:36:05,890 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:09,740 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:36:10,431 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:19,566 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:36:20,273 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:22,000 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:36:22,719 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:25,507 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:36:26,211 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:27,953 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:36:28,678 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:31,423 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\endpoints.py changed, reloading.
+2023-03-20 00:36:32,128 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:47,648 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:36:48,385 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:36:53,314 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:36:54,037 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:01,127 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:01,994 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:04,911 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:05,657 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:08,469 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:09,207 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:10,946 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:11,635 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:18,664 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:19,398 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:22,208 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:22,907 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:24,643 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:25,344 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:27,059 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:27,804 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:31,678 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:32,393 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:37:40,497 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:37:41,165 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:38:20,234 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:38:20,946 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:38:22,677 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:38:23,389 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:38:51,736 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:38:52,483 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:38:55,289 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:38:56,045 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:39:10,479 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:39:11,227 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:39:16,158 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:39:16,961 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:39:25,046 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:39:25,815 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:39:27,557 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:39:28,275 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:39:33,155 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\models.py changed, reloading.
+2023-03-20 00:39:33,930 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:01,233 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:02,022 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:05,020 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:05,841 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:07,460 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:08,222 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:10,783 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:11,693 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:14,280 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:15,025 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:19,652 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:20,440 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:23,237 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:24,021 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:26,599 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:27,396 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:29,966 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:30,715 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:33,291 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:34,079 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:36,646 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:37,389 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:53,988 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:54,782 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:40:57,360 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:40:58,103 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:41:07,219 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:41:07,991 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:41:22,582 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:41:23,349 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:41:28,283 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:41:29,038 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:41:35,024 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:41:35,783 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:41:38,544 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:41:39,319 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:41:45,273 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:41:46,027 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:41:52,032 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:41:52,767 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:41:56,607 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:41:57,342 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:42:04,395 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:42:05,115 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:42:10,002 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:42:10,753 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:42:12,451 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:42:13,232 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:42:14,931 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:42:15,705 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:42:23,835 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:42:24,675 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:42:28,552 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:42:29,332 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:42:31,051 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:42:31,825 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:42:36,466 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:42:37,211 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:42:58,925 ERROR [log_response:241] Internal Server Error: /admin/api/comment/
+Traceback (most recent call last):
+  File "C:\Python\lib\site-packages\django\db\models\options.py", line 668, in get_field
+    return self.fields_map[field_name]
+KeyError: <function CommentAdmin.Id at 0x000002097FCFD240>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python\lib\site-packages\django\contrib\admin\utils.py", line 271, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "C:\Python\lib\site-packages\django\contrib\admin\utils.py", line 302, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "C:\Python\lib\site-packages\django\db\models\options.py", line 670, in get_field
+    raise FieldDoesNotExist(
+django.core.exceptions.FieldDoesNotExist: Comment has no field named '<function CommentAdmin.Id at 0x000002097FCFD240>'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Python\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Python\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "C:\Python\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "C:\Python\lib\site-packages\django\template\backends\django.py", line 62, in render
+    return self.template.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 175, in render
+    return self._render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\base.py", line 45, in render
+    return super().render(context)
+  File "C:\Python\lib\site-packages\django\template\library.py", line 258, in render
+    _dict = self.func(*resolved_args, **resolved_kwargs)
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 336, in result_list
+    "results": list(results(cl)),
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 312, in results
+    yield ResultList(None, items_for_result(cl, res, None))
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 303, in __init__
+    super().__init__(*items)
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 213, in items_for_result
+    f, attr, value = lookup_field(field_name, result, cl.model_admin)
+  File "C:\Python\lib\site-packages\django\contrib\admin\utils.py", line 277, in lookup_field
+    value = attr(obj)
+  File "D:\Project\cfa\cfa_server\api\admin.py", line 126, in Id
+    return self.caseId.cid
+AttributeError: 'Comment' object has no attribute 'caseId'
+2023-03-20 00:43:29,571 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\view\case_view.py changed, reloading.
+2023-03-20 00:43:30,354 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:43:48,092 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:43:48,836 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:43:52,018 ERROR [log_response:241] Internal Server Error: /admin/api/comment/
+Traceback (most recent call last):
+  File "C:\Python\lib\site-packages\django\db\models\options.py", line 668, in get_field
+    return self.fields_map[field_name]
+KeyError: <function CommentAdmin.Id at 0x000001EEBA67D240>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python\lib\site-packages\django\contrib\admin\utils.py", line 271, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "C:\Python\lib\site-packages\django\contrib\admin\utils.py", line 302, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "C:\Python\lib\site-packages\django\db\models\options.py", line 670, in get_field
+    raise FieldDoesNotExist(
+django.core.exceptions.FieldDoesNotExist: Comment has no field named '<function CommentAdmin.Id at 0x000001EEBA67D240>'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Python\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Python\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "C:\Python\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "C:\Python\lib\site-packages\django\template\backends\django.py", line 62, in render
+    return self.template.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 175, in render
+    return self._render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\base.py", line 45, in render
+    return super().render(context)
+  File "C:\Python\lib\site-packages\django\template\library.py", line 258, in render
+    _dict = self.func(*resolved_args, **resolved_kwargs)
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 336, in result_list
+    "results": list(results(cl)),
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 312, in results
+    yield ResultList(None, items_for_result(cl, res, None))
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 303, in __init__
+    super().__init__(*items)
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 213, in items_for_result
+    f, attr, value = lookup_field(field_name, result, cl.model_admin)
+  File "C:\Python\lib\site-packages\django\contrib\admin\utils.py", line 277, in lookup_field
+    value = attr(obj)
+  File "D:\Project\cfa\cfa_server\api\admin.py", line 126, in Id
+    return self.cmtid.cid
+AttributeError: 'int' object has no attribute 'cid'
+2023-03-20 00:44:09,147 ERROR [log_response:241] Internal Server Error: /admin/api/comment/
+Traceback (most recent call last):
+  File "C:\Python\lib\site-packages\django\db\models\options.py", line 668, in get_field
+    return self.fields_map[field_name]
+KeyError: <function CommentAdmin.Id at 0x000001EEBA67D240>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python\lib\site-packages\django\contrib\admin\utils.py", line 271, in lookup_field
+    f = _get_non_gfk_field(opts, name)
+  File "C:\Python\lib\site-packages\django\contrib\admin\utils.py", line 302, in _get_non_gfk_field
+    field = opts.get_field(name)
+  File "C:\Python\lib\site-packages\django\db\models\options.py", line 670, in get_field
+    raise FieldDoesNotExist(
+django.core.exceptions.FieldDoesNotExist: Comment has no field named '<function CommentAdmin.Id at 0x000001EEBA67D240>'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Python\lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Python\lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+  File "C:\Python\lib\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "C:\Python\lib\site-packages\django\template\backends\django.py", line 62, in render
+    return self.template.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 175, in render
+    return self._render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\template\loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "C:\Python\lib\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\base.py", line 45, in render
+    return super().render(context)
+  File "C:\Python\lib\site-packages\django\template\library.py", line 258, in render
+    _dict = self.func(*resolved_args, **resolved_kwargs)
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 336, in result_list
+    "results": list(results(cl)),
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 312, in results
+    yield ResultList(None, items_for_result(cl, res, None))
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 303, in __init__
+    super().__init__(*items)
+  File "C:\Python\lib\site-packages\django\contrib\admin\templatetags\admin_list.py", line 213, in items_for_result
+    f, attr, value = lookup_field(field_name, result, cl.model_admin)
+  File "C:\Python\lib\site-packages\django\contrib\admin\utils.py", line 277, in lookup_field
+    value = attr(obj)
+  File "D:\Project\cfa\cfa_server\api\admin.py", line 126, in Id
+    return self.cmtid.cid
+AttributeError: 'int' object has no attribute 'cid'
+2023-03-20 00:45:57,979 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:46:00,792 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:46:23,105 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\api\admin.py changed, reloading.
+2023-03-20 00:46:23,886 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:49:55,284 INFO [create:358] Entering
+2023-03-20 00:49:55,298 INFO [create:365] Exiting with success
+2023-03-20 00:50:36,546 INFO [create:358] Entering
+2023-03-20 00:50:36,558 INFO [create:365] Exiting with success
+2023-03-20 00:52:04,380 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:52:05,322 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:52:17,757 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:52:18,454 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:52:24,471 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:52:25,197 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:52:27,129 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:52:27,905 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:52:31,768 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:52:32,481 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:52:34,208 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:52:34,913 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:52:36,641 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:52:37,380 INFO [run_with_reloader:677] Watching for file changes with StatReloader
+2023-03-20 00:52:40,189 INFO [trigger_reload:266] D:\Project\cfa\cfa_server\cfa_server\urls.py changed, reloading.
+2023-03-20 00:52:40,892 INFO [run_with_reloader:677] Watching for file changes with StatReloader

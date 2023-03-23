@@ -56,15 +56,15 @@ urlpatterns = [
     #path('police-station-contact-update/', policeStationContact_update, name= "police-station-contact-update"),
     #policeStationContact url ends --
 
-        #policeOfficer URL begins --
+    #policeOfficer URL begins --
     path('police-officer-list/', policeOfficer_list, name= "police-officer-list"),
     path('police-officer-get/<int:pk>', policeOfficer_get, name= "police-officer-get"),
     #path('police-officer-create/', policeOfficer_create, name= "police-officer-create"),
     #path('police-officer-delete/<int:pk>', policeOfficer_delete, name= "police-officer-delete"),
     #path('police-officer-update/', policeOfficer_update, name= "police-officer-update"),
-        #policeOfficer url ends --
+    #policeOfficer url ends --
 
-        #case URL begins --
+    #case URL begins --
     path('case-list/', case_list, name= "case-list"),
     path('case-get/<int:pk>', case_get, name= "case-get"),
     path('case-create/', case_create, name= "case-create"),
@@ -72,7 +72,7 @@ urlpatterns = [
     path('case-update/<int:pk>', case_update, name= "case-update"),
         #case url ends --
 
-     #caseHistory URL begins --
+    #caseHistory URL begins --
     path('case-history-list/', caseHistory_list, name= "case-history-list"),
     path('case-history-get/<int:pk>', caseHistory_get, name= "case-history-get"),
     path('case-history-create/', caseHistory_create, name= "case-history-create"),
@@ -80,20 +80,28 @@ urlpatterns = [
     path('case-history-update/<int:pk>', caseHistory_update, name= "case-history-update"),
      #caseHistory url ends --
 
-        #media URL begins --
+    #media URL begins --
     path('media-list/', media_list, name= "media-list"),
     path('media-get/<int:pk>', media_get, name= "media-get"),
     path('media-create/', media_create, name= "media-create"),
     path('media-delete/<int:pk>', media_delete, name= "media-delete"),
     path('media-update/', media_update, name= "media-update"),
-     #media url ends --
+    #media url ends --
 
-        #media URL begins --
+    #media URL begins --
     path('lost-vehicle-list/', lostVehicle_list, name= "lostVehicle-list"),
     path('lost-vehicle-get/<int:pk>', lostVehicle_get, name= "lostVehicle-get"),
     path('lost-vehicle-create/', lostVehicle_create, name= "lostVehicle-create"),
     path('lost-vehicle-delete/<int:pk>', lostVehicle_delete, name= "lostVehicle-delete"),
     path('lost-vehicle-update/<int:pk>', lostVehicle_update, name= "lostVehicle-update"),
+    #media url ends --
+
+             #media URL begins --
+    path('comment-list/', comment_list, name= "comment-list"),
+    path('comment-get/<int:pk>', comment_get, name= "comment-get"),
+    path('comment-create/', comment_create, name= "comment-create"),
+    path('comment-delete/<int:pk>', comment_delete, name= "comment-delete"),
+    #path('comment-update/<int:pk>', comment_update, name= "comment-update"), # no update for comment. Only delete
      #media url ends --
 ]
 

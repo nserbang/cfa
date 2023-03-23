@@ -120,3 +120,15 @@ admin.site.register(LostVehicle,LostVehicleAdmin)
     engineNumber = models.CharField(max_length=50, null=True)
     make = models.CharField(max_length=50, null=True)
     model = models.CharField(max_length=50, null=True) """
+
+class CommentAdmin(admin.ModelAdmin):
+    def Id(self):
+        return self.cid.cid
+    Id.short_description = 'Case ID'
+
+    def commentid(self):
+        return self.cmtid
+    commentid.short_description = 'Comment ID'
+    list_display = [commentid, Id,'user', 'content']
+
+admin.site.register(Comment,CommentAdmin)

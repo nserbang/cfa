@@ -164,12 +164,12 @@ class LostVehicle(models.Model):
     make = models.CharField(max_length=50, null=True, default="N/A")
     model = models.CharField(max_length=50, null=True, default="N/A")
 
-class Comments(models.Model):
+class Comment(models.Model):
     cmtid = models.BigAutoField(primary_key=True)
-    chid = models.ForeignKey(CaseHistory,to_field="chid", db_column="case_history_chid",on_delete= models.CASCADE)
-    content = models.TextField(null=True)
+    cid = models.ForeignKey(Case,to_field="cid", db_column="case_cid",on_delete= models.CASCADE)    
     user = models.ForeignKey(cUser,to_field="username",db_column="cuser_username",on_delete=models.CASCADE)
-
+    content = models.TextField(null=True)
+""" cmtid, cid, content, user 
 class CommentMedia(models.Model):
     cmmid = models.BigAutoField(primary_key=True)
     chid = models.ForeignKey(Comments, to_field="cmtid",db_column="comment_cmtid",on_delete=models.CASCADE)
@@ -182,7 +182,7 @@ class CommentMedia(models.Model):
     # media type
     type = models.CharField(max_length=10,choices=mtype,default="Photo")
     # media path
-    path = models.CharField(max_length=50,null=True)
+    path = models.CharField(max_length=50,null=True) """
     
 
 

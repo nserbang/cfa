@@ -342,3 +342,70 @@ class LostVehicleViewSet(viewsets.ViewSet):
             return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)
         serialized = LostVehicleSerializer(lv)
         return JsonResponse(serialized.data, status=200)
+
+class CommentViewSet(viewsets.ViewSet):
+    def list(self,request):
+        try:
+            lv = Comment.objects.all()
+        except Comment.DoesNotExist:
+            return JsonResponse({"message": "Comments not found"}, status=HTTPStatus.NOT_FOUND)
+        except ValidationError:
+            return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)        
+        serialized = CommentSerializer(lv,many= True)
+        return JsonResponse(serialized.data, safe=False) 
+
+    def create(self, request): 
+        log.info("Entering")       
+        serializer = CommentSerializer(data=json.loads(request.data))
+        print(" Creating Comment :",serializer.error_messages, "\n Values ",serializer, "\n Received :",json.loads(request.data))
+        if serializer.is_valid():
+            lv  = Comment(**serializer.validated_data)
+            lv.save()            
+            serialized = CommentSerializer(lv)
+            log.info("Exiting with success")   
+            return JsonResponse(serialized.data, status = HTTPStatus.OK)
+        log.info("Exiting with error")   
+        return JsonResponse({"message": "Comment not saved"}, status=HTTPStatus.BAD_REQUEST)
+    
+    def update(self, request, pk = None):
+        log.info("Entering ")
+        caseId  = pk             
+        try:
+            lv = Comment.objects.get(pk = caseId) 
+            print(" Comment :",lv, " case id ",caseId)           
+        except Comment.DoesNotExist:
+            log.info(" Exiting with vehicle not found")
+            return JsonResponse({"message": "Comment not found"}, status=HTTPStatus.NOT_FOUND)
+        except ValidationError:
+            log.info(" Exiting with validation error")
+            return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)            
+        serializer = LostVehicleSerializer(lv, data= json.loads(request.data), partial = True)
+        if serializer.is_valid():           
+            serializer.save()
+            serialized = CommentSerializer(lv)
+            log.info(" Exiting with success")
+            return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
+        log.info(" Exiting with error")
+        return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
+        
+    def destroy(self, request, pk = None):
+        caseId  = pk 
+        try:
+            lv = Comment.objects.get(pk=caseId)
+            lv.delete()
+        except Comment.DoesNotExist:
+            return JsonResponse({"message": "Comment not found"}, status=HTTPStatus.NOT_FOUND)
+        except ValidationError:
+            return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)
+        return JsonResponse({"message": "Comment deleted"}, status=HTTPStatus.OK)
+    
+    def retrieve(self, request, pk):
+        #pk = caseId
+        try:
+            lv = Comment.objects.get(cmtid=pk)
+        except Comment.DoesNotExist:
+            return JsonResponse({"message": "LostVehicle not found"}, status=HTTPStatus.NOT_FOUND)
+        except ValidationError:
+            return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)
+        serialized = CommentSerializer(lv)
+        return JsonResponse(serialized.data, status=200)

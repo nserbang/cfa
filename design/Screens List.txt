@@ -25,5 +25,5 @@
 17) Action screen (shows only for Police) *
 18) Driving Direction on Map screen (shows only for Police) *
 19) Privacy Policy *
-20) History
-20.1) History of photo/video album
+20) History * 
+20.1) History of photo/video album *

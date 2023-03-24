@@ -1,3 +1,4 @@
 app/
 .git/
 cfa_app/py/__pycache__/
+cfa_server/app.log

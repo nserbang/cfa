@@ -1,6 +1,7 @@
 #:import hex kivy.utils.get_color_from_hex
 
-
+#: include kv/user_home.kv
+#: include kv/edit_profile.kv
 
 <ContentNavigationDrawer>
 
@@ -41,18 +42,9 @@
 
         MDScreenManager:
             id: screen_manager
-            MDScreen:
-                name: "scr 1"
-                MDLabel:
-                    text: "Profile"
-                    halign: "center"
+            size_hint_y: .9
 
-            MDScreen:
-                name: "scr 2"
 
-                MDLabel:
-                    text: "Password"
-                    halign: "center"
 
 
         MDNavigationDrawer:
@@ -76,7 +68,7 @@
                     text: "Edit Profile"
                     on_press:
                         nav_drawer.set_state("close")
-                        screen_manager.current = "scr 1"
+                        screen_manager.current = "edit_profile_scr"
 
                 MDNavigationDrawerItem
                     icon: "lock"

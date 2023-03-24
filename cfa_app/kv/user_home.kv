@@ -1,0 +1,18 @@
+
+#: include kv/list_card.kv
+
+<User_Home_Screen>:
+    name: 'user_home_scr'
+
+    MDBoxLayout:
+        orientation: 'vertical'
+
+        MDBoxLayout:
+            orientation: 'vertical'
+            ScrollView:
+                MDList:
+                    size_hint: 1, None
+                    id: case_list
+                    spacing: '12dp'
+                    padding: '10dp'
+                    

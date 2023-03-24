@@ -14,6 +14,7 @@ from functools import partial
 
 from py.login import Login_Screen
 from py.register import Register_Screen
+from py.otp import Otp_Screen
 from py.home import Home_Screen
 
 
@@ -28,10 +29,12 @@ class MainApp(MDApp):
 
         self.login_screen = Login_Screen()
         self.register_screen = Register_Screen()
+        self.otp_screen = Otp_Screen()
         self.home_screen = Home_Screen()
 
         self.sm.add_widget(self.login_screen)
         self.sm.add_widget(self.register_screen)
+        self.sm.add_widget(self.otp_screen)
         self.sm.add_widget(self.home_screen)
         
         return self.sm

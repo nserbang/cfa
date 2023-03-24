@@ -39,16 +39,15 @@
 
             Image:
                 id: profile_img
-                size_hint_y: .35
+                size_hint_y: .9
                 source: 'images/logo.png'
 
             AnchorLayout: 
                 size_hint_y: .1
                 anchor_x: 'right'
                 anchor_y: 'center'
-                padding: 5
                 MDIconButton:
-                    size_hint_x: .4
+                    size_hint_x: .6
                     icon: "camera-image"
                     on_release: root.choose_photo()
 

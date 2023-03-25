@@ -1,7 +1,7 @@
 #:import hex kivy.utils.get_color_from_hex
 
-<Register_Screen>:
-    name: 'register_scr'
+<Otp_Screen>:
+    name: 'otp_scr'
 
     BoxLayout:
         orientation: 'vertical'
@@ -24,7 +24,7 @@
 
 
             MDLabel:
-                text: 'Register'
+                text: 'OTP Verification'
                 theme_text_color: "Custom"
                 text_color: "#000000"
                 halign: 'center'
@@ -34,10 +34,22 @@
                 font_style: 'H4'
 
 
+
+            MDLabel:
+                text: 'Enter OTP to Verify Phone number'
+                theme_text_color: "Custom"
+                text_color: "#000000"
+                halign: 'left'
+                valign: 'middle'        
+                text_size: self.size            
+                markup: True
+                font_style: 'H5'
+
+
             MDTextField:
-                id: name_box
+                id: otp_box
                 size_hint_x: .7
-                hint_text: "Name"
+                hint_text: "OTP"
                 mode: "fill"
                 radius: [10, 10, 10, 10]
                 fill_color: 0, 0, 0, .4
@@ -48,36 +60,6 @@
                 hint_text_color_normal: .6, .6, .6, 1
                 text_color_normal: .6, .6, .6, 1
 
-
-            MDTextField:
-                id: phone_box
-                size_hint_x: .7
-                hint_text: "Phone Number"
-                mode: "fill"
-                radius: [10, 10, 10, 10]
-                fill_color: 0, 0, 0, .4
-                multiline: False
-                pos_hint: {"center_x": .5, "center_y": .5}
-                fill_color_normal: 1, 1, 1, 1
-                fill_color_focus: .95, .95, .95, 1
-                hint_text_color_normal: .6, .6, .6, 1
-                text_color_normal: .6, .6, .6, 1
-
-
-            MDTextField:
-                id: pass_box
-                password: True
-                size_hint_x: .7
-                hint_text: "Password"
-                mode: "fill"
-                radius: [10, 10, 10, 10]
-                fill_color: 0, 0, 0, .4
-                multiline: False
-                pos_hint: {"center_x": .5, "center_y": .5}
-                fill_color_normal: 1, 1, 1, 1
-                fill_color_focus: .95, .95, .95, 1
-                hint_text_color_normal: .6, .6, .6, 1
-                text_color_normal: .6, .6, .6, 1
                 
 
             MDRaisedButton:
@@ -85,8 +67,8 @@
                 height: '60dp'
                 pos_hint: {"center_x": .5, "center_y": .5}
                 size_hint_x: .7
-                text: "Register"
+                text: "Verify"
                 md_bg_color: "#1D96FD"
                 radius: [10, 10, 10, 10]
-                on_release: root.register_clicked()
+                on_release: root.verify_otp_clicked()
 

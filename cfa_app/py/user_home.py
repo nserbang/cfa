@@ -30,8 +30,11 @@ class User_Home_Screen(Screen):
                         station = '{}'.format(str(case[4])),
                         officer = 'Officer: {}'.format(str(case[5])),
                         
-                        para_case = str(case[6][:90]),
+                        para_case = str(case[6][:100]),
                         all_paragraph = str(case[6]),
+                        
+                        likes_no = str(10),
+                        comments_no = str(15),
                 )
             )
 

@@ -16,10 +16,14 @@ class ListingCard(MDCard):
     
     para_case = StringProperty()
 
-
     all_paragraph = StringProperty()
 
     case_img = StringProperty()
+
+
+    likes_no = StringProperty()
+
+    comments_no = StringProperty()
     
     adaptive_height= True
     
@@ -38,14 +42,18 @@ class ListingCard(MDCard):
             self.animate_label(self.ids.paragraph_lbl)
 
         else:
-            self.ids.paragraph_lbl.text = self.all_paragraph[:90]
-            self.height = 380
-            self.ids.paragraph_lbl.height = '20sp'
+            self.ids.paragraph_lbl.text = self.all_paragraph[:100]
+            #self.height = 420
+            #self.ids.paragraph_lbl.height = '20sp'
+
+            Animation(height = 20, font_size=15, duration=0.3).start(self.ids.paragraph_lbl) 
+            Animation(height=420,  duration=0.3).start(self)
+
 
 
     def animate_label(self, lbl):
         Animation(size=lbl.size, height = 150, font_size=15, duration=0.3).start(lbl) 
         #self.size_hint_y=None
-        Animation(height=380+ 150,  duration=0.3).start(self)
+        Animation(height=420+ 150,  duration=0.3).start(self)
 
 

@@ -27,6 +27,7 @@
 
             
         MDBoxLayout:
+            id: background_box
             orientation: 'vertical'
 
             canvas.before:
@@ -37,17 +38,34 @@
                     size: self.size
 
 
-            Image:
-                id: profile_img
-                size_hint_y: .9
-                source: 'images/logo.png'
+
+            AnchorLayout:
+                anchor_x: "center"
+                anchor_y: "center"
+                size_hint_y: .33
+
+                MDCard:
+                    size_hint: None, None
+                    size: background_box.width/2.5, background_box.width/2.5
+                    radius: background_box.width/5.
+                    md_bg_color: "white"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    elevation: 2
+
+                    FitImage:
+                        source: "images/logo.png"
+                        #size_hint_y: .35
+                        pos_hint: {"top": 1}
+                        size: self.width, self.width
+                        radius: self.height/2., self.height/2., self.height/2., self.height/2.
+
 
             AnchorLayout: 
                 size_hint_y: .1
+                size_hint_x: .7
                 anchor_x: 'right'
                 anchor_y: 'center'
                 MDIconButton:
-                    size_hint_x: .6
                     icon: "camera-image"
                     on_release: root.choose_photo()
 

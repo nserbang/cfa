@@ -3,7 +3,7 @@
 <ListingCard>:
     padding: 5
     size_hint: .35, None
-    height: 380
+    height: 420
     radius: 10
     elevation: 1
 
@@ -132,4 +132,24 @@
                 source: root.case_img
                 pos_hint: {"top": 1}
                 radius: 15
+
+
+        MDBoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 40
+            spacing: 10
+            MDFillRoundFlatIconButton:
+                text: root.likes_no
+                icon: 'heart-circle'
+                theme_icon_color: "Custom"
+                icon_color: hex('#CDD8DC')
+
+
+            MDFillRoundFlatIconButton:
+                
+                text: root.comments_no
+                icon: 'comment'
+                theme_icon_color: "Custom"
+                icon_color: hex('#CDD8DC')
 

@@ -3,7 +3,10 @@
 #: include kv/user_home.kv
 #: include kv/edit_profile.kv
 #: include kv/change_password.kv
+#: include kv/case_details.kv
+#: include kv/emergency.kv
 
+#: include kv/report_stolen.kv
 
 <ContentNavigationDrawer>
 
@@ -33,6 +36,7 @@
         title: "Police"
         left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
 
+
     MDNavigationLayout:
 
         canvas.before:
@@ -45,7 +49,6 @@
         MDScreenManager:
             id: screen_manager
             size_hint_y: .9
-
 
 
 
@@ -94,3 +97,44 @@
                 MDNavigationDrawerItem
                     icon: "logout"
                     text: "Logout"
+
+
+
+
+    MDBottomNavigation:
+        size_hint_y: 0.1
+        panel_color: hex("#2196F3")
+        selected_color_background: "orange"
+        text_color_active: "orange"
+        
+        MDBottomNavigationItem:
+            text: "Home"
+            icon: "home"
+            on_tab_press: screen_manager.current = 'user_home_scr'
+
+        MDBottomNavigationItem:
+            text: "My Account"
+            icon: "account"
+            on_tab_press: screen_manager.current = 'user_home_scr'
+
+        MDBottomNavigationItem:
+            text: "Emergency"
+            icon: "phone"
+            on_tab_press: screen_manager.current = 'emergency_scr'
+
+        MDBottomNavigationItem:
+            text: "Information"
+            icon: "information"
+            on_tab_press: screen_manager.current = 'information_scr'
+
+        MDBottomNavigationItem:
+
+
+#    MDFloatingActionButtonSpeedDial:
+#        id: "speed_dial"
+#        hint_animation: True
+#        root_button_anim: True
+#        data: root.data
+#        label_text_color: "black"
+#        label_bg_color: "orange"            
+

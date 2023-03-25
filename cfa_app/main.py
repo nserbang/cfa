@@ -20,6 +20,7 @@ from py.home import Home_Screen
 
     
 class MainApp(MDApp):
+
     def build(self):
         self.theme_cls.primary_palette = "Blue"
         self.theme_cls.theme_style = "Light"

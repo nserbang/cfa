@@ -1,0 +1,37 @@
+
+#: include kv/call_card.kv
+
+<Emergency_Screen>:
+    name: 'emergency_scr'
+
+    MDBoxLayout:
+        orientation: 'vertical'
+
+
+
+        MDDropDownItem:
+            size_hint_y: .1
+            id: district_drop_item
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            text: 'Choose District'
+            on_release: root.district_menu.open()
+
+
+        MDDropDownItem:
+            size_hint_y: .1
+            id: type_drop_item
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            text: 'Choose Type'
+            on_release: root.type_menu.open()
+
+
+
+        MDBoxLayout:
+            orientation: 'vertical'
+            ScrollView:
+                MDList:
+                    size_hint: 1, None
+                    id: calls_list
+                    spacing: '12dp'
+                    padding: '10dp'
+                    

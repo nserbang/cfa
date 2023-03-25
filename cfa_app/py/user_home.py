@@ -1,14 +1,14 @@
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition
 from kivy.properties import ObjectProperty
-from kivymd.uix.scrollview import MDScrollView
+
 
 from py.list_card import ListingCard
     
 
 class User_Home_Screen(Screen):
 
-    def on_enter(self):
+    def on_pre_enter(self):
         self.fill_case_list()
 
     # fill case list
@@ -35,6 +35,9 @@ class User_Home_Screen(Screen):
                         
                         likes_no = str(10),
                         comments_no = str(15),
+                        
+                        case_list = case
+                        
                 )
             )
 

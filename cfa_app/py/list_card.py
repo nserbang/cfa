@@ -1,4 +1,5 @@
-from kivy.properties import StringProperty
+from kivymd.app import MDApp
+from kivy.properties import StringProperty, ListProperty
 from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivy.animation import Animation
@@ -6,6 +7,8 @@ from kivy.animation import Animation
 class ListingCard(MDCard):
 
     is_expanded = False
+
+    case_list = ListProperty()
 
     case_no = StringProperty()
     comp_type = StringProperty()
@@ -56,4 +59,20 @@ class ListingCard(MDCard):
         #self.size_hint_y=None
         Animation(height=420+ 150,  duration=0.3).start(self)
 
+
+    def show_case_details(self):
+        app_inst = MDApp.get_running_app()
+        case_details_scr = app_inst.home_screen.case_details_screen
+
+        case_details_scr.case_list = self.case_list
+
+        case_details_scr.case_no_field = self.case_no
+        case_details_scr.comp_type_field = self.comp_type
+        case_details_scr.time_field = self.time
+        case_details_scr.status_field = self.status
+        case_details_scr.station_field = self.station
+        case_details_scr.officer_field = self.officer
+        case_details_scr.all_paragraph_field = self.all_paragraph
+        
+        case_details_scr.manager.current = 'case_details_scr'
 

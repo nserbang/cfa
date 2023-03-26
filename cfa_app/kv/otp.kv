@@ -1,3 +1,4 @@
+#:kivy 2.1.0
 #:import hex kivy.utils.get_color_from_hex
 
 <Otp_Screen>:
@@ -24,7 +25,7 @@
 
 
             MDLabel:
-                text: 'OTP Verification'
+                text: '[u]OTP Verification[/u]'
                 theme_text_color: "Custom"
                 text_color: "#000000"
                 halign: 'center'
@@ -33,23 +34,21 @@
                 markup: True
                 font_style: 'H4'
 
-
-
             MDLabel:
-                text: 'Enter OTP to Verify Phone number'
+                text: "[color=#097969][size=12]OTP number was sent to your mobile number. \n\n Enter OTP received on your mobile to verify your mobile number [/size] [/color] "
                 theme_text_color: "Custom"
                 text_color: "#000000"
-                halign: 'left'
+                halign: 'center'
                 valign: 'middle'        
                 text_size: self.size            
-                markup: True
-                font_style: 'H5'
+                markup: True               
 
 
+  
             MDTextField:
                 id: otp_box
                 size_hint_x: .7
-                hint_text: "OTP"
+                hint_text: "Enter OTP received"
                 mode: "fill"
                 radius: [10, 10, 10, 10]
                 fill_color: 0, 0, 0, .4
@@ -58,7 +57,7 @@
                 fill_color_normal: 1, 1, 1, 1
                 fill_color_focus: .95, .95, .95, 1
                 hint_text_color_normal: .6, .6, .6, 1
-                text_color_normal: .6, .6, .6, 1
+                text_color_normal: .6, .6, .6, 1                
 
                 
 

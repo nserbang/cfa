@@ -1,3 +1,4 @@
+#:kivy 2.1.0
 #:import hex kivy.utils.get_color_from_hex
 
 <Login_Screen>:
@@ -70,12 +71,10 @@
             anchor_x: "right"
             anchor_y: "center"    
             size_hint_y: .35
-            MDRaisedButton:
+            MDFlatButton:
                 id: req_box
-                height: '60dp'
-                text: 'Register As New'
+                text: "[color=#009E60] [size=12] [u]or register as New User[/u][/size][/color]"
                 theme_text_color: "Custom"
-                markup: True
-                bold: True
+                markup: True                
                 on_release: root.go_to_register_scr()
 

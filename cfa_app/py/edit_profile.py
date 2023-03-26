@@ -20,3 +20,5 @@ class Edit_Profile_Screen(Screen):
       
     def back_clicked(self):
         self.manager.current = 'user_home_scr'
+
+

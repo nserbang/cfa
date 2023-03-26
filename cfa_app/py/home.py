@@ -9,7 +9,7 @@ from py.change_password import Change_Password_Screen
 from py.case_details import Case_Details_Screen
 from py.emergency import Emergency_Screen
 from py.report_stolen import Report_Stolen_Screen
-
+from py.report_extortion import Report_Extortion_Screen
 
 from kivymd.uix.button import MDFloatingActionButtonSpeedDial
 
@@ -39,6 +39,7 @@ class Home_Screen(Screen):
         self.emergency_screen = Emergency_Screen()
 
         self.report_stolen_screen = Report_Stolen_Screen()
+        self.report_extortion_screen = Report_Extortion_Screen()
 
         
         self.ids.screen_manager.add_widget(self.user_home_screen)
@@ -49,7 +50,7 @@ class Home_Screen(Screen):
         self.ids.screen_manager.add_widget(self.emergency_screen)
 
         self.ids.screen_manager.add_widget(self.report_stolen_screen)
-
+        self.ids.screen_manager.add_widget(self.report_extortion_screen)
 
     def on_pre_enter(self):
         self.speeddial_btn = MDFloatingActionButtonSpeedDial(

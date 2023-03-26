@@ -1,0 +1,148 @@
+#:import hex kivy.utils.get_color_from_hex
+
+
+<Video_Photo_Content>:
+    adaptive_height: True
+    orientation: 'vertical'
+
+
+    BoxLayout:
+        orientation: 'horizontal'
+        spacing: 10
+        padding: 25
+        MDFillRoundFlatIconButton:
+            size_hint_x: .5
+            text: 'Video'
+            icon: 'video'
+            theme_icon_color: "Custom"
+            icon_color: hex('#CDD8DC')
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+        MDFillRoundFlatIconButton:
+            size_hint_x: .5
+            text: 'Photo'
+            icon: 'image'
+            theme_icon_color: "Custom"
+            icon_color: hex('#CDD8DC')
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+    MDLabel:
+        id: filename_box
+        size_hint_x: .1
+        text: 'a'
+        theme_text_color: "Custom"
+        text_color: hex("#8D8D8D")
+        font_size: '16sp'
+        bold: True
+        halign: 'center'
+        pos_hint: {"center_x": .5, "center_y": .5}
+
+
+
+
+<Location_Content>:
+    adaptive_height: True
+
+    MDLabel:
+        text: 'Map'
+
+<Details_Content>:
+
+
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+
+        MDTextField:
+            size_hint_x: .85
+            hint_text: "Add Details like place, Date & contact"
+            mode: "fill"
+            fill_color: 0, 0, 0, .4
+            multiline: True
+            pos_hint: {"center_x": .5, "center_y": .5}
+            fill_color_normal: .93, .93, .93, 1
+            fill_color_focus: .9, .9, .9, 1
+            hint_text_color_normal: .6, .6, .6, 1
+            text_color_normal: .6, .6, .6, 1
+
+
+
+<Report_Extortion_Screen>:
+    name: 'report_extortion_scr'
+
+
+    canvas.before:
+        Color:
+            rgba: hex('#FFFFFF')
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+
+
+        BoxLayout:
+            size_hint_y: .1
+            orientation: 'horizontal'
+            AnchorLayout: 
+                size_hint_x: .15
+                anchor_x: 'left'
+                anchor_y: 'center'
+                MDIconButton:
+                    icon: "arrow-left"
+                    theme_icon_color: "Custom"
+                    icon_color: hex('#CDD8DC')
+                    on_release: root.back_clicked()
+
+            MDLabel:
+                size_hint_x: .85
+                text: 'Report Extortion'
+                theme_text_color: "Custom"
+                text_color: hex("#8D8D8D")
+                font_size: '16sp'
+                bold: True
+
+
+        MDScrollView:
+
+            MDGridLayout:
+                id: box
+                cols: 1
+                adaptive_height: True
+
+
+
+        MDScrollView:
+            AnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'center'
+                MDTextField:
+                    size_hint_x: .85
+                    hint_text: "Add Details like place, Date & contact"
+                    mode: "fill"
+                    fill_color: 0, 0, 0, .4
+                    multiline: True
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    fill_color_normal: .93, .93, .93, 1
+                    fill_color_focus: .9, .9, .9, 1
+                    hint_text_color_normal: .6, .6, .6, 1
+                    text_color_normal: .6, .6, .6, 1
+
+
+
+        AnchorLayout:
+            anchor_x: 'center'
+            anchor_y: 'center'
+            MDRaisedButton:
+                size_hint_y: None
+                height: '60dp'
+                pos_hint: {"center_x": .5, "center_y": .5}
+                size_hint_x: .5
+                text: "Submit"
+                md_bg_color: "#1D96FD"
+                radius: [10, 10, 10, 10]
+                on_release: root.submit_clicked()
+
+
+                

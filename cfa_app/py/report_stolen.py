@@ -8,3 +8,6 @@ class Report_Stolen_Screen(Screen):
 
     def submit_clicked(self):
         print('Submit Clicked')
+        
+    def back_clicked(self):
+        self.manager.current = 'user_home_scr'

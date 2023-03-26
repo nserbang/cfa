@@ -28,7 +28,15 @@ class Register_Screen(Screen):
         # TO DO : send name, phone, hashed_password, salt to server for store.
         # Check status and status and store in result
         return result
-    
 
+
+    def hash_password(self, password, salt):
+        # Combine the password and salt
+        password_salt = f"{password}{salt}".encode("utf-8")
+
+        # Hash the combined password and salt using SHA-256
+        hashed_password = hashlib.sha256(password_salt).hexdigest()
+
+        return hashed_password
 
 

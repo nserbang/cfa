@@ -5,6 +5,7 @@
 #: include kv/change_password.kv
 #: include kv/case_details.kv
 #: include kv/emergency.kv
+#: include kv/information.kv
 
 #: include kv/report_stolen.kv
 #: include kv/report_extortion.kv
@@ -29,6 +30,7 @@
 <Home_Screen>:
     name: 'home_scr'
 
+    bottom_nav: bottom_nav
 
     MDTopAppBar:
         id: top
@@ -39,7 +41,6 @@
 
 
     MDNavigationLayout:
-
         canvas.before:
             Color:
                 rgba: hex('#FFFFFF')
@@ -49,7 +50,8 @@
 
         MDScreenManager:
             id: screen_manager
-            size_hint_y: .9
+            size_hint_y: .8
+            pos_hint: {"center_x": .5, "center_y": .5}
 
 
 
@@ -103,6 +105,7 @@
 
 
     MDBottomNavigation:
+        id: bottom_nav
         size_hint_y: 0.1
         panel_color: hex("#2196F3")
         selected_color_background: "orange"

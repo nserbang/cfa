@@ -24,6 +24,7 @@ class MainApp(MDApp):
     def build(self):
         self.theme_cls.primary_palette = "Blue"
         self.theme_cls.theme_style = "Light"
+        self.theme_cls.font_size = "10sp"
         
         self.sm = ScreenManager()
         self.sm.transition = WipeTransition()

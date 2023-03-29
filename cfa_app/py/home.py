@@ -8,6 +8,7 @@ from py.edit_profile import Edit_Profile_Screen
 from py.change_password import Change_Password_Screen
 from py.case_details import Case_Details_Screen
 from py.emergency import Emergency_Screen
+from py.information import Information_Screen
 from py.report_stolen import Report_Stolen_Screen
 from py.report_extortion import Report_Extortion_Screen
 
@@ -37,6 +38,7 @@ class Home_Screen(Screen):
         
         self.case_details_screen = Case_Details_Screen()
         self.emergency_screen = Emergency_Screen()
+        self.information_screen = Information_Screen()
 
         self.report_stolen_screen = Report_Stolen_Screen()
         self.report_extortion_screen = Report_Extortion_Screen()
@@ -48,6 +50,7 @@ class Home_Screen(Screen):
 
         self.ids.screen_manager.add_widget(self.case_details_screen)
         self.ids.screen_manager.add_widget(self.emergency_screen)
+        self.ids.screen_manager.add_widget(self.information_screen)
 
         self.ids.screen_manager.add_widget(self.report_stolen_screen)
         self.ids.screen_manager.add_widget(self.report_extortion_screen)

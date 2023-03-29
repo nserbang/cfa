@@ -1,0 +1,89 @@
+#:import hex kivy.utils.get_color_from_hex
+
+<Information_Screen>:
+    name: 'information_scr'
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        MDLabel:
+            size_hint_y: .1
+            text: 'Information'
+            theme_text_color: "Custom"
+            text_color: hex("#000000")
+            font_size: '18sp'
+            bold: True
+            pos_hint: {"center_x": .5, "center_y": .5}
+            halign: 'center'
+
+
+        MDTabs:
+            size_hint_y: .1
+            id: tabs
+            on_tab_switch: root.on_tab_switch(*args)
+            Tab:
+                title: "Drugs"
+                theme_text_color: "Custom"
+                text_color: "white"
+
+            Tab:
+                title: "Extortion"
+                theme_text_color: "Custom"
+                text_color: "white"
+
+            Tab:
+                title: "Theft"
+
+
+
+        ScreenManager:
+            id: info_sm
+            
+
+
+<Tab>:
+
+    MDRaisedButton:
+        pos_hint: {"center_x": .5, "center_y": .5}
+
+
+
+<Drugs_Screen>:
+    name: 'drugs_scr'
+
+    BoxLayout:
+        padding: 5
+        orientation: 'vertical'
+        MDScrollView:
+            size_hint_y: .6
+            MDGridLayout:
+                id: box
+                cols: 1
+                adaptive_height: True
+
+
+<Extortion_Screen>:
+    name: 'extortion_scr'
+
+    
+<Theft_Screen>:
+    name: 'theft_scr'
+    
+    
+<Title_Content_1>:
+    adaptive_height: True
+    size_hint_y: None
+    height: '300sp'
+    BoxLayout:
+        padding: 5
+        orientation: 'vertical'
+
+
+<Title_Content_2>:
+    adaptive_height: True
+    size_hint_y: None
+    height: '300sp'
+    BoxLayout:
+        padding: 5
+        orientation: 'vertical'
+

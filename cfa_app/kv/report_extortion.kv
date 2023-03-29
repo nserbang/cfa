@@ -1,5 +1,9 @@
 #:import hex kivy.utils.get_color_from_hex
 
+<Item>
+
+    IconLeftWidget:
+        icon: root.source
 
 <Video_Photo_Content>:
     adaptive_height: True
@@ -25,7 +29,8 @@
             theme_icon_color: "Custom"
             icon_color: hex('#CDD8DC')
             pos_hint: {"center_x": .5, "center_y": .5}
-            on_release: root.capture_photo()
+            #on_release: root.capture_img()
+            on_release: root.choose_option_photo()
 
     MDLabel:
         id: filename_box

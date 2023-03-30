@@ -4,6 +4,8 @@
 #: include kv/user_home.kv
 #: include kv/edit_profile.kv
 #: include kv/change_password.kv
+#: include kv/terms.kv
+#: include kv/privacy.kv
 #: include kv/case_details.kv
 #: include kv/emergency.kv
 #: include kv/information.kv
@@ -89,10 +91,16 @@
                 MDNavigationDrawerItem
                     icon: "note"
                     text: "Terms"
-
+                    on_press:
+                        nav_drawer.set_state("close")
+                        screen_manager.current = "terms_scr"
+                        
                 MDNavigationDrawerItem
                     icon: "file-document-outline"
                     text: "Privacy Policy"
+                    on_press:
+                        nav_drawer.set_state("close")
+                        screen_manager.current = "privacy_scr"
 
                 MDNavigationDrawerItem
                     icon: "phone"
@@ -101,7 +109,9 @@
                 MDNavigationDrawerItem
                     icon: "logout"
                     text: "Logout"
-
+                    on_press:
+                        nav_drawer.set_state("close")
+                        root.manager.current = "login_scr"
 
 
 

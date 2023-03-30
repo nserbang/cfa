@@ -6,6 +6,9 @@ from kivymd.uix.scrollview import MDScrollView
 from py.user_home import User_Home_Screen
 from py.edit_profile import Edit_Profile_Screen
 from py.change_password import Change_Password_Screen
+from py.terms import Terms_Screen
+from py.privacy import Privacy_Screen
+
 from py.case_details import Case_Details_Screen
 from py.emergency import Emergency_Screen
 from py.information import Information_Screen
@@ -35,6 +38,8 @@ class Home_Screen(Screen):
         self.user_home_screen = User_Home_Screen()
         self.edit_profile_screen = Edit_Profile_Screen()
         self.change_password_screen = Change_Password_Screen()
+        self.terms_screen = Terms_Screen()
+        self.privacy_screen = Privacy_Screen()
         
         self.case_details_screen = Case_Details_Screen()
         self.emergency_screen = Emergency_Screen()
@@ -47,6 +52,8 @@ class Home_Screen(Screen):
         self.ids.screen_manager.add_widget(self.user_home_screen)
         self.ids.screen_manager.add_widget(self.edit_profile_screen)
         self.ids.screen_manager.add_widget(self.change_password_screen)
+        self.ids.screen_manager.add_widget(self.terms_screen)
+        self.ids.screen_manager.add_widget(self.privacy_screen)
 
         self.ids.screen_manager.add_widget(self.case_details_screen)
         self.ids.screen_manager.add_widget(self.emergency_screen)

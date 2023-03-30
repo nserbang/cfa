@@ -4,11 +4,19 @@ from kivy.properties import ObjectProperty, StringProperty
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelOneLine
 from kivy.uix.modalview import ModalView
-from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.list import OneLineIconListItem
 
+from kivymd.uix.filemanager import MDFileManager
+from kivymd.toast import toast
+
+import os
+from os.path import exists
+from datetime import datetime
+
+from plyer import camera
 from kivy_garden.mapview import MapView, MapMarker
+#from kivy_garden.xcamera import XCamera
 
 class Item(OneLineIconListItem):
     divider = None
@@ -18,26 +26,144 @@ class Video_Photo_Content(MDBoxLayout):
 
     camera_popup = None
 
-    def capture_img(self, instance):
-        self.camera_popup = Camera_Popup()
-        self.camera_popup.parent_instance = self
-        self.camera_popup.open()    
+    video_manager_open = False
+    photo_manager_open = False
 
 
-    def choose_option_photo(self):
-        self.dialog = MDDialog(
-            title="Select Option",
+    """
+        Functions of Choose Video Options  (Gallery / Camera)
+    """
+
+
+    def choose_option_video(self):
+        self.video_dialog = MDDialog(
+            title="Select Video Option",
             type="simple",
             items=[
-                Item(text="Gallery", source="folder-multiple-image", on_release=self.choose_img_gallery),
-                Item(text="Camera", source="camera", on_release=self.capture_img),
+                Item(text="Gallery", source="folder-multiple-image", on_release=self.show_video_gallery),
+                Item(text="Camera", source="camera", on_release=self.capture_video),
             ],
         )
-        self.dialog.open()
+        self.video_dialog.open()
 
 
-    def choose_img_gallery(self, instance):
-        pass
+    def show_video_gallery(self, instance):
+        # Video File Manager
+        self.file_manager = MDFileManager(
+            exit_manager=self.exit_manager,
+            select_path=self.select_path,
+            ext=['.mp4']
+        )
+
+        path = os.path.expanduser("~")  # path of directory opened file manager
+        self.file_manager.show(path)
+
+        self.video_manager_open = True
+
+
+    def capture_video(self, instance):
+        print("Capturing Video has not yet been implemented.")
+
+        # toast message 
+        toast("Capturing Video has not yet been implemented.")
+
+
+    """
+        Functions of Choose Photo Options (Gallery / Camera)
+    """
+
+    def choose_option_photo(self):
+        self.photo_dialog = MDDialog(
+            title="Select Image Option",
+            type="simple",
+            items=[
+                Item(text="Gallery", source="folder-multiple-image", on_release=self.show_photo_gallery),
+                Item(text="Camera", source="camera", on_release=self.capture_image),
+            ],
+        )
+        self.photo_dialog.open()
+
+
+
+    def show_photo_gallery(self, instance):
+        # Photo File Manager
+        self.file_manager = MDFileManager(
+            exit_manager=self.exit_manager,
+            select_path=self.select_path,
+            ext=['.png', '.jpg', '.jpeg'],
+            preview=True
+        )
+
+        path = os.path.expanduser("~")  # path of directory opened file manager
+        self.file_manager.show(path)
+
+        self.photo_manager_open = True
+
+
+    def capture_image(self, instance):
+#        self.camera_popup = Camera_Popup()
+#        self.camera_popup.parent_instance = self
+#        self.camera_popup.open()    
+
+
+        ti = datetime.now()
+        timestr = ti.strftime("%Y%m%d_%H%M%S")
+
+        filepath = 'IMG_{}.png'.format(timestr)
+
+        if exists(filepath):
+            print("Picture with this name already exists!")
+            return False
+        try:
+            camera.take_picture(filename=filepath,
+                                on_complete=self.camera_callback)
+        except NotImplementedError:
+            print("This feature hasn't yet been implemented for this platform.")
+
+            # toast message 
+            toast("This feature hasn't yet been implemented for this platform.")
+
+
+    def camera_callback(self, filepath):
+        if exists(filepath):
+            print("Picture saved!")
+        else:
+            print("Could not save your picture!")
+
+
+
+    """
+        Functions of File Manager (Video / Photo)
+    """
+
+    def select_path(self, path: str):
+
+        self.exit_manager()
+        toast(path)
+
+        # Path of video choosen from Gallery
+        if self.video_manager_open == True:
+            self.video_manager_open = False
+            
+            # video path
+            self.gallery_video_path = path
+            print('Video Path')
+            
+        # Path of  choosen from Gallery
+        elif self.photo_manager_open == True:
+            self.photo_manager_open = False
+
+            # photo path 
+            self.gallery_photo_path = path
+            print('Photo Path')
+
+
+    def exit_manager(self, *args):
+        '''Called when the user reaches the root of the directory tree.'''
+
+        self.file_manager.close()
+
+
 
 
 class Location_Content(MDBoxLayout):
@@ -56,12 +182,8 @@ class Location_Content(MDBoxLayout):
         lon =  self.mapview.lon
         print('add marker')
 
-        # Snack message 
-        snack_bar = Snackbar(text="Location is added",
-            snackbar_x="10dp",
-            snackbar_y="10dp",
-            size_hint_x=.8)
-        snack_bar.open()
+        # Toast message 
+        toast("Location is added")
         
 
     def remove_marker(self):
@@ -82,10 +204,10 @@ class Camera_Popup(ModalView):
 
         # dismiss popup
         self.dismiss()
-        self.parent_instance.ids.filename_box.text = filename
+        #self.parent_instance.ids.filename_box.text = filename
 
-        #destroy instance
-        self.__del__()
+        #play is False
+        camera.play = False
 
 
 

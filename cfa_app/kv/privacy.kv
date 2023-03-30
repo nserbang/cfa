@@ -1,0 +1,29 @@
+#:import hex kivy.utils.get_color_from_hex
+
+<Privacy_Screen>:
+    name: 'privacy_scr'
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        MDLabel:
+            size_hint_y: .1
+            text: 'Privacy Policy'
+            theme_text_color: "Custom"
+            text_color: hex("#000000")
+            font_size: '18sp'
+            bold: True
+            pos_hint: {"center_x": .5, "center_y": .5}
+            halign: 'center'
+
+
+        MDLabel:
+            id: privacy_box
+            size_hint_y: .9
+            text: ''
+            theme_text_color: "Custom"
+            text_color: hex("#000000")
+            font_size: '16sp'
+            pos_hint: {"center_x": .5, "center_y": .5}
+            halign: 'center'
+

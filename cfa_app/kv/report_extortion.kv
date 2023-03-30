@@ -1,5 +1,8 @@
 #:import hex kivy.utils.get_color_from_hex
 
+#:import XCamera kivy_garden.xcamera.XCamera
+
+
 <Item>
 
     IconLeftWidget:
@@ -21,7 +24,8 @@
             theme_icon_color: "Custom"
             icon_color: hex('#CDD8DC')
             pos_hint: {"center_x": .5, "center_y": .5}
-
+            on_release: root.choose_option_video()
+            
         MDFillRoundFlatIconButton:
             size_hint_x: .5
             text: 'Photo'
@@ -32,15 +36,6 @@
             #on_release: root.capture_img()
             on_release: root.choose_option_photo()
 
-    MDLabel:
-        id: filename_box
-        text: ''
-        theme_text_color: "Custom"
-        text_color: hex("#8D8D8D")
-        font_size: '16sp'
-        bold: True
-        halign: 'center'
-        pos_hint: {"center_x": .5, "center_y": .5}
 
 
 
@@ -171,7 +166,7 @@
 
 
         MDScrollView:
-            size_hint_y: .6
+            size_hint_y: .8
             MDGridLayout:
                 id: box
                 cols: 1
@@ -222,10 +217,11 @@
     BoxLayout:
         orientation: 'vertical'
         spacing: 10
-        Camera:
+        XCamera:
             id: camera
-            resolution: (846, 640)
-            play: True
+            on_picture_taken: app.picture_taken(*args)            
+#            resolution: (640, 480)
+#            play: False
 
         MDFloatingActionButton:
             #text: 'Capture'

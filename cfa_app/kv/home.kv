@@ -66,6 +66,19 @@
                 screen_manager: screen_manager
                 nav_drawer: nav_drawer
 
+                AnchorLayout:
+                    anchor_x: 'center'
+                    anchor_y: 'center'
+                    size_hint_y: None
+                    height: 150
+
+                    FitImage:
+                        size_hint: None, None
+                        size: 120, 120
+                        id: profile_img
+                        source: "images/profile.png"
+                        radius: [25, 25, 25, 25, ]
+
 
                 MDNavigationDrawerHeader:
                     id: header_box

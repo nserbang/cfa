@@ -15,6 +15,7 @@ from py.information import Information_Screen
 from py.report_stolen import Report_Stolen_Screen
 from py.report_extortion import Report_Extortion_Screen
 
+from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.button import MDFloatingActionButtonSpeedDial
 
 class ContentNavigationDrawer(MDScrollView):
@@ -63,27 +64,58 @@ class Home_Screen(Screen):
         self.ids.screen_manager.add_widget(self.report_extortion_screen)
 
     def on_pre_enter(self):
-        self.speeddial_btn = MDFloatingActionButtonSpeedDial(
-                    id="speed_dial",
-                    #hint_animation= True,
-                    root_button_anim =True,
-                    label_text_color = "black",
-                    label_bg_color = "orange"
-                )
-        self.add_widget(self.speeddial_btn)
+        # self.speeddial_btn = MDFloatingActionButtonSpeedDial(
+        #             id="speed_dial",
+        #             #hint_animation= True,
+        #             #root_button_anim =True,
+        #             #label_text_color = "black",
+        #             #label_bg_color = "orange",
+
+        #         )
+        # self.add_widget(self.speeddial_btn)
+
+        # data = {
+        #     'Report Stolen Vehicle': ['plus', "on_release", lambda x: self.switch_screen("report_stolen_scr")],
+        #     'Report Extortion': ['plus', "on_release", lambda x: self.switch_screen("report_extortion_scr")],
+        #     'Report Drug Issue': ['plus', "on_release", lambda x: self.switch_screen("report_drug_scr")]
+        # }
+
+        # self.speeddial_btn.data = data
 
 
-        data = {
-            'Report Stolen Vehicle': ['plus', "on_release", lambda x: self.switch_screen("report_stolen_scr")],
-            'Report Extortion': ['plus', "on_release", lambda x: self.switch_screen("report_extortion_scr")],
-            'Report Drug Issue': ['plus', "on_release", lambda x: self.switch_screen("report_drug_scr")]
-        }
 
-        self.speeddial_btn.data = data
+        reports_list = ["Report Extortion", "Report Stolen Vehicles", "Report Drugs"]
+
+        reports_items = [
+            {
+                "text": f"{reports_list[i]}",
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=f"{reports_list[i]}": self.speeddial_callback(x),
+
+            } for i in range(len(reports_list))
+        ]
+        self.reports_menu = MDDropdownMenu(
+            caller=self.ids.dial_btn,
+            items=reports_items,
+            elevation=4,
+            width_mult=4,
+            ver_growth="up",
+            position="top"
+        )
 
 
-    def switch_screen(self, screen_name):
-        self.speeddial_btn.close_stack()
-        self.ids.screen_manager.current = screen_name
+    def speeddial_callback(self, text_item):
+        self.reports_menu.dismiss()
+        if text_item == 'Report Extortion':
+            self.ids.screen_manager.current = 'report_extortion_scr'
+        elif text_item == 'Report Stolen Vehicles':
+            self.ids.screen_manager.current = 'report_stolen_scr'
+        elif text_item == 'Report Drugs':
+            pass
+
+
+#    def switch_screen(self, screen_name):
+#        self.speeddial_btn.close_stack()
+#        self.ids.screen_manager.current = screen_name
 
 

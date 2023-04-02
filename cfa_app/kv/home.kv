@@ -145,11 +145,15 @@
         MDBottomNavigationItem:
 
 
-#    MDFloatingActionButtonSpeedDial:
-#        id: "speed_dial"
-#        hint_animation: True
-#        root_button_anim: True
-#        data: root.data
-#        label_text_color: "black"
-#        label_bg_color: "orange"            
 
+
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'bottom'
+        padding: 15
+        MDFloatingActionButton:
+            id: dial_btn
+            icon: "plus"
+            theme_icon_color: "Custom"
+            on_release: root.reports_menu.open()
+            

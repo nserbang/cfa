@@ -4,6 +4,18 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.label import MDLabel
 from kivy.animation import Animation
 
+from kivymd.uix.fitimage import FitImage
+from kivymd.uix.swiper import MDSwiperItem
+from kivy.uix.videoplayer import VideoPlayer
+
+
+class Video_Player(VideoPlayer):
+    #state='play'
+    #options = {'eos': 'loop'}
+    allow_stretch=True
+
+
+
 class ListingCard(MDCard):
 
     is_expanded = False
@@ -23,13 +35,13 @@ class ListingCard(MDCard):
 
     case_img = StringProperty()
 
-
     likes_no = StringProperty()
 
     comments_no = StringProperty()
     
     adaptive_height= True
-    
+
+    media_list = ListProperty()
 
     def expand_paragraph(self):
         self.is_expanded = not self.is_expanded
@@ -76,3 +88,30 @@ class ListingCard(MDCard):
         
         case_details_scr.manager.current = 'case_details_scr'
 
+
+    def fill_media_swiper(self):
+        self.ids.media_swiper.clear_widgets()
+
+        for media_file in self.media_list:
+
+            swiper_item =  MDSwiperItem()
+
+            if media_file.lower().endswith(('.png', '.jpg', '.jpeg')):
+
+                img = FitImage(source='media/{}'.format(media_file), radius=[20,0])
+
+                swiper_item.add_widget(img)
+
+                self.ids.media_swiper.add_widget(swiper_item)
+
+            elif media_file.lower().endswith(('.mkv', '.avi', '.mp4')):
+
+                video = Video_Player(source='media/{}'.format(media_file))
+                swiper_item.add_widget(video)
+
+                self.ids.media_swiper.add_widget(swiper_item)
+
+
+        if self.media_list == []:
+            self.ids.media_swiper.height = 0
+            self.height = 420-150 # new height

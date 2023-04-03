@@ -120,21 +120,12 @@
                 on_release: root.show_case_details()
                 #on_release: root.expand_paragraph()
 
-        MDCard:
+        MDSwiper:
+            id: media_swiper
             #size_hint_y: .35
             size_hint_y: None
             height: 150
-            padding: 5
-            radius: 16
-            md_bg_color: "white"
-            pos_hint: {"center_x": .5, "center_y": .5}
-            elevation: 1
-
-            FitImage:
-                source: root.case_img
-                pos_hint: {"top": 1}
-                radius: 15
-
+            #pos_hint: {"center_x": .5, "center_y": .5}
 
         MDBoxLayout:
             orientation: 'horizontal'

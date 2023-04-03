@@ -14,32 +14,37 @@ class User_Home_Screen(Screen):
     # fill case list
     def fill_case_list(self):
         
-        case_list_test = [ ['1','type 1','3/3/2023','Accepted','XYZ Police Station', 'Smith', 'lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text ' ],
-        ['2','type 2','4/3/2023','Accepted','XYZ Police Station', 'Smith', 'lorem text lorem text lorem text lorem text lorem text lorem text ' ],
-        ['3','type 3','4/3/2023','Accepted','XYZ Police Station', 'Smith', 'lorem text lorem text lorem text lorem text lorem text lorem text ' ] ]
+        case_list_test = [ ['1','type 1','3/3/2023','Accepted','XYZ Police Station', 'Smith', 'lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text lorem text ', ['1.png', '2.png', 'sample_video.avi', ] ],
+        ['2','type 2','4/3/2023','Accepted','XYZ Police Station', 'Smith', 'lorem text lorem text lorem text lorem text lorem text lorem text ', [] ],
+        ['3','type 3','4/3/2023','Accepted','XYZ Police Station', 'Smith', 'lorem text lorem text lorem text lorem text lorem text lorem text ', [] ] ]
 
 
         for case in case_list_test:
 
-            self.ids.case_list.add_widget(
-                ListingCard(
-                        case_no = 'Case No.: {}'.format(str(case[0])),
-                        comp_type = 'Complaint Type: {}'.format(str(case[1])),
-                        time = 'Reported On: {}'.format(str(case[2])),
-                        status = 'Status: {}'.format(str(case[3])),
-                        station = '{}'.format(str(case[4])),
-                        officer = 'Officer: {}'.format(str(case[5])),
+
+            list_card_widget = ListingCard(
+                    case_no = 'Case No.: {}'.format(str(case[0])),
+                    comp_type = 'Complaint Type: {}'.format(str(case[1])),
+                    time = 'Reported On: {}'.format(str(case[2])),
+                    status = 'Status: {}'.format(str(case[3])),
+                    station = '{}'.format(str(case[4])),
+                    officer = 'Officer: {}'.format(str(case[5])),
                         
-                        para_case = str(case[6][:100]),
-                        all_paragraph = str(case[6]),
+                    para_case = str(case[6][:100]),
+                    all_paragraph = str(case[6]),
+
+                    media_list = case[7],
+
+                    likes_no = str(10),
+                    comments_no = str(15),
                         
-                        likes_no = str(10),
-                        comments_no = str(15),
+                    case_list = case
                         
-                        case_list = case
-                        
-                )
             )
+
+            list_card_widget.fill_media_swiper()
+
+            self.ids.case_list.add_widget(list_card_widget)
 
 
 

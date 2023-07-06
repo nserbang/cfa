@@ -3,3 +3,5 @@ app/
 cfa_app/py/__pycache__
 cfa_app/cache
 cfa_server/app.log
+venv/
+**/__pycache__/

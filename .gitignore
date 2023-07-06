@@ -5,4 +5,4 @@ cfa_app/cache
 cfa_server/app.log
 venv/
 **/__pycache__/
-**/[Ll]ogs
+**/[Ll]og

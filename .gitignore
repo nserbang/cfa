@@ -6,3 +6,5 @@ cfa_server/app.log
 venv/
 **/__pycache__/
 cfa_server/api.log
+api.log
+.vscode/

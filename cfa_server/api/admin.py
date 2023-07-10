@@ -82,10 +82,10 @@ class CaseAdmin(admin.ModelAdmin):
         #print(" Ranks: ",PoliceOfficer.RANKS)
         ranks = PoliceOfficer.RANKS   
         #print("rank at 13 :",ranks[13])
-        dic = {}   
+        dic = {}
         for x in ranks:
             d1 = {k:v for k,v in zip(x[0:],x[1:])}
-            dic = {**dic, **d1}             
+            dic = {**dic, **d1}          
         return  format_html("<span> <b> {} </b> <p> {} </p> </span>", self.oid.user.first_name, dic[self.oid.rank])
     officer_name.short_description = "Officer Name"
     officer_name.admin_order_field ="oid__oid"

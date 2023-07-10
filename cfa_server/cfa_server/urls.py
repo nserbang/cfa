@@ -22,6 +22,8 @@ from rest_framework import routers
 from api.viewset.case import *
 from api.viewset.district import *
 from api.viewset.police import *
+from api.viewset.emergency import *
+from api.viewset.information import *
 
 router = routers.DefaultRouter()
 router.register('district', DistrictViewSet, basename='district')
@@ -33,7 +35,8 @@ router.register('case-history', CaseHistoryViewSet, basename='case-history')
 router.register('media', MediaViewSet, basename='media')
 router.register('lost-vehicle', LostVehicleViewSet, basename='lost-vehicle')
 router.register('comment', CommentViewSet, basename='comments')
-
+router.register('emergency', EmergencyViewSet, basename='emergency')
+router.register('information', InformationViewSet, basename='information')
 # router.register()
 
 urlpatterns = [

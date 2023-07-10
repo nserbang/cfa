@@ -97,3 +97,37 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
+
+class EmergencySerializer(serializers.ModelSerializer):
+
+    district = DistrictSerializer(source='did')
+
+    class Meta:
+        model = Emergency
+        fields = [
+            'emid',
+            'district',
+            'name',
+            'number',
+            'lat',
+            'long',
+
+        ]
+
+
+class InformationSerializer(serializers.ModelSerializer):
+
+    information_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Information
+        fields = [
+            'inid',
+            'information_type',
+            'heading',
+            'content'
+        ]
+
+    def get_information_type(self, information):
+        return dict(Information.Itype)[information.information_type]
+

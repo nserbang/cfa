@@ -94,7 +94,8 @@ class Case(models.Model):
         ('pending','Pending'), # Complaint lodged for the first time
         ('approved','Approved'), # Complaint approved for investigation
         ('accepted','Accepted'), # Formal case approved
-        ('transferred','Transferred'), # Complaint being transferred from one ps to another
+        ('assign','Assign'), # Assign case to some other officer
+        ('transfer','Transfer'), # Complaint being transferred from one ps to another
         ('resolved','Resolved'), # Complaint has been resolved
         ('info','Info'),    # Police officer requires more information from complainant
     )
@@ -152,8 +153,7 @@ class Media(models.Model):
     )
     ptype = models.CharField(max_length=10, choices=Ptype,default='case')
     # media path
-    path = models.FileField(upload_to=get_upload_path)
-    
+    path = models.FileField(upload_to=get_upload_path)    
     description = models.TextField(null= True)
 
 class LostVehicle(models.Model):
@@ -184,6 +184,25 @@ class CommentMedia(models.Model):
     # media path
     path = models.CharField(max_length=50,null=True) """
     
+# Table for emergency helpline numbers with their name and gps location
+class Emergency(models.Model):
+    emid = models.BigAutoField(primary_key=True)
+    did = models.ForeignKey(District,to_field="did",db_column="district_did",on_delete=models.CASCADE)
+    name = models.CharField(max_length=50, null=True, default="N/A")
+    number = models.CharField(max_length=100, null=True)
+    lat = models.DecimalField(max_digits=9,decimal_places=6, null=True)
+    long = models.DecimalField(max_digits=9,decimal_places=6, null=True)
 
-
+class Information(models.Model):
+    inid = models.BigAutoField(primary_key=True)
+    Itype = ( # Represent information type 
+        ('drug','Drug'), # information related drug offenses
+        ('extortion','Extortion'), # Information related to Extortion Offenses
+        ('Vehicle','Vehicle'), # Rules/information related to vehicle theft
+    )
+    information_type = models.CharField(max_length=15, choices=Itype,default='drug')
+    heading = models.TextField(blank=False,null=False)
+    content = models.TextField(blank=False, null=True)
+    
+    
 

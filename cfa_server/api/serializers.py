@@ -22,10 +22,26 @@ class PoliceStationContactSerializer(serializers.ModelSerializer):
 class PoliceStationSerializer(serializers.ModelSerializer):
 
     district = DistrictSerializer(source='did')
+    contacts = PoliceStationContactSerializer(source='policestationcontact_set', many=True)
 
     class Meta:
         model = PoliceStation
-        fields = '__all__'
+        fields = [
+            'pid',
+            'did',
+            'name',
+            'address',
+            'lat',
+            'long',
+            'distance',
+            'contacts',
+            'district'
+        ]
+
+    # def get_contact(self, police_station):
+    #     contacts = police_station.contacts.all()
+    #     serializers = PoliceStationContactSerializer(contacts, many=True)
+    #     return serializers
 
 class PoliceOfficerSerializer(serializers.ModelSerializer):
 

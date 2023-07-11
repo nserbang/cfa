@@ -24,6 +24,7 @@ from api.viewset.district import *
 from api.viewset.police import *
 from api.viewset.emergency import *
 from api.viewset.information import *
+from api.viewset.user import *
 
 router = routers.DefaultRouter()
 router.register('district', DistrictViewSet, basename='district')
@@ -43,7 +44,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace= "rest_framework")),
-
+    path('api/v1/register/', UserRegistrationView.as_view(), name='user-registration'),
+    path('api/v1/login/', UserLoginView.as_view(), name='user-login'),
 
     #User URL
     # path(r'register/', user_create, name="register"),

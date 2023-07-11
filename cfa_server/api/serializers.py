@@ -1,5 +1,7 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 from .models import *
+from django.contrib.auth import authenticate
 
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,7 +64,6 @@ class MediaSerializer(serializers.ModelSerializer):
         model = Media
         fields = '__all__'
 
-
 class CaseSerializer(serializers.ModelSerializer):
     #history = CaseHistorySerializer(many=True)
     #media = MediaSerializer(many=True)
@@ -111,9 +112,7 @@ class EmergencySerializer(serializers.ModelSerializer):
             'number',
             'lat',
             'long',
-
         ]
-
 
 class InformationSerializer(serializers.ModelSerializer):
 
@@ -131,3 +130,47 @@ class InformationSerializer(serializers.ModelSerializer):
     def get_information_type(self, information):
         return dict(Information.Itype)[information.information_type]
 
+User = get_user_model()
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password'],
+            role=validated_data.get('role', 'user'),
+            address=validated_data.get('address', None),
+            pincode=validated_data.get('pincode', ''),
+            otp_code=validated_data.get('otp_code', None)
+        )
+        return user
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'password', 'role', 'address', 'pincode', 'otp_code']
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+
+            if user:
+                if not user.is_active:
+                    raise serializers.ValidationError('User account is disabled.')
+            else:
+                raise serializers.ValidationError('Unable to log in with the provided credentials.')
+        else:
+            raise serializers.ValidationError('Must include "username" and "password".')
+
+        attrs['user'] = user
+        return attrs
+    
+class OTPSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    otp_code = serializers.CharField(max_length=6)

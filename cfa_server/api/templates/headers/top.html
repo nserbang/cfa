@@ -1,12 +1,16 @@
 <div class="container-flex" >  
     <div class="row p-2" style="background-color:#154c79">       
         <div style="float:right;">
-            <span style="float:right;">    
-                <a href="/login" title="Skip to content" class="text-white">Login</a> &nbsp
-                <a href= "/signup" class="text-white" > Sign Up </a> &nbsp
-                <!-- <a id="fontSmall" href="javascript:void(0)" class="text-white"> Decrease Font</a> &nbsp   -->
-                <!-- <a id="fontLarge" href="javascript:void(0)" class="text-white"> Enlarge Font </a> &nbsp -->
-                <!-- <a id="fontDefault" href="javascript:void(0)" class="text-white"> Normal Display </a> &nbsp  -->
+            <span style="float:right;">
+                {% if user.is_authenticated %}   
+                    <a href="/logout" title="Skip to content" class="text-white">Logout</a>
+                {% else %} 
+                    <a href="/login" title="Skip to content" class="text-white">Login</a> &nbsp
+                    <a href= "/register" class="text-white" >Register</a> &nbsp
+                    <!-- <a id="fontSmall" href="javascript:void(0)" class="text-white"> Decrease Font</a> &nbsp   -->
+                    <!-- <a id="fontLarge" href="javascript:void(0)" class="text-white"> Enlarge Font </a> &nbsp -->
+                    <!-- <a id="fontDefault" href="javascript:void(0)" class="text-white"> Normal Display </a> &nbsp  -->
+                {% endif %}
             </br>
             </span>
         </div>

@@ -4,9 +4,11 @@ from django.urls import NoReverseMatch
 from django.utils import timezone
 from datetime import datetime
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
+
+from django.contrib.auth.forms import UserCreationForm
 
 
 #from rest_framework.request import Request
@@ -57,7 +59,8 @@ def index(request):
 
     vars = {
         "items":items,
-        "home": True
+        "home": True,
+        "user": request.user if request.user else {}
     }
 
     return render(request,"index.html",vars)
@@ -127,3 +130,19 @@ def login_view(request):
             messages.error(request, 'Invalid username or password')
 
     return render(request, 'login.html')
+
+def register_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')  # Replace 'home' with the URL name of your home page
+    else:
+        form = UserCreationForm()
+    
+    return render(request, 'register.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')  # Replace 'home' with the URL name of your home page

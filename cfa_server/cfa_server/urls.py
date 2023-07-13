@@ -25,7 +25,7 @@ from api.viewset.police import *
 from api.viewset.emergency import *
 from api.viewset.information import *
 from api.viewset.user import *
-from api.views import index, emergency, information, login_view
+from api.views import index, emergency, information, login_view, register_view, logout_view
 
 router = routers.DefaultRouter()
 router.register('district', DistrictViewSet, basename='district')
@@ -49,9 +49,12 @@ urlpatterns = [
     path('api/v1/login/', UserLoginView.as_view(), name='user-login'),
     
     path('', index, name='index'),
+    path('home/', index, name='home'),
     path('emergency/', emergency, name='emergency'),
     path('information/', information, name='information'),
-    path('login/', login_view, name='login')
+    path('login/', login_view, name='login'),
+    path('register/', register_view, name='register'),
+    path('logout/', logout_view, name='logout'),
     #User URL
     # path(r'register/', user_create, name="register"),
     # path(r'user-update/<str:pk>', user_update, name="user-update"),

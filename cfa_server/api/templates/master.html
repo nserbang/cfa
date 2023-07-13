@@ -1,0 +1,155 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head> 
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Department of Information and Public Relation, Government of Arunachal Pradesh</title>   
+    <link rel="shortcut icon" href= "{% static 'images/favicon.ico' %}">
+    <script type='text/javascript' src="{% static 'js/jquery-3.6.1.min.js' %}"></script> 
+    {% comment %} x<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous">   </script>  {% endcomment %}
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>      
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    {% comment %} <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> {% endcomment %}
+    {% comment %} <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> {% endcomment %}
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" integrity="sha512-sMXtMNL1zRzolHYKEujM2AqCLUR9F2C4/05cdbxjjLSRvMQIciEPCQZo++nk7go3BtSuK9kfa/s+a4f4i5pLkw==" crossorigin="anonymous" />
+
+    <script type='text/javascript' src="{% static 'js/site.js' %}"></script>
+    <script type="text/javascript">
+      jQuery(document).ready(function()
+      {
+        $.creaseFont();
+      });
+      
+      $(window).keydown(function(e) {
+        switch (e.keyCode) {
+            case 107:
+                $('#fontLarge').click();
+                return false;
+            case 109:
+                $('#fontSmall').click();
+                return false;
+        }
+        return;
+      });
+
+      $(document).ready(function() {
+        $(".owl-carousel").owlCarousel();
+      });
+
+      $('.carousel-main').owlCarousel({
+        items: 3,
+        loop: true,
+        autoplay: true,
+        autoplayTimeout: 1500,
+        margin: 10,
+        nav: true,
+        dots: false,
+        navText: ['<span class="fas fa-chevron-left fa-2x"></span>','<span class="fas fa-chevron-right fa-2x"></span>'],
+      });
+
+      setInterval(function() {
+        $('.fa-bell').toggleClass('flashing-icon');
+      }, 1000);
+     
+    </script>  
+    
+    <script type="text/javascript" src="{% static 'js/jquery.creaseFont.min.js' %}"></script>
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v11.0" nonce="GsgmHcUC"></script>
+
+  </head>
+{% comment %}   class="container d-none d-sm-block bg-dark text-white display-block" {% endcomment %}
+  <body class="bg-white">  
+    <div class="container-flex" >  
+      <div class="row p-2" style="background-color:#154c79">       
+       <div style="float:right;">
+       <span style="float:right;">    
+        <a href="#skipCont" title="Skip to content" class="text-white">Skip to content</a> &nbsp
+        <a href= "" class="text-white" > Screen Reader </a> &nbsp
+        <a id="fontSmall" href="javascript:void(0)" class="text-white"> Decrease Font</a> &nbsp  
+        <a id="fontLarge" href="javascript:void(0)" class="text-white"> Enlarge Font </a> &nbsp
+        <a id="fontDefault" href="javascript:void(0)" class="text-white"> Normal Display </a> &nbsp 
+       </br>
+      </span>
+    </div>
+  </div>
+    </div>
+
+    <div class="container-flex d-none d-sm-block bg-white">
+      <div class="row">  
+          <img src=  "{% static 'images/banner.jpg' %}" class="img-fluid" style="height:100%; width:100%" alt="Arunachal Pradesh"> 
+      </div>       
+    </div>
+  
+     <!--BODY STARTS-->
+     <div id ="skipCont"> </div>
+     {% block contentarea %}
+    
+      {% comment%} Content of pages will be paced here {% endcomment %}
+
+     {% endblock contentarea %}
+
+    <div style="background-color:#4866B6">
+    <hr class="text-white">
+     <div class="container mlcr" style="font-size:.8rem">
+        <div class="hstack gap-1 ">
+          <div class="vr"></div>
+          <div class=""> 
+            <a href="" > Home </a>
+          </div> 
+          <div class="vr"></div>
+          <div class=""><a href=""Contact Us </a></div>
+          <div class="vr"></div>
+          <div class=""><a href=""Disclaimer </a></div>
+          <div class="vr"></div>
+          <div class=""><a href=""Website Governance </a></div>          
+          <div class="vr"></div>
+          <div class=""><a href="" >Website Information Manager </a></div>
+          <div class="vr"></div>
+          <div class=""><a href="" >FAQ </a></div>
+      </div>
+    
+    </div>
+    <div class="container text-light" style="font-size:.7rem; height:30px">     
+    &#169; Website Maintained and Updated by
+          <a class="text-light" href="" Department of IPR </a>,  Designed and Developed by <a class="text-light" target="_blank" href="http://ditc.arunachal.gov.in/">Department of Information Technology and Communication, Government of Arunachal Pradesh </a>
+  </div>
+</div>
+ {% comment %}    <div class="container-fluid bg-secondary p-3">
+      <div class="row">
+        <div class="col-md-1 d_none"></div>
+        <div class="col-md-4 text-light border border-light mt-0">
+          <h4>Website Designed and Developed by</h4>
+          <a class="text-light text-decoration-none" target="_blank" href="http://ditc.arunachal.gov.in/">Department of Information Technology and Communication, Government of Arunachal Pradesh </a>      
+        </div>
+        <div class="col-1 col-md-1 mt-5"></div>
+        <div class="col-md-4 text-light border border-light">
+          <h4>Website Maintained and Updated by </h4>
+          <a class="text-light text-decoration-none" href="" Department of Printing, Government of Arunachal Pradesh </a>                 
+        </div>
+      </div>
+      <div class="col-md-1 d_none"></div>
+    </div>
+  <div class="container p-2">
+  
+  </div> {% endcomment %}
+
+  <div class="container p-3">
+  
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js" integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk" crossorigin="anonymous"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+  
+
+  </body>
+</html>

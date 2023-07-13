@@ -1,0 +1,54 @@
+<style>
+    .custom-card-body {
+        height: auto;
+    }
+
+    .custom-card-deck {
+        width: 65%;
+        overflow-y: auto;
+        max-height: 100vh;
+    }
+
+    .card-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .card-info i {
+        margin-right: 5px;
+    }
+
+    .center-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+</style>
+
+<div class="center-container">
+    <div class="card-deck custom-card-deck">
+        {% for item in items %}
+            <div class="col-md-9">
+                <div class="card mb-9">
+                    <div class="card-body custom-card-body">
+                        <h5 class="card-title">Case No: {{ item.number }}</h5>
+                        <h5 class="card-title">Case Type: {{ item.type }}</h5>
+                        <h5 class="card-title">Case Status: {{ item.status }}</h5>
+                        <h5 class="card-title">Police Station: {{ item.police.station }}</h5>
+                        <h5 class="card-title">Reported Date: {{ item.reported_date }}</h5>
+                        <div class="card-info">
+                            <i class="bi bi-hand-thumbs-up"></i>
+                            <p class="card-text">Likes: {{ item.likes }}</p>
+                        </div>
+                        <div class="card-info">
+                            <i class="bi bi-chat-dots"></i>
+                            <p class="card-text">Comments: {{ item.comments }}</p>
+                        </div>
+                        <button class="btn btn-primary">Share</button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

@@ -8,3 +8,4 @@ venv/
 cfa_server/api.log
 api.log
 .vscode/
+hello/

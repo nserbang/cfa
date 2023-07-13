@@ -1,49 +1,85 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-  <head> 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Crime free Arunachal Pradesh</title>   
-    <link rel="shortcut icon" href= "{% static 'images/favicon.ico' %}">
-    <script type='text/javascript' src="{% static 'js/jquery-3.6.1.min.js' %}"></script> 
-    {% comment %} x<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous">   </script>  {% endcomment %}
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>      
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    {% comment %} <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> {% endcomment %}
-    {% comment %} <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> {% endcomment %}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crime free Arunachal Pradesh</title>
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" />
+    <script
+      type="text/javascript"
+      src="{% static 'js/jquery-3.6.1.min.js' %}"
+    ></script>
+    {% comment %} x
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+      crossorigin="anonymous"
+    ></script>
+    {% endcomment %}
+    <script
+      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+      integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
+      crossorigin="anonymous"
+    ></script>
 
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" integrity="sha512-sMXtMNL1zRzolHYKEujM2AqCLUR9F2C4/05cdbxjjLSRvMQIciEPCQZo++nk7go3BtSuK9kfa/s+a4f4i5pLkw==" crossorigin="anonymous" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'css/style.css' %}"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+      crossorigin="anonymous"
+    />
+    {% comment %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    {% endcomment %} {% comment %}
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    {% endcomment %}
 
-    <script type='text/javascript' src="{% static 'js/site.js' %}"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
+      integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g=="
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css"
+      integrity="sha512-sMXtMNL1zRzolHYKEujM2AqCLUR9F2C4/05cdbxjjLSRvMQIciEPCQZo++nk7go3BtSuK9kfa/s+a4f4i5pLkw=="
+      crossorigin="anonymous"
+    />
+
+    <script type="text/javascript" src="{% static 'js/site.js' %}"></script>
     <script type="text/javascript">
-      jQuery(document).ready(function()
-      {
+      jQuery(document).ready(function () {
         $.creaseFont();
       });
-      
-      $(window).keydown(function(e) {
+
+      $(window).keydown(function (e) {
         switch (e.keyCode) {
-            case 107:
-                $('#fontLarge').click();
-                return false;
-            case 109:
-                $('#fontSmall').click();
-                return false;
+          case 107:
+            $("#fontLarge").click();
+            return false;
+          case 109:
+            $("#fontSmall").click();
+            return false;
         }
         return;
       });
 
-      $(document).ready(function() {
+      $(document).ready(function () {
         $(".owl-carousel").owlCarousel();
       });
 
-      $('.carousel-main').owlCarousel({
+      $(".carousel-main").owlCarousel({
         items: 3,
         loop: true,
         autoplay: true,
@@ -51,74 +87,84 @@
         margin: 10,
         nav: true,
         dots: false,
-        navText: ['<span class="fas fa-chevron-left fa-2x"></span>','<span class="fas fa-chevron-right fa-2x"></span>'],
+        navText: [
+          '<span class="fas fa-chevron-left fa-2x"></span>',
+          '<span class="fas fa-chevron-right fa-2x"></span>',
+        ],
       });
 
-      setInterval(function() {
-        $('.fa-bell').toggleClass('flashing-icon');
+      setInterval(function () {
+        $(".fa-bell").toggleClass("flashing-icon");
       }, 1000);
-     
-    </script>  
-    
-    <script type="text/javascript" src="{% static 'js/jquery.creaseFont.min.js' %}"></script>
-    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v11.0" nonce="GsgmHcUC"></script>
+    </script>
 
+    <script
+      type="text/javascript"
+      src="{% static 'js/jquery.creaseFont.min.js' %}"
+    ></script>
+    <script
+      async
+      src="https://platform.twitter.com/widgets.js"
+      charset="utf-8"
+    ></script>
+    <script
+      async
+      defer
+      crossorigin="anonymous"
+      src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v11.0"
+      nonce="GsgmHcUC"
+    ></script>
   </head>
-<body>
-
-
-  {% include 'headers/top.html' %}
-  {% include 'headers/navbar.html' %}
+  <body>
+    {% include 'headers/top.html' %} {% include 'headers/navbar.html' %}
 
     <style>
-        .custom-card-body {
-            height: auto;
-        }
-
-        .custom-card-deck {
-            width: 65%;
-            overflow-y: auto;
-            max-height: 100vh;
-        }
-
-        .card-info {
-            display: flex;
-            align-items: center;
-        }
-
-        .card-info i {
-            margin-right: 5px;
-        }
-
-        .center-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+      {% comment %} .card-info {
+        display: flex;
+        align-items: center;
+      }
+    
+      .card-info i {
+        margin-right: 5px;
+      } {% endcomment %}
+    
+      .card-title {
+        font-size: 16px;
+      }
+      .card-wrapper {
+        margin: 10px 0;
+      }
+    
+      .footer{
+        border-top: 1px solid #dadada;
+        padding-top: 20px;
+      }
+      .emergency-contact-title{
+        text-align: center;
+        margin: 10px 0;
+      }
+      .button-radius{
+        border-radius: 100px;
+      }
     </style>
-
-    <div class="center-container">
-        <div class="card-deck custom-card-deck">
-            {% for item in items %}
-                <div class="col-md-9">
-                    <div class="card mb-9">
-                        <div class="card-body custom-card-body">
-                            <h5 class="card-title">{{item.name}}</h5>
-                            <h5 class="card-title">{{item.contact_number}}</h5>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+    <div class="container-xl">
+      <div class="card-deck">
+        <h4 class="emergency-contact-title">Emergency Contact Nearest to You</h4>
+        {% for item in items %}
+        <div class="col-md-12 card-wrapper">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title"><b> {{ item.name }}- {{item.type}}</b></h5>
+              <h5 class="card-title"><b>{{item.contact_number}}</b></h5>
+              <button class="btn btn-outline-success button-radius">{{item.away}} KM Away</button>
+            </div>
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </div>
 
-  
-  {% include 'footers/navbar.html' %}
-  <sidebar>
-
-  </sidebar>
-
-</body>
+    {% include 'footers/navbar.html' %}
+    <sidebar> </sidebar>
+  </body>
 </html>

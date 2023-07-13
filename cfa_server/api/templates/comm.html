@@ -1,54 +1,62 @@
 <style>
-    .custom-card-body {
-        height: auto;
-    }
+  {% comment %} .card-info {
+    display: flex;
+    align-items: center;
+  }
 
-    .custom-card-deck {
-        width: 65%;
-        overflow-y: auto;
-        max-height: 100vh;
-    }
+  .card-info i {
+    margin-right: 5px;
+  } {% endcomment %}
 
-    .card-info {
-        display: flex;
-        align-items: center;
-    }
+  .card-title {
+    font-size: 16px;
+  }
+  .card-wrapper {
+    margin: 10px 0;
+  }
 
-    .card-info i {
-        margin-right: 5px;
-    }
-
-    .center-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
+  .footer{
+    border-top: 1px solid #dadada;
+    padding-top: 20px;
+  }
 </style>
 
-<div class="center-container">
-    <div class="card-deck custom-card-deck">
-        {% for item in items %}
-            <div class="col-md-9">
-                <div class="card mb-9">
-                    <div class="card-body custom-card-body">
-                        <h5 class="card-title">Case No: {{ item.number }}</h5>
-                        <h5 class="card-title">Case Type: {{ item.type }}</h5>
-                        <h5 class="card-title">Case Status: {{ item.status }}</h5>
-                        <h5 class="card-title">Police Station: {{ item.police.station }}</h5>
-                        <h5 class="card-title">Reported Date: {{ item.reported_date }}</h5>
-                        <div class="card-info">
-                            <i class="bi bi-hand-thumbs-up"></i>
-                            <p class="card-text">Likes: {{ item.likes }}</p>
-                        </div>
-                        <div class="card-info">
-                            <i class="bi bi-chat-dots"></i>
-                            <p class="card-text">Comments: {{ item.comments }}</p>
-                        </div>
-                        <button class="btn btn-primary">Share</button>
-                    </div>
+<div class="container-xl">
+  <div class="card-deck">
+    {% for item in items %}
+    <div class="col-md-12 card-wrapper">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title"><b>Case No</b>: {{ item.number }}</h5>
+          <h5 class="card-title"><b>Case Type</b>: {{ item.type }}</h5>
+          <h5 class="card-title"><b>Case Status</b>: {{ item.status }}</h5>
+          <h5 class="card-title"><b>Police Station</b>: {{ item.police.station }}</h5>
+          <h5 class="card-title"><b>Reported Date</b>: {{ item.reported_date }}</h5>
+          <div class="footer">
+            <div class="row">
+              <div class="col">
+                <div class="card-info">
+                  <i class="bi bi-hand-thumbs-up"></i>
+                  <p class="card-text">Likes: {{ item.likes }}</p>
                 </div>
+              </div>
+              <div class="col">
+                <div class="card-info">
+                  <i class="bi bi-chat-dots"></i>
+                  <p class="card-text">Comments: {{ item.comments }}</p>
+                </div>
+              </div>
+              <div class="col">
+                <i class="fa-regular fa-share"></i>
+                <button class="btn btn-default">
+                  <i class="fa-light fa-share-nodes"></i>
+                </button>
+              </div>
             </div>
-        {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
     </div>
+  </div>
 </div>

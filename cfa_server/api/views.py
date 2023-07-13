@@ -89,31 +89,44 @@ def information(request):
         "home": True
     }
 
-    return render(request,"emergency.html",vars)
+    return render(request,"information.html",vars)
 
 def emergency(request):
     limit = int(request.GET.get("limit",10))
     page = int(request.GET.get("page", 0))
     hospitals = Emergency.objects.all()
-    items = []
-    for hospital in hospitals:
-
-        number_of_comments = hospital.comment_set.count()
-
-        data = {
-            "number":hospital.cid,
-            "type":dict(hospital.cType)[hospital.type],
-            "status":dict(hospital.cState)[hospital.cstate],
-
-            "reported_date":str(hospital.created)
-        }
-        items.append(data)
+    items = [
+        {
+            "name":"Police Station - 1",
+            "contact_number": 2442112,
+            "type":"Police Station",
+            "away": 120
+        },
+        {
+            "name":"Police Station - 2",
+            "contact_number": 2442113,
+            "type":"Police Station",
+            "away": 60
+        },
+        {
+            "name":"Hospital - 1",
+            "contact_number": 2442912,
+            "type":"Hospital",
+            "away": 27
+        },
+        {
+            "name":"Hospital - 2",
+            "contact_number": 2443112,
+            "type":"Hospital",
+            "away": 24
+        },
+    ]
 
     vars = {
         "items":items,
     }
 
-    return render(request,"information.html",vars)
+    return render(request,"emergency.html",vars)
 
 
 def login_view(request):

@@ -1,4 +1,7 @@
 from rest_framework.viewsets import ViewSet, ModelViewSet
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
 from api.models import (
     Case,
     CaseHistory,
@@ -9,6 +12,7 @@ from api.models import (
 from api.serializers import (
     CaseSerializer,
     CaseHistorySerializer,
+    CaseSerializerCreate,
     CommentSerializer,
     LostVehicleSerializer,
     MediaSerializer,
@@ -63,3 +67,11 @@ class CommentViewSet(ModelViewSet):
     def get_queryset(self):
         case_id = self.kwargs['case_id']
         return Comment.objects.filter(cid=case_id).all()
+
+class CaseCreateAPIView(APIView):
+    def post(self, request, format=None):
+        serializer = CaseSerializerCreate(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)

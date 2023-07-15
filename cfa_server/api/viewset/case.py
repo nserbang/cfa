@@ -38,3 +38,7 @@ class CommentViewSet(ModelViewSet):
 
     serializer_class = CommentSerializer
     queryset = Comment.objects.all()
+
+    def get_queryset(self):
+        case_id = self.kwargs['case_id']
+        return Comment.objects.filter(cid=case_id).all()

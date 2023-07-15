@@ -200,7 +200,7 @@ class Information(models.Model):
         ('extortion','Extortion'), # Information related to Extortion Offenses
         ('Vehicle','Vehicle'), # Rules/information related to vehicle theft
     )
-    information_type = models.CharField(max_length=15, choices=Itype,default='drug')
+    information_type = models.CharField(max_length=15, choices=Itype,default='drug', blank=False)
     heading = models.TextField(blank=False,null=False)
     content = models.TextField(blank=False, null=True)
     

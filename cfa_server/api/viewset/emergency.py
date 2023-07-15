@@ -14,3 +14,10 @@ class EmergencyViewSet(ModelViewSet):
         else:
             permission_classes = []
         return [permission() for permission in permission_classes]
+
+    def get_queryset(self):
+        district_id = self.kwargs['district_id']
+
+        queryset = Emergency.objects.filter(did=district_id).all()
+
+        return queryset

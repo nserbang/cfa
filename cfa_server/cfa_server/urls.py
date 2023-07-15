@@ -40,7 +40,7 @@ router.register('lost-vehicle', LostVehicleViewSet, basename='lost-vehicle')
 router.register('emergency', EmergencyViewSet, basename='emergency')
 router.register('information', InformationViewSet, basename='information')
 router.register(r'case/(?P<case_id>\d+)/comments', CommentViewSet, basename='case-comments')
-# router.register()
+router.register(r'district/(?P<district_id>\d+)/emergency', EmergencyViewSet, basename='emergencies')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

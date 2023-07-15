@@ -163,6 +163,7 @@ class LostVehicle(models.Model):
     engineNumber = models.CharField(max_length=50, null=True,default="N/A")
     make = models.CharField(max_length=50, null=True, default="N/A")
     model = models.CharField(max_length=50, null=True, default="N/A")
+    description = models.CharField(max_length=500, null=True, default="N/A")
 
 class Comment(models.Model):
     cmtid = models.BigAutoField(primary_key=True)

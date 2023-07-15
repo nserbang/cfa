@@ -21,3 +21,14 @@ class EmergencyViewSet(ModelViewSet):
         queryset = Emergency.objects.filter(did=district_id).all()
 
         return queryset
+
+class EmergencyViewListSet(ModelViewSet):
+    serializer_class = EmergencySerializer
+    queryset = Emergency.objects.all()
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            permission_classes = [IsAuthenticatedOrWriteOnly]
+        else:
+            permission_classes = []
+        return [permission() for permission in permission_classes]

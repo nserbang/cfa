@@ -132,3 +132,7 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = [commentid, Id,'user', 'content']
 
 admin.site.register(Comment,CommentAdmin)
+
+@admin.register(Information)
+class InformationAdmin(admin.ModelAdmin):
+    pass

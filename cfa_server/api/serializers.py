@@ -116,7 +116,7 @@ class EmergencySerializer(serializers.ModelSerializer):
 
 class InformationSerializer(serializers.ModelSerializer):
 
-    information_type = serializers.SerializerMethodField()
+    information_type = serializers.ChoiceField(choices=Information.Itype, required=True, source='get_information_type_display')
 
     class Meta:
         model = Information

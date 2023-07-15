@@ -116,7 +116,7 @@ class EmergencySerializer(serializers.ModelSerializer):
 
 class InformationSerializer(serializers.ModelSerializer):
 
-    information_type = serializers.ChoiceField(choices=Information.Itype, required=True, source='get_information_type_display')
+    information_type = serializers.ChoiceField(choices=Information.Itype, required=True)
 
     class Meta:
         model = Information
@@ -127,8 +127,8 @@ class InformationSerializer(serializers.ModelSerializer):
             'content'
         ]
 
-    def get_information_type(self, information):
-        return dict(Information.Itype)[information.information_type]
+    # def get_information_type(self, information):
+    #     return dict(Information.Itype)[information.information_type]
 
 User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):

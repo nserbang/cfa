@@ -136,3 +136,7 @@ admin.site.register(Comment,CommentAdmin)
 @admin.register(Information)
 class InformationAdmin(admin.ModelAdmin):
     pass
+
+@admin.register(Emergency)
+class Emergency(admin.ModelAdmin):
+    pass

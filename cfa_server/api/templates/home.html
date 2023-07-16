@@ -4,31 +4,30 @@
 
 <div class='row'>
     <div class="col-3">
-        <div class="list-group text-sm fs-6">
-            <a href="{% url 'home' %}" class="list-group-item list-group-item-action active fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-                My Complaints
-            </a>
-            </div>
+        {% include 'api/side_menu.html' %}
     </div>
     <div class="col-9">
+        {% if cases %}
         <div class="d-flex flex-row">
-            <h4 class="flex-fill">My Complaints</h4>
-            <a href="{% url 'add_case' %}">Add Case</a>
+            <h4 class="flex-fill">{{ header }}</h4>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'add_case' %}">Add Case</a>
+            {% endif %}
         </div>
         <table class="table pt-2">
-        <thead>
-            <tr>
-            <th scope="col">#</th>
-            <th scope="col">Case Type</th>
-            <th scope="col">Status</th>
-            <th scope="col">Police Station</th>
-            <th scope="col">Reported Date</th>
-            <th scope="col">Likes</th>
-            <th scope="col">Comments</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for case in cases %}
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Case Type</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Police Station</th>
+                    <th scope="col">Reported Date</th>
+                    <th scope="col">Likes</th>
+                    <th scope="col">Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for case in cases %}
                 <tr>
                     <th scope="row">{{ case.cid }}</th>
                     <td>{{ case.type }}</td>
@@ -38,9 +37,89 @@
                     <td>{{ case.likes }}</td>
                     <td>{{ case.comments }}</td>
                 </tr>
-            {% endfor %}
-        </tbody>
+                {% endfor %}
+            </tbody>
         </table>
+        {% else %}
+        <table class="table pt-2">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Case Type</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Police Station</th>
+                    <th scope="col">Reported Date</th>
+                    <th scope="col">Likes</th>
+                    <th scope="col">Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Thept</td>
+                    <td>Pending</td>
+                    <td>Lorem Ipsum</td>
+                    <td>2023-07-16</td>
+                    <td>0</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Thept</td>
+                    <td>Pending</td>
+                    <td>Lorem Ipsum</td>
+                    <td>2023-07-16</td>
+                    <td>0</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Thept</td>
+                    <td>Pending</td>
+                    <td>Lorem Ipsum</td>
+                    <td>2023-07-16</td>
+                    <td>0</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Thept</td>
+                    <td>Pending</td>
+                    <td>Lorem Ipsum</td>
+                    <td>2023-07-16</td>
+                    <td>0</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Thept</td>
+                    <td>Pending</td>
+                    <td>Lorem Ipsum</td>
+                    <td>2023-07-16</td>
+                    <td>0</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Thept</td>
+                    <td>Pending</td>
+                    <td>Lorem Ipsum</td>
+                    <td>2023-07-16</td>
+                    <td>0</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Thept</td>
+                    <td>Pending</td>
+                    <td>Lorem Ipsum</td>
+                    <td>2023-07-16</td>
+                    <td>0</td>
+                    <td>2</td>
+                </tr>
+            </tbody>
+        </table>
+        {% endif %}
     </div>
 </div>
 

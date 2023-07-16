@@ -172,11 +172,27 @@ def logout_view(request):
 
 class HomePageView(View):
 
+    def get_header(self):
+        header_map = {
+            "complaints": "My complaints",
+            "stolen_vechicle": "Stollen Vehicle",
+            "seized_vehicle": "Unclaimed/Seized Vehicle",
+            "drug_case": "Drug Case Reported",
+            "extortion_case": "Extortion Case Reported",
+            "missing_child": "Missing Children",
+            "unidentified_child": "Un-identified Children Found",
+            "missing_person": "Missing Persons",
+            "unindentified_daad": "Unidentified Dead Bodies",
+            "unidentified_person": "Unidentified Person",
+        }
+        return header_map.get(self.request.GET.get('title'))
+
     def get(self, request, *args, **kwargs):
         cases = Case.objects.filter(user=request.user).annotate(
             comments=Count('comment'), likes=Value(0),
-        )
-        return render(request, 'home.html', {'cases': cases})
+        ).select_related('pid')
+        header = self.get_header()
+        return render(request, 'home.html', {'cases': cases, 'header': header})
 
 
 class UserRegistrationView(View):

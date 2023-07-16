@@ -6,11 +6,7 @@
 
 <div class='row'>
     <div class="col-3">
-        <div class="list-group text-sm fs-6">
-            <a href="{% url 'home' %}" class="list-group-item list-group-item-action active fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-                My Complaints
-            </a>
-            </div>
+        {% include 'api/side_menu.html' %}
     </div>
     <div class="col-9">
         <h4 class="flex-fill">Add A New Complaint</h4>

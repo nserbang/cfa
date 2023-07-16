@@ -1,0 +1,20 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Verify OTP{% endblock title %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center align-middle">
+<div class="card">
+    <h5 class="card-header">Verify OTP</h5>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary">Verify OTP</button>
+        </form>
+    </div>
+</div>
+</div>
+
+{% endblock content %}

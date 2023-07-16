@@ -1,6 +1,7 @@
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib.auth.models import AbstractUser
 from geopy.distance import distance
+from django.contrib.gis.geos import fromstr
 from api.utl import get_upload_path
 # Create your models here.
 
@@ -61,9 +62,14 @@ class PoliceStation(models.Model):
     lat = models.DecimalField(max_digits=9,decimal_places=6,default=0.0)
     long = models.DecimalField(max_digits=9,decimal_places=6, default=0.0)
     distance = models.DecimalField(max_digits=9, decimal_places=2, null = True)
+    geo_location = models.PointField(blank=True, null=True, srid=4326)
 
     def __str__(self):
         return self.name
+
+    def save(self, **kwargs):
+        self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
+        super().save(**kwargs)
 
 # Holds various contacts in the police station
 class PoliceStationContact(models.Model):
@@ -133,10 +139,15 @@ class Case(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     lat = models.DecimalField(max_digits=9,decimal_places=6, null=True)
     long = models.DecimalField(max_digits=9,decimal_places=6, null=True)
+    geo_location = models.PointField(blank=True, null=True, srid=4326)
     # Text description of the complaint
     description = models.TextField(null=True)
     # Follow me flag
     follow = models.BooleanField(default=False)
+
+    def save(self, **kwargs):
+        self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
+        return super().save(**kwargs)
 
 
 class CaseHistory(models.Model):

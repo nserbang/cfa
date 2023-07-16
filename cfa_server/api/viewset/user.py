@@ -1,6 +1,6 @@
 import requests
 from rest_framework import status
-from rest_framework.views import APIView 
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -8,7 +8,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from api.serializers import UserSerializer, LoginSerializer, OTPSerializer
 from api.models import cUser
 
-class UserRegistrationView(APIView):
+class UserRegistrationViewApiView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():

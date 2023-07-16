@@ -34,7 +34,10 @@ from api.views import (
     login_view,
     register_view,
     logout_view,
-    UserRegistrationView
+    UserRegistrationView,
+    VerifyOtpView,
+    HomePageView,
+    CaseAddView,
 )
 
 router = routers.DefaultRouter()
@@ -57,10 +60,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace= "rest_framework")),
-    path('api/v1/register/', UserRegistrationView.as_view(), name='user-registration'),
+    path('api/v1/register/', UserRegistrationViewApiView.as_view(), name='user-registration'),
     path('api/v1/login/', UserLoginView.as_view(), name='user-login'),
 
-    path('', index, name='index'),
+    # path('', index, name='index'),
+    path('', HomePageView.as_view(), name='home'),
+
     path('home/', index, name='home'),
     path('emergency/', emergency, name='emergency'),
     path('information/', information, name='information'),
@@ -75,6 +80,12 @@ urlpatterns = [
         UserRegistrationView.as_view(),
         name='signup',
     ),
+    path(
+        "accounts/verify-otp/",
+        VerifyOtpView.as_view(),
+        name='verify_otp',
+    ),
+    path("case/add/", CaseAddView.as_view(), name='add_case'),
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
     path('api/cases/create/', CaseCreateAPIView.as_view(), name='case-create'),

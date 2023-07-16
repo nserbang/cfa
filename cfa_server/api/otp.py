@@ -33,6 +33,7 @@ def validate_otp(user, otp: int, digits=4) -> bool:
 
 def send_otp_verification_code(user):
     otp_code = generate_otp(user)
+    print(otp_code, 'OTPPPPPPP')
     text = f"{otp_code}. Use this opt code to verify your mobile"
     url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
     params = {

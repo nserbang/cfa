@@ -159,14 +159,17 @@ class UserSerializer(serializers.ModelSerializer):
 
         otp_code = randint(100000, 999999)
 
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            password=validated_data['password'],
+        user = User(
+            username=validated_data.get('username'),
+            mobile=validated_data['mobile'],
             role=validated_data.get('role', 'user'),
             address=validated_data.get('address', None),
             pincode=validated_data.get('pincode', ''),
             otp_code=validated_data.get('otp_code', otp_code)
         )
+        if password := validated_data.get('password'):
+            user.set_password(password)
+        user.save()
         return user
 
     class Meta:

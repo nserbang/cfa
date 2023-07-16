@@ -1,19 +1,21 @@
 #from view_includes import *
 
-from django.urls import NoReverseMatch
+from django.urls import reverse_lazy
+from django.db.models import Count, Value
 from django.utils import timezone
 from datetime import datetime
 from django.shortcuts import render, reverse, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.views import View
+from django.views.generic import CreateView
 
-from django.contrib.auth.forms import UserCreationForm
-from .user_forms import UserRegistrationForm
+from .user_forms import UserRegistrationForm, VerifyOtpFrom
 from .otp import send_otp_verification_code
 
-from api.models import cUser
+from api.models import Case
 
 #from rest_framework.request import Request
 from api.view.district_views import *
@@ -21,6 +23,7 @@ from api.view.police_views import *
 from api.view.case_view import *
 from api.view.cuser_views import *
 from api.forms.user import cUserCreationForm
+from api.forms.case import CaseForm
 
 case = {
     "number":1,
@@ -170,7 +173,10 @@ def logout_view(request):
 class HomePageView(View):
 
     def get(self, request, *args, **kwargs):
-        pass
+        cases = Case.objects.filter(user=request.user).annotate(
+            comments=Count('comment'), likes=Value(0),
+        )
+        return render(request, 'home.html', {'cases': cases})
 
 
 class UserRegistrationView(View):
@@ -184,9 +190,32 @@ class UserRegistrationView(View):
         if form.is_valid():
             user = form.save()
             send_otp_verification_code(user)
-            return redirect(reverse('veryfy_otp') + f"?mobile={user.mobile}")
+            return redirect(reverse('verify_otp') + f"?mobile={user.mobile}")
         return render(request, 'api/signup.html', {"form": form})
 
 
 class VerifyOtpView(View):
-    pass
+
+    def get(self, request, *args, **kwargs):
+        form = VerifyOtpFrom(mobile=request.GET.get('mobile', ""))
+        return render(request, 'api/verify_otp.html', {"form": form})
+
+    def post(self, request, *args, **kwargs):
+        mobile = request.GET.get('mobile', "")
+        form = VerifyOtpFrom(request.POST, mobile=mobile)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('login'))
+        return render(request, 'api/verify_otp.html', {"form": form})
+
+
+class CaseAddView(LoginRequiredMixin, CreateView):
+    form_class = CaseForm
+    model = Case
+    success_url = reverse_lazy('home')
+    template_name = 'api/add_case.html'
+
+    def get_form_kwargs(self):
+        kw = super().get_form_kwargs()
+        kw['user'] = self.request.user
+        return kw

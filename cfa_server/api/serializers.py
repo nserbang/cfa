@@ -96,9 +96,19 @@ class CaseSerializer(serializers.ModelSerializer):
         return case.comment_set.count()
 
 class CaseSerializerCreate(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(write_only=True)  # Add user_id field for write-only
+
     class Meta:
         model = Case
-        fields = '__all__'
+        fields = ['pid', 'user_id', 'oid', 'type','title','cstate']  # Specify the fields to include in the serializer
+
+    def create(self, validated_data):
+        user_id = validated_data.pop('user_id', None)  # Extract the user_id from validated_data
+        if user_id:
+            user = cUser.objects.get(pk=user_id)  # Retrieve the user object based on the user_id
+            validated_data['user'] = user  # Assign the user object to the 'user' field in validated_data
+        return super().create(validated_data)
+
 
 class LostVehicleSerializer(serializers.ModelSerializer):
     class Meta:

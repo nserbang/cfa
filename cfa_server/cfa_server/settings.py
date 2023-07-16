@@ -133,6 +133,11 @@ STATIC_ROOT = 'files/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'api.cUser'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
 """ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

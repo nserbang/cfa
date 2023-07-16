@@ -26,3 +26,6 @@ typing_extensions==4.7.1
 uritemplate==4.1.1
 urllib3==2.0.3
 django-filter==23.2
+django-debug-toolbar==4.1.0
+crispy-bootstrap5==0.7
+pyotp==2.6.0

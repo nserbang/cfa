@@ -16,18 +16,38 @@ class District(models.Model):
 #username will be the primary key which will be the mobile number of the user
 
 class cUser(AbstractUser):
+
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        help_text=(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+        validators=[AbstractUser.username_validator],
+        error_messages={
+            "unique": ("A user with that username already exists."),
+        },
+        null=True,
+        blank=True,
+    )
+
     ROLES = (
         ('user','User'),
         ('police','Police'),
         ('admin','Admin'),
     )
-    # Role of the user    
+    mobile = models.CharField(max_length=26, unique=True)
+
+    # Role of the user
     role = models.CharField(max_length=10, choices=ROLES, default='user')
     # Address of the user. Optional
-    address = models.TextField(null = True)
+    address = models.TextField(null=True)
     # Pin code of the user. Optional
-    pincode = models.CharField(max_length=10)
-    otp_code = models.CharField(max_length=6, default=None, null=True, blank=True)    
+    pincode = models.CharField(max_length=10, blank=True)
+    otp_code = models.CharField(max_length=6, default=None, null=True, blank=True)
+
+    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'mobile'
 
 # Holds list of police stations
 class PoliceStation(models.Model):
@@ -79,7 +99,7 @@ class PoliceOfficer(models.Model):
     oid = models.BigAutoField(primary_key=True)
     pid = models.ForeignKey(PoliceStation,to_field="pid",db_column="police_station_pid", on_delete=models.DO_NOTHING)
     #name = models.CharField(max_length=30,default=None)
-    rank = models.CharField(max_length=10, choices=RANKS, default='Inspector')    
+    rank = models.CharField(max_length=10, choices=RANKS, default='Inspector')
     entryDate= models.DateField(auto_now=True)
     status = models.CharField(max_length=10, choices=oState, default='active')
     mobile = models.CharField(max_length=55, null=True)
@@ -123,7 +143,7 @@ class Case(models.Model):
 
 class CaseHistory(models.Model):
     chid = models.BigAutoField(primary_key=True)
-    # which case history 
+    # which case history
     cid = models.ForeignKey(Case, to_field="cid", db_column="case_cid",on_delete=models.DO_NOTHING)
     # Who has entered this entry
     user = models.ForeignKey(cUser, to_field="username",db_column="user_username",on_delete=models.DO_NOTHING)
@@ -131,7 +151,7 @@ class CaseHistory(models.Model):
     cstate = models.CharField(max_length=15,choices= Case.cState)
     # Date and time when complaint was reported
     created = models.DateTimeField(auto_now_add=True)
-    # Description added 
+    # Description added
     description = models.TextField(null=True)
 
 class Media(models.Model):
@@ -146,14 +166,14 @@ class Media(models.Model):
     )
     # media type
     mtype = models.CharField(max_length=10,choices=Mtype,default="Photo")
-    Ptype = ( # 
+    Ptype = ( #
         ('case','Case'),
         ('history','History'),
         ('comment','Comment'),
     )
     ptype = models.CharField(max_length=10, choices=Ptype,default='case')
     # media path
-    path = models.FileField(upload_to=get_upload_path)    
+    path = models.FileField(upload_to=get_upload_path)
     description = models.TextField(null= True)
 
 class LostVehicle(models.Model):
@@ -167,10 +187,10 @@ class LostVehicle(models.Model):
 
 class Comment(models.Model):
     cmtid = models.BigAutoField(primary_key=True)
-    cid = models.ForeignKey(Case,to_field="cid", db_column="case_cid",on_delete= models.CASCADE)    
+    cid = models.ForeignKey(Case,to_field="cid", db_column="case_cid",on_delete= models.CASCADE)
     user = models.ForeignKey(cUser,to_field="username",db_column="cuser_username",on_delete=models.CASCADE)
     content = models.TextField(null=True)
-""" cmtid, cid, content, user 
+""" cmtid, cid, content, user
 class CommentMedia(models.Model):
     cmmid = models.BigAutoField(primary_key=True)
     chid = models.ForeignKey(Comments, to_field="cmtid",db_column="comment_cmtid",on_delete=models.CASCADE)
@@ -184,7 +204,7 @@ class CommentMedia(models.Model):
     type = models.CharField(max_length=10,choices=mtype,default="Photo")
     # media path
     path = models.CharField(max_length=50,null=True) """
-    
+
 # Table for emergency helpline numbers with their name and gps location
 class Emergency(models.Model):
     emid = models.BigAutoField(primary_key=True)
@@ -196,7 +216,7 @@ class Emergency(models.Model):
 
 class Information(models.Model):
     inid = models.BigAutoField(primary_key=True)
-    Itype = ( # Represent information type 
+    Itype = ( # Represent information type
         ('drug','Drug'), # information related drug offenses
         ('extortion','Extortion'), # Information related to Extortion Offenses
         ('Vehicle','Vehicle'), # Rules/information related to vehicle theft
@@ -204,6 +224,6 @@ class Information(models.Model):
     information_type = models.CharField(max_length=15, choices=Itype,default='drug', blank=False)
     heading = models.TextField(blank=False,null=False)
     content = models.TextField(blank=False, null=True)
-    
-    
+
+
 

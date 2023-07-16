@@ -42,7 +42,10 @@ INSTALLED_APPS = [
     'api',
     'rest_framework.authtoken',
     'drf_yasg',
-    'django_filters'
+    'django_filters',
+    'debug_toolbar',
+    'crispy_forms',
+    'crispy_bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +57,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
 
 ROOT_URLCONF = 'cfa_server.urls'
 
@@ -172,7 +178,7 @@ AUTH_USER_MODEL = 'api.cUser'
 }
 
  """
-""" 
+"""
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -207,3 +213,10 @@ LOGGING = {
     },
 }
  """
+
+INTERNAL_IPS = ["127.0.0.1"]
+
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"

@@ -3,13 +3,15 @@
 from django.urls import NoReverseMatch
 from django.utils import timezone
 from datetime import datetime
+from django.shortcuts import render, reverse, redirect
 
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.views import View
 
 from django.contrib.auth.forms import UserCreationForm
-
+from .forms import UserRegistrationForm
+from .otp import send_otp_verification_code
 
 #from rest_framework.request import Request
 from api.view.district_views import *
@@ -153,9 +155,35 @@ def register_view(request):
             return redirect('home')  # Replace 'home' with the URL name of your home page
     else:
         form = UserCreationForm()
-    
+
     return render(request, 'register.html', {'form': form})
 
 def logout_view(request):
     logout(request)
     return redirect('home')  # Replace 'home' with the URL name of your home page
+
+
+
+class HomePageView(View):
+
+    def get(self, request, *args, **kwargs):
+        pass
+
+
+class UserRegistrationView(View):
+
+    def get(self, request, *args, **kwargs):
+        form = UserRegistrationForm
+        return render(request, 'api/signup.html', {"form": form})
+
+    def post(self, request, *args, **kwargs):
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            send_otp_verification_code(user)
+            return redirect(reverse('veryfy_otp') + f"?mobile={user.mobile}")
+        return render(request, 'api/signup.html', {"form": form})
+
+
+class VerifyOtpView(View):
+    pass

@@ -143,8 +143,8 @@ class InformationSerializer(serializers.ModelSerializer):
 
 User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    
+    password = serializers.CharField(write_only=True, required=False)
+
     def create(self, validated_data):
 
         otp_code = randint(100000, 999999)
@@ -161,7 +161,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'password', 'role', 'address', 'pincode', 'otp_code']
+        fields = ['id', 'mobile', 'username', 'password', 'role', 'address', 'pincode', 'otp_code']
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -184,7 +184,7 @@ class LoginSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
-    
+
 class OTPSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     otp_code = serializers.CharField(max_length=6)

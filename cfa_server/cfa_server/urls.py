@@ -18,14 +18,24 @@ from django.urls import path, include
 # from api.endpoints import *
 from django.contrib import admin
 from rest_framework import routers
+from django.conf import settings
+from django.contrib.auth import views as auth_views
 
-from api.viewset.case import *
+from api.viewset.case import *  # noqa
 from api.viewset.district import *
 from api.viewset.police import *
 from api.viewset.emergency import *
 from api.viewset.information import *
 from api.viewset.user import *
-from api.views import index, emergency, information, login_view, register_view, logout_view
+from api.views import (
+    index,
+    emergency,
+    information,
+    login_view,
+    register_view,
+    logout_view,
+    UserRegistrationView
+)
 
 router = routers.DefaultRouter()
 router.register('district', DistrictViewSet, basename='district')
@@ -49,12 +59,22 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls", namespace= "rest_framework")),
     path('api/v1/register/', UserRegistrationView.as_view(), name='user-registration'),
     path('api/v1/login/', UserLoginView.as_view(), name='user-login'),
-    
+
     path('', index, name='index'),
     path('home/', index, name='home'),
     path('emergency/', emergency, name='emergency'),
     path('information/', information, name='information'),
     path('login/', login_view, name='login'),
+    path(
+        "accounts/login/",
+        auth_views.LoginView.as_view(template_name="api/login.html"),
+        name='login'
+    ),
+    path(
+        "accounts/signup/",
+        UserRegistrationView.as_view(),
+        name='signup',
+    ),
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
     path('api/cases/create/', CaseCreateAPIView.as_view(), name='case-create'),
@@ -137,9 +157,7 @@ urlpatterns = [
 ]
 
 
-
-
-
-
-
-
+if settings.DEBUG:
+    urlpatterns += [
+        path("__debug__/", include("debug_toolbar.urls")),
+    ]

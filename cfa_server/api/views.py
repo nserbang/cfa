@@ -10,14 +10,17 @@ from django.contrib import messages
 from django.views import View
 
 from django.contrib.auth.forms import UserCreationForm
-from .forms import UserRegistrationForm
+from .user_forms import UserRegistrationForm
 from .otp import send_otp_verification_code
+
+from api.models import cUser
 
 #from rest_framework.request import Request
 from api.view.district_views import *
 from api.view.police_views import *
 from api.view.case_view import *
 from api.view.cuser_views import *
+from api.forms.user import cUserCreationForm
 
 case = {
     "number":1,
@@ -148,13 +151,13 @@ def login_view(request):
 
 def register_view(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = cUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('home')  # Replace 'home' with the URL name of your home page
     else:
-        form = UserCreationForm()
+        form = cUserCreationForm()
 
     return render(request, 'register.html', {'form': form})
 

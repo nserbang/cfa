@@ -20,13 +20,13 @@ def get_base32_key(user) -> str:
     return val.split("'")[1]
 
 
-def generate_otp(user, digits=4) -> int:
+def generate_otp(user, digits=6) -> int:
     base32_key = get_base32_key(user)
     otp = TOTP(base32_key, interval=OTP_VALIDITY_TIME, digits=digits).now()
     return otp
 
 
-def validate_otp(user, otp: int, digits=4) -> bool:
+def validate_otp(user, otp: int, digits=5) -> bool:
     base32_key = get_base32_key(user)
     return TOTP(base32_key, interval=OTP_VALIDITY_TIME, digits=digits).verify(otp)
 
@@ -45,4 +45,4 @@ def send_otp_verification_code(user):
         "smsContentType": "english"
     }
 
-    requests.post(url, json=params)
+    requests.get(url, params=params)

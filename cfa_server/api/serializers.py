@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import *
 from django.contrib.auth import authenticate
+from random import randint, randrange
 
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,37 +22,42 @@ class PoliceStationContactSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PoliceStationSerializer(serializers.ModelSerializer):
+class PoliceStationSerializer(serializers.Serializer):
+    pid = serializers.ReadOnlyField()
+    did = DistrictSerializer(read_only=True)
+    name = serializers.CharField(read_only=True)
+    address = serializers.CharField(read_only=True)
+    lat = serializers.DecimalField(max_digits=9, decimal_places=6, read_only=True)
+    long = serializers.DecimalField(max_digits=9, decimal_places=6, read_only=True)
+    distance = serializers.DecimalField(max_digits=9, decimal_places=2, read_only=True)
+    contacts = PoliceStationContactSerializer(many=True, read_only=True)
 
-    district = DistrictSerializer(source='did')
-    contacts = PoliceStationContactSerializer(source='policestationcontact_set', many=True)
-
-    class Meta:
-        model = PoliceStation
-        fields = [
-            'pid',
-            'did',
-            'name',
-            'address',
-            'lat',
-            'long',
-            'distance',
-            'contacts',
-            'district'
-        ]
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['district'] = data.pop('did')
+        return data
 
     # def get_contact(self, police_station):
     #     contacts = police_station.contacts.all()
     #     serializers = PoliceStationContactSerializer(contacts, many=True)
     #     return serializers
 
-class PoliceOfficerSerializer(serializers.ModelSerializer):
+class PoliceOfficerSerializer(serializers.Serializer):
+    oid = serializers.ReadOnlyField()
+    user = cUserSerializer(read_only=True)
+    pid = PoliceStationSerializer(read_only=True)
+    rank = serializers.CharField(read_only=True)
+    entryDate = serializers.DateField(read_only=True)
+    status = serializers.CharField(read_only=True)
+    mobile = serializers.CharField(read_only=True)
 
-    police_station = PoliceStationSerializer(source='pid')
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['user'] = cUserSerializer(instance.user).data
+        data['pid'] = PoliceStationSerializer(instance.pid).data
+        return data
 
-    class Meta:
-        model = PoliceOfficer
-        fields = '__all__'
+
 
 
 class CaseHistorySerializer(serializers.ModelSerializer):
@@ -89,6 +95,21 @@ class CaseSerializer(serializers.ModelSerializer):
     def get_comment_count(self, case):
         return case.comment_set.count()
 
+class CaseSerializerCreate(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(write_only=True)  # Add user_id field for write-only
+
+    class Meta:
+        model = Case
+        fields = ['pid', 'user_id', 'oid', 'type','title','cstate']  # Specify the fields to include in the serializer
+
+    def create(self, validated_data):
+        user_id = validated_data.pop('user_id', None)  # Extract the user_id from validated_data
+        if user_id:
+            user = cUser.objects.get(pk=user_id)  # Retrieve the user object based on the user_id
+            validated_data['user'] = user  # Assign the user object to the 'user' field in validated_data
+        return super().create(validated_data)
+
+
 class LostVehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = LostVehicle
@@ -116,7 +137,7 @@ class EmergencySerializer(serializers.ModelSerializer):
 
 class InformationSerializer(serializers.ModelSerializer):
 
-    information_type = serializers.SerializerMethodField()
+    information_type = serializers.ChoiceField(choices=Information.Itype, required=True)
 
     class Meta:
         model = Information
@@ -127,21 +148,24 @@ class InformationSerializer(serializers.ModelSerializer):
             'content'
         ]
 
-    def get_information_type(self, information):
-        return dict(Information.Itype)[information.information_type]
+    # def get_information_type(self, information):
+    #     return dict(Information.Itype)[information.information_type]
 
 User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-
+    
     def create(self, validated_data):
+
+        otp_code = randint(100000, 999999)
+
         user = User.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password'],
             role=validated_data.get('role', 'user'),
             address=validated_data.get('address', None),
             pincode=validated_data.get('pincode', ''),
-            otp_code=validated_data.get('otp_code', None)
+            otp_code=validated_data.get('otp_code', otp_code)
         )
         return user
 

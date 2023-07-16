@@ -1,3 +1,4 @@
+import requests
 from rest_framework import status
 from rest_framework.views import APIView 
 from rest_framework.response import Response
@@ -12,6 +13,17 @@ class UserRegistrationView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
+            params = {
+                "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
+                "message": "OTP CODE :{}".format(user.otp_code),
+                "senderId": "mnwalk",
+                "routeId": 8,
+                "mobileNos": "9729013259",
+                "smsContentType": "english"
+            }
+            x = requests.get(url, params=params)
+
             return Response({'user_id': user.id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -27,7 +39,7 @@ class UserRegistrationView(APIView):
             return Response({'error': 'Invalid user_id'}, status=status.HTTP_400_BAD_REQUEST)
 
         # if user.otp_code != otp_code:
-        if 111111 != otp_code:
+        if user.otp_code != otp_code:
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
         # OTP verification successful, you can activate the user or perform any other necessary actions

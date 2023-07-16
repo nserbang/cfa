@@ -161,6 +161,7 @@ class LostVehicle(models.Model):
     engineNumber = models.CharField(max_length=50, null=True,default="N/A")
     make = models.CharField(max_length=50, null=True, default="N/A")
     model = models.CharField(max_length=50, null=True, default="N/A")
+    description = models.CharField(max_length=500, null=True, default="N/A")
 
 class Comment(models.Model):
     cmtid = models.BigAutoField(primary_key=True)
@@ -199,7 +200,7 @@ class Information(models.Model):
         ('extortion','Extortion'), # Information related to Extortion Offenses
         ('Vehicle','Vehicle'), # Rules/information related to vehicle theft
     )
-    information_type = models.CharField(max_length=15, choices=Itype,default='drug')
+    information_type = models.CharField(max_length=15, choices=Itype,default='drug', blank=False)
     heading = models.TextField(blank=False,null=False)
     content = models.TextField(blank=False, null=True)
 

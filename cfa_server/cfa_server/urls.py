@@ -32,14 +32,16 @@ router.register('district', DistrictViewSet, basename='district')
 router.register('police-station', PoliceStationViewSet, basename='police-station')
 router.register('police-officer', PoliceOfficerViewSet, basename='police-officer')
 router.register('police-station-contact', PoliceStationContactViewSet, basename='police-contact')
-router.register('case', CaseViewSet, basename='case')
+router.register(r'case', CaseViewSet, basename='case')
+# router.register(r'case/create', CaseCreateAPIView.as_view(), basename= 'case-create')
 router.register('case-history', CaseHistoryViewSet, basename='case-history')
 router.register('media', MediaViewSet, basename='media')
 router.register('lost-vehicle', LostVehicleViewSet, basename='lost-vehicle')
-router.register('comment', CommentViewSet, basename='comments')
-router.register('emergency', EmergencyViewSet, basename='emergency')
+# router.register('comment', CommentViewSet, basename='comments')
+router.register('emergency', EmergencyViewListSet, basename='emergency')
 router.register('information', InformationViewSet, basename='information')
-# router.register()
+router.register(r'case/(?P<case_id>\d+)/comments', CommentViewSet, basename='case-comments')
+router.register(r'district/(?P<district_id>\d+)/emergency', EmergencyViewSet, basename='emergencies')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -55,6 +57,8 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
+    path('api/cases/create/', CaseCreateAPIView.as_view(), name='case-create'),
+
     #User URL
     # path(r'register/', user_create, name="register"),
     # path(r'user-update/<str:pk>', user_update, name="user-update"),

@@ -66,7 +66,7 @@ urlpatterns = [
     # path('', index, name='index'),
     path('', HomePageView.as_view(), name='home'),
 
-    path('home/', index, name='home'),
+    path('home/', HomePageView.as_view(), name='home'),
     path('emergency/', emergency, name='emergency'),
     path('information/', information, name='information'),
     path('login/', login_view, name='login'),

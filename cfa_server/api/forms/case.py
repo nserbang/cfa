@@ -29,12 +29,15 @@ class CaseForm(forms.ModelForm):
 
     def save(self, commit=False):
         case = super().save(commit=False)
-        geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
+        geo_location = fromstr(f"POINT({case.lat} {case.long})", srid=4326)
         user_distance = Distance("geo_location", geo_location)
         police_station = PoliceStation.objects.annotate(
-            distance=user_distance
-        ).order_by('distance').first()
-        self.pid = police_station.pid
-        self.oid = police_station.policeofficer_set.order_by('-rank').first()
-        self.user = self.user
+            radius=user_distance
+        ).order_by('radius').first()
+        # import pdb; pdb.set_trace()
+        case.pid = police_station
+        case.geo_location = geo_location
+        officier = police_station.policeofficer_set.order_by('-rank').first()
+        case.oid = officier
+        case.user = self.user
         return case.save()

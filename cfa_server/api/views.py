@@ -212,10 +212,14 @@ class VerifyOtpView(View):
 class CaseAddView(LoginRequiredMixin, CreateView):
     form_class = CaseForm
     model = Case
-    success_url = reverse_lazy('home')
     template_name = 'api/add_case.html'
+    success_url = '/'
 
     def get_form_kwargs(self):
         kw = super().get_form_kwargs()
         kw['user'] = self.request.user
         return kw
+
+    def form_valid(self, form):
+        form.save()
+        return redirect(reverse("home"))

@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ViewSet, ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 from api.models import (
     Case,
@@ -68,7 +69,9 @@ class CommentViewSet(ModelViewSet):
         case_id = self.kwargs['case_id']
         return Comment.objects.filter(cid=case_id).all()
 
+
 class CaseCreateAPIView(APIView):
+
     def post(self, request, format=None):
         serializer = CaseSerializerCreate(data=request.data)
         if serializer.is_valid():

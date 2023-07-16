@@ -1,8 +1,11 @@
 from rest_framework import serializers
+from django.contrib.gis.geos import fromstr
+from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth import get_user_model
 from .models import *
 from django.contrib.auth import authenticate
 from random import randint, randrange
+from api.models import Case, PoliceStation, cUser
 
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
@@ -95,19 +98,49 @@ class CaseSerializer(serializers.ModelSerializer):
     def get_comment_count(self, case):
         return case.comment_set.count()
 
+
 class CaseSerializerCreate(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(write_only=True)  # Add user_id field for write-only
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=cUser.objects.all(),
+        write_only=True
+    )  # Add user_id field for write-only
 
     class Meta:
         model = Case
-        fields = ['pid', 'user_id', 'oid', 'type','title','cstate']  # Specify the fields to include in the serializer
+        fields = [
+            'user',
+            'type',
+            'title',
+            'cstate',
+            'lat',
+            'long',
+            'description',
+            'follow',
+        ]
 
     def create(self, validated_data):
-        user_id = validated_data.pop('user_id', None)  # Extract the user_id from validated_data
-        if user_id:
-            user = cUser.objects.get(pk=user_id)  # Retrieve the user object based on the user_id
-            validated_data['user'] = user  # Assign the user object to the 'user' field in validated_data
-        return super().create(validated_data)
+        case = Case(
+            type=validated_data['type'],
+            title=validated_data['title'],
+            cstate=validated_data['cstate'],
+            lat=validated_data['lat'],
+            long=validated_data['long'],
+            description=validated_data['description'],
+            follow=validated_data['follow'],
+        )
+        geo_location = fromstr(f"POINT({case.lat} {case.long})", srid=4326)
+        user_distance = Distance("geo_location", geo_location)
+        police_station = PoliceStation.objects.annotate(
+            radius=user_distance
+        ).order_by('radius').first()
+        # import pdb; pdb.set_trace()
+        case.pid = police_station
+        case.geo_location = geo_location
+        officier = police_station.policeofficer_set.order_by('-rank').first()
+        case.oid = officier
+        case.user = validated_data['user']
+        case.save()
+        return case
 
 
 class LostVehicleSerializer(serializers.ModelSerializer):

@@ -42,8 +42,7 @@ class cUserViewSet(viewsets.ViewSet):
             )
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
-
-    
+   
     def partial_update(self, request, pk = None):
         log.info("ENTERED")    
         username = pk

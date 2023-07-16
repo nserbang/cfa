@@ -31,6 +31,7 @@ class CaseViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             cs  = Case(**serializer.validated_data)
             cs.save()
+            
             serialized = CaseSerializer(cs)
             log.info(" Exiting with success") 
             return JsonResponse(serialized.data, status = HTTPStatus.OK)

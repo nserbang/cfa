@@ -4,7 +4,6 @@ from geopy.distance import distance
 from api.utl import get_upload_path
 # Create your models here.
 
-
 #Holds list of districts
 class District(models.Model):
     did = models.AutoField(primary_key=True)
@@ -91,8 +90,7 @@ class Case(models.Model):
         ('extortion', 'Extortion'),
     )
     cState = (
-        ('pending','Pending'), # Complaint lodged for the first time
-        ('approved','Approved'), # Complaint approved for investigation
+        ('pending','Pending'), # Complaint lodged for the first time       
         ('accepted','Accepted'), # Formal case approved
         ('assign','Assign'), # Assign case to some other officer
         ('transfer','Transfer'), # Complaint being transferred from one ps to another
@@ -146,7 +144,7 @@ class Media(models.Model):
     )
     # media type
     mtype = models.CharField(max_length=10,choices=Mtype,default="Photo")
-    Ptype = ( # 
+    Ptype = (# 
         ('case','Case'),
         ('history','History'),
         ('comment','Comment'),
@@ -169,6 +167,7 @@ class Comment(models.Model):
     cid = models.ForeignKey(Case,to_field="cid", db_column="case_cid",on_delete= models.CASCADE)    
     user = models.ForeignKey(cUser,to_field="username",db_column="cuser_username",on_delete=models.CASCADE)
     content = models.TextField(null=True)
+
 """ cmtid, cid, content, user 
 class CommentMedia(models.Model):
     cmmid = models.BigAutoField(primary_key=True)
@@ -203,6 +202,8 @@ class Information(models.Model):
     information_type = models.CharField(max_length=15, choices=Itype,default='drug')
     heading = models.TextField(blank=False,null=False)
     content = models.TextField(blank=False, null=True)
-    
+
+
+
     
 

@@ -187,14 +187,36 @@ class HomePageView(View):
         }
         return header_map.get(self.request.GET.get('title', "complaints"))
 
-    def get(self, request, *args, **kwargs):
+    def get_case_type(self):
+        case_type = {
+            "stolen-vehicle": "vehicle",
+            "drug-case": "drug",
+            "extortion-case": "extortion",
+        }
+        return case_type.get(self.kwargs.get('case_type'))
+
+    def get_template_name(self):
+        template = self.get_case_type()
+        if template:
+            return f'case/{template}.html'
+        return 'home.html'
+
+    def get_queryset(self):
         cases = Case.objects.annotate(
             comments=Count('comment'), likes=Value(0),
         ).select_related('pid')
-        if request.user.is_authenticated:
-            cases = cases.filter(user=request.user)
+        case_type = self.get_case_type()
+        if case_type:
+            cases = cases.filter(type=case_type)
+        if self.request.user.is_authenticated:
+            cases = cases.filter(user=self.request.user)
+        return cases
+
+    def get(self, request, *args, **kwargs):
+        cases = self.get_queryset()
         header = self.get_header()
-        return render(request, 'home.html', {'cases': cases, 'header': header})
+        template_name = self.get_template_name()
+        return render(request, template_name, {'cases': cases, 'header': header})
 
 
 class UserRegistrationView(View):
@@ -230,7 +252,7 @@ class VerifyOtpView(View):
 class CaseAddView(LoginRequiredMixin, CreateView):
     form_class = CaseForm
     model = Case
-    template_name = 'api/add_case.html'
+    template_name = 'case/add_case.html'
     success_url = '/'
 
     def get_form_kwargs(self):

@@ -69,6 +69,7 @@ urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
 
     path('home/', HomePageView.as_view(), name='home'),
+    path('<str:case_type>/', HomePageView.as_view(), name='case'),
     path('emergency/', emergency, name='emergency'),
     path('information/', information, name='information'),
     path('login/', login_view, name='login'),

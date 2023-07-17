@@ -7,9 +7,8 @@
         {% include 'case/side_menu.html' %}
     </div>
     <div class="col-9">
-        {% if cases %}
         <div class="d-flex flex-row">
-            <h4 class="flex-fill">{{ header }}</h4>
+            <h4 class="flex-fill">Extortion Cases</h4>
             {% if request.user.is_authenticated %}
                 <a href="{% url 'add_case' %}">Add Case</a>
             {% endif %}
@@ -18,7 +17,6 @@
             <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">Case Type</th>
                     <th scope="col">Status</th>
                     <th scope="col">Police Station</th>
                     <th scope="col">Reported Date</th>
@@ -30,7 +28,6 @@
                 {% for case in cases %}
                 <tr>
                     <th scope="row">{{ case.cid }}</th>
-                    <td>{{ case.type }}</td>
                     <td>{{ case.cstate }}</td>
                     <td>{{ case.pid.name }}</td>
                     <td>{{ case.created|date }}</td>
@@ -40,7 +37,6 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% endif %}
     </div>
 </div>
 

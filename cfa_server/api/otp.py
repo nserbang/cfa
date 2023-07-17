@@ -2,11 +2,6 @@ import base64
 
 import requests
 from django.conf import settings
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import EmailMultiAlternatives
-from django.template import loader
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from pyotp import TOTP
 
 OTP_VALIDITY_TIME: int = 60 * 15
@@ -33,7 +28,6 @@ def validate_otp(user, otp: int, digits=5) -> bool:
 
 def send_otp_verification_code(user):
     otp_code = generate_otp(user)
-    print(otp_code, 'OTPPPPPPP')
     text = f"{otp_code}. Use this opt code to verify your mobile"
     url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
     params = {

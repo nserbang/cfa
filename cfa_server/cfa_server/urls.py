@@ -27,6 +27,7 @@ from api.viewset.police import *
 from api.viewset.emergency import *
 from api.viewset.information import *
 from api.viewset.user import *
+from api.viewset.lost_vehicle import CheckLostVehicle
 from api.views import (
     index,
     emergency,
@@ -62,6 +63,7 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls", namespace= "rest_framework")),
     path('api/v1/register/', UserRegistrationViewApiView.as_view(), name='user-registration'),
     path('api/v1/login/', UserLoginView.as_view(), name='user-login'),
+    path('api/v1/check-vehicle/', CheckLostVehicle.as_view(), name='check_vehicle'),
 
     # path('', index, name='index'),
     path('', HomePageView.as_view(), name='home'),

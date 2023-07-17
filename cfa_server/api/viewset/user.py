@@ -9,6 +9,7 @@ from api.serializers import UserSerializer, LoginSerializer, OTPSerializer
 from api.models import cUser
 
 class UserRegistrationViewApiView(APIView):
+
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():

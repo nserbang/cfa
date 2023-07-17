@@ -1,16 +1,16 @@
 from django.contrib.gis.db import models
 from django.contrib.auth.models import AbstractUser
-from geopy.distance import distance
 from django.contrib.gis.geos import fromstr
 from api.utl import get_upload_path
-# Create your models here.
 
-#Holds list of districts
+
+# Holds list of districts
 class District(models.Model):
     did = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
     def __str__(self):
         return self.name
+
 
 # Holds user database
 #username will be the primary key which will be the mobile number of the user
@@ -37,6 +37,7 @@ class cUser(AbstractUser):
         ('admin','Admin'),
     )
     mobile = models.CharField(max_length=26, unique=True)
+    is_verified = models.BooleanField(default=False)
 
     # Role of the user
     role = models.CharField(max_length=10, choices=ROLES, default='user')
@@ -48,6 +49,7 @@ class cUser(AbstractUser):
 
     REQUIRED_FIELDS = []
     USERNAME_FIELD = 'mobile'
+
 
 # Holds list of police stations
 class PoliceStation(models.Model):
@@ -71,6 +73,7 @@ class PoliceStation(models.Model):
         self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
         super().save(**kwargs)
 
+
 # Holds various contacts in the police station
 class PoliceStationContact(models.Model):
     ps_cid = models.BigAutoField(primary_key=True)
@@ -79,6 +82,7 @@ class PoliceStationContact(models.Model):
     contactName = models.CharField(max_length=50, null=True)
     # Mobile number or phone number
     number = models.CharField(max_length=15)
+
 
 class PoliceOfficer(models.Model):
     RANKS = (
@@ -108,6 +112,7 @@ class PoliceOfficer(models.Model):
     entryDate= models.DateField(auto_now=True)
     status = models.CharField(max_length=10, choices=oState, default='active')
     mobile = models.CharField(max_length=55, null=True)
+
 
 class Case(models.Model):
     cType = (
@@ -163,6 +168,7 @@ class CaseHistory(models.Model):
     # Description added
     description = models.TextField(null=True)
 
+
 class Media(models.Model):
     mid = models.BigAutoField(primary_key=True)
     #chid =  models.ForeignKey(CaseHistory, to_field="chid",db_column="case_history_chid",on_delete=models.CASCADE)
@@ -185,6 +191,7 @@ class Media(models.Model):
     path = models.FileField(upload_to=get_upload_path)
     description = models.TextField(null= True)
 
+
 class LostVehicle(models.Model):
     caseId = models.OneToOneField(Case,to_field="cid",db_column="Case_cid",on_delete=models.DO_NOTHING)
     regNumber = models.CharField(max_length=30)
@@ -194,11 +201,13 @@ class LostVehicle(models.Model):
     model = models.CharField(max_length=50, null=True, default="N/A")
     description = models.CharField(max_length=500, null=True, default="N/A")
 
+
 class Comment(models.Model):
     cmtid = models.BigAutoField(primary_key=True)
     cid = models.ForeignKey(Case,to_field="cid", db_column="case_cid",on_delete= models.CASCADE)
     user = models.ForeignKey(cUser,to_field="username",db_column="cuser_username",on_delete=models.CASCADE)
     content = models.TextField(null=True)
+
 
 """ cmtid, cid, content, user
 class CommentMedia(models.Model):
@@ -215,6 +224,7 @@ class CommentMedia(models.Model):
     # media path
     path = models.CharField(max_length=50,null=True) """
 
+
 # Table for emergency helpline numbers with their name and gps location
 class Emergency(models.Model):
     emid = models.BigAutoField(primary_key=True)
@@ -223,6 +233,7 @@ class Emergency(models.Model):
     number = models.CharField(max_length=100, null=True)
     lat = models.DecimalField(max_digits=9,decimal_places=6, null=True)
     long = models.DecimalField(max_digits=9,decimal_places=6, null=True)
+
 
 class Information(models.Model):
     inid = models.BigAutoField(primary_key=True)

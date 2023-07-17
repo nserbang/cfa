@@ -1,11 +1,13 @@
 from rest_framework import serializers
 from django.contrib.gis.geos import fromstr
+from django.db.models.functions import Lower
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth import get_user_model
 from .models import *
 from django.contrib.auth import authenticate
 from random import randint, randrange
 from api.models import Case, PoliceStation, cUser
+from api.npr import detectVehicleNumber
 
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
@@ -234,3 +236,36 @@ class LoginSerializer(serializers.Serializer):
 class OTPSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     otp_code = serializers.CharField(max_length=6)
+
+
+class CheckLostVehicleSerializer(serializers.Serializer):
+    image = serializers.ImageField(required=False)
+    registration_no = serializers.CharField(required=False)
+
+    def validate(self, data):
+        image = data.get('image')
+        registration_no = data.get('registration_no')
+        if not (image or registration_no):
+            raise serializers.ValidationError(
+                'Provide either image and/or registration no.'
+            )
+        return data
+
+    def check_vehicle(self):
+        image = self.validated_data.get('image')
+        registration_no = self.validated_data.get('registration_no')
+        registration_numbers = []
+        if image:
+            registration_numbers.extend(detectVehicleNumber(image))
+        if registration_no:
+            registration_numbers.append(registration_no)
+
+        registration_numbers = map(lambda x: x.lower(), registration_numbers)
+        qs = LostVehicle.objects.annotate(
+            reg_lower=Lower('regNumber').filter(reg_lower__in=registration_numbers)
+        ).values_list('reg_lower', flat=True)
+        response = {}
+        for registration_no in registration_numbers:
+            response[registration_no] = registration_no in qs
+        return response
+

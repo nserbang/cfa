@@ -29,3 +29,5 @@ django-filter==23.2
 django-debug-toolbar==4.1.0
 crispy-bootstrap5==0.7
 pyotp==2.6.0
+pytesseract==0.3.10
+opencv-python==4.8.0.74

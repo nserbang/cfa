@@ -37,7 +37,7 @@ class cUser(AbstractUser):
         ('admin','Admin'),
     )
     mobile = models.CharField(max_length=26, unique=True)
-    is_verified = models.BooleanField(default=False)
+    # is_verified = models.BooleanField(default=False)
 
     # Role of the user
     role = models.CharField(max_length=10, choices=ROLES, default='user')

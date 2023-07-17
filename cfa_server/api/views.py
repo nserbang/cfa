@@ -185,12 +185,14 @@ class HomePageView(View):
             "unindentified_daad": "Unidentified Dead Bodies",
             "unidentified_person": "Unidentified Person",
         }
-        return header_map.get(self.request.GET.get('title'))
+        return header_map.get(self.request.GET.get('title', "complaints"))
 
     def get(self, request, *args, **kwargs):
-        cases = Case.objects.filter(user=request.user).annotate(
+        cases = Case.objects.annotate(
             comments=Count('comment'), likes=Value(0),
         ).select_related('pid')
+        if request.user.is_authenticated:
+            cases = cases.filter(user=request.user)
         header = self.get_header()
         return render(request, 'home.html', {'cases': cases, 'header': header})
 

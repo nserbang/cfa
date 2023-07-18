@@ -18,6 +18,7 @@ class District(models.Model):
 
 
 class cUser(AbstractUser):
+    username = None
     ROLES = (
         ("user", "User"),
         ("police", "Police"),

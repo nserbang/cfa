@@ -2,7 +2,6 @@ from django.utils.html import format_html
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from .models import *
-from django.urls import reverse
 from api.forms.user import UserChangeForm, UserCreationForm
 
 # from api.log import log
@@ -16,20 +15,63 @@ class DistrictModel(admin.ModelAdmin):
 
 @admin.register(cUser)
 class cUserModel(auth_admin.UserAdmin):
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "email",
+                    "password",
+                )
+            },
+        ),
+        (
+            ("Personal info"),
+            {"fields": ("first_name", "last_name", "mobile", "address")},
+        ),
+        (
+            ("Permissions"),
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                    "role",
+                ),
+            },
+        ),
+        (("Important dates"), {"fields": ("last_login", "date_joined")}),
+    )
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "mobile",
+                    "address",
+                    "password1",
+                    "password2",
+                    "is_staff",
+                    "is_active",
+                    "role",
+                ),
+            },
+        ),
+    )
     list_display = [
+        "email",
         "first_name",
         "last_name",
-        "email",
-        "is_active",
-        "is_staff",
+        "mobile",
         "is_superuser",
         "role",
-        "address",
-        "pincode",
-        "otp_code",
     ]
-
-    search_fields = ["username"]
+    search_fields = ["first_name", "email", "mobile", "role"]
+    ordering = ["-date_joined", "mobile"]
     form = UserChangeForm
     add_form = UserCreationForm
 

@@ -3,13 +3,13 @@ from api.models import cUser
 
 
 class cUserCreationForm(UserCreationForm):
-
     class Meta:
         model = cUser
-        fields = ('username',)
+        fields = ("mobile",)
+
 
 class cUserChangeForm(UserChangeForm):
-
     class Meta:
         model = cUser
-        fields = ('username',)
+        fields = ("mobile", "email")
+        error_messages = {"mobile": {"unique": ("This mobile is already registered.")}}

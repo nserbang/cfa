@@ -236,15 +236,15 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    mobile = serializers.CharField()
     password = serializers.CharField()
 
     def validate(self, attrs):
-        username = attrs.get("username")
+        mobile = attrs.get("mobile")
         password = attrs.get("password")
 
-        if username and password:
-            user = authenticate(username=username, password=password)
+        if mobile and password:
+            user = authenticate(username=mobile, password=password)
 
             if user:
                 if not user.is_active:

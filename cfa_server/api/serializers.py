@@ -261,9 +261,7 @@ class CheckLostVehicleSerializer(serializers.Serializer):
             registration_numbers.append(registration_no)
 
         registration_numbers = map(lambda x: x.lower(), registration_numbers)
-        qs = LostVehicle.objects.annotate(
-            reg_lower=Lower('regNumber').filter(reg_lower__in=registration_numbers)
-        ).values_list('reg_lower', flat=True)
+        qs = LostVehicle.objects.annotate(reg_lower=Lower('regNumber')).filter(reg_lower__in=registration_numbers).values_list('reg_lower', flat=True)
         response = {}
         for registration_no in registration_numbers:
             response[registration_no] = registration_no in qs

@@ -8,6 +8,7 @@ from api.models import LostVehicle
 def detectVehicleNumber(img = None, numbers = None):  
     #cv.imshow(" Found :",img)
     ret_nums = []
+    # cv.imshow("Grayscale Image", img)
     #cv.waitKey(0)
     if numbers is not None:
         # TO DO: search num in lostVehicle. If found, return as it is
@@ -22,13 +23,16 @@ def detectVehicleNumber(img = None, numbers = None):
         else:
             ret_nums.append({numbers:False})    
     if img is not None:
+        image_data_bytes = img.read()
+        image_array = np.frombuffer(image_data_bytes, dtype=np.uint8)
+        img = cv.imdecode(image_array, cv.IMREAD_COLOR)
+
         car = img
-        cascade = cv.CascadeClassifier('haarcascade_number_plate.xml')
+        cascade = cv.CascadeClassifier('./cfa_server/api/haarcascade_number_plate.xml')
 
         grayCar = cv.cvtColor(car,cv.COLOR_RGB2BGR)
 
         numPlate = cascade.detectMultiScale(grayCar,1.1,4)
-        print( " Plate :",numPlate)
         npr = []
         nums = []
         for x,y,w,h in numPlate:
@@ -51,15 +55,16 @@ def detectVehicleNumber(img = None, numbers = None):
             grayBlur = cv.medianBlur(grayLarged,3)
 
             num = pt.image_to_string(grayBlur, config=custom_config)
-            rcn = LostVehicle.objects.get(regNumber = num)
-            if rcn is not None:
-                ret_nums.append({rcn:True})
-            else:
-                ret_nums.append({rcn:False})
-            print (' NUMBER  in image : ',num)
+            num=num.replace('\n', '').replace('\x0c', '')
+            # rcn = LostVehicle.objects.get(regNumber = num)
+            # if rcn is not None:
+            #     ret_nums.append({rcn:True})
+            # else:
+            #     ret_nums.append({rcn:False})
+            # print (' NUMBER  in image : ',num)
             nums.append(num) # get recognized numbers
 
-        return car, ret_nums
+        return nums
 
 
 

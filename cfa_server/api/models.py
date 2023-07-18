@@ -245,3 +245,27 @@ class Information(models.Model):
     information_type = models.CharField(max_length=15, choices=Itype,default='drug', blank=False)
     heading = models.TextField(blank=False,null=False)
     content = models.TextField(blank=False, null=True)
+
+class Victim(models.Model):
+    Vtype = ( # Represent victim type
+        ('missing_children','Missing Children'), # information related Missing Children
+        ('children_found','Children Found'), # Information related to children lost found
+        ('missing_person','Missing Person'), # information related to missing person
+        ('dead_body','Dead Bodied Found'), # Information related to dead bodies found     
+        ('other','Any other case '), # Information related to any other case    
+    )
+
+    type = models.CharField(max_length=15, choices = Vtype, default='missing_children', blank=False)
+    created = models.DateTimeField(auto_now_add=True)
+    content = models.CharField(blank=False)
+
+class Criminal(models.Model):
+    Ctype = ( # Represent criminal type
+        ('offender','Habitual offender'),
+        ('wanted','Wanted'),
+        ('proclaimed','Proclaimed Offender'),
+    )
+
+    type = models.CharField(max_length=15, choices = Vtype, default='missing_children', blank=False)
+    created = models.DateTimeField(auto_now_add=True)
+    content = models.CharField(blank=False)

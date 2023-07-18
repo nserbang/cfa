@@ -81,9 +81,9 @@ def detectVehicleNumber(img = None, numbers = None):
                 else:
                     ret_nums.append({rcn:False})
             # print (' NUMBER  in image : ',num)
-            nums.append(num) # get recognized numbers
+            # nums.append(num) # get recognized numbers
 
-        return nums
+        return ret_nums
 
 
 

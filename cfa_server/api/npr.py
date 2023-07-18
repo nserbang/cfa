@@ -2,6 +2,24 @@ import cv2 as cv
 import numpy as np
 import pytesseract as pt
 from api.models import LostVehicle
+# check or valid RC string
+def has_numbers_and_characters(s):
+    has_digit = False
+    has_letter = False
+
+    for char in s:
+        if char.isdigit():
+            has_digit = True
+        elif char.isalpha():
+            has_letter = True
+
+        # Break the loop early if both conditions are met
+        if has_digit and has_letter:
+            break
+
+    return has_digit and has_letter
+
+
 # INPUT: Image or vehicle numbers
 # OUTPUT: Vehicle number annotated input image, list of vehicle numbers detected in the image
 
@@ -56,11 +74,12 @@ def detectVehicleNumber(img = None, numbers = None):
 
             num = pt.image_to_string(grayBlur, config=custom_config)
             num=num.replace('\n', '').replace('\x0c', '')
-            # rcn = LostVehicle.objects.get(regNumber = num)
-            # if rcn is not None:
-            #     ret_nums.append({rcn:True})
-            # else:
-            #     ret_nums.append({rcn:False})
+            if has_numbers_and_characters(num) is True:
+                rcn = LostVehicle.objects.get(regNumber = num)
+                if rcn is not None:
+                    ret_nums.append({rcn:True})
+                else:
+                    ret_nums.append({rcn:False})
             # print (' NUMBER  in image : ',num)
             nums.append(num) # get recognized numbers
 

@@ -1,10 +1,9 @@
 app/
 .git/
-cfa_app/py/__pycache__
+__pycache__/
 cfa_app/cache
 cfa_server/app.log
 venv/
-**/__pycache__/
 cfa_server/api.log
 api.log
 .vscode/

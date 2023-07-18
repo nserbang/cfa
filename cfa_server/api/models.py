@@ -4,6 +4,9 @@ from django.contrib.gis.geos import fromstr
 from api.utl import get_upload_path
 
 
+from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField
+
 # Holds list of districts
 class District(models.Model):
     did = models.AutoField(primary_key=True)
@@ -255,9 +258,9 @@ class Victim(models.Model):
         ('other','Any other case '), # Information related to any other case    
     )
 
-    type = models.CharField(max_length=15, choices = Vtype, default='missing_children', blank=False)
+    type = models.CharField(max_length=25, choices = Vtype, default='missing_children', blank=False)
     created = models.DateTimeField(auto_now_add=True)
-    content = models.CharField(blank=False)
+    content = RichTextUploadingField()
 
 class Criminal(models.Model):
     Ctype = ( # Represent criminal type
@@ -266,6 +269,6 @@ class Criminal(models.Model):
         ('proclaimed','Proclaimed Offender'),
     )
 
-    type = models.CharField(max_length=15, choices = Vtype, default='missing_children', blank=False)
+    type = models.CharField(max_length=25, choices = Ctype, default='offender', blank=False)
     created = models.DateTimeField(auto_now_add=True)
-    content = models.CharField(blank=False)
+    content = RichTextUploadingField()

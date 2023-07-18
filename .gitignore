@@ -9,3 +9,4 @@ api.log
 .vscode/
 hello/
 db.sqlite3
+cfa_server/db.sqlite3

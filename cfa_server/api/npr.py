@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 import pytesseract as pt
-from models import LostVehicle
+from api.models import LostVehicle
 # INPUT: Image or vehicle numbers
 # OUTPUT: Vehicle number annotated input image, list of vehicle numbers detected in the image
 

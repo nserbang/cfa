@@ -226,3 +226,15 @@ class InformationAdmin(admin.ModelAdmin):
 @admin.register(Emergency)
 class Emergency(admin.ModelAdmin):
     pass
+
+
+# @admin.register(Victim)
+# class Victim(admin.ModelAdmin):
+#     pass
+
+# @admin.register(Criminal)
+# class Criminal(admin.ModelAdmin):
+#     pass
+
+admin.site.register(Victim)
+admin.site.register(Criminal)

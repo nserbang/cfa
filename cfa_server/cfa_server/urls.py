@@ -28,6 +28,8 @@ from api.viewset.emergency import *
 from api.viewset.information import *
 from api.viewset.user import *
 from api.viewset.lost_vehicle import CheckLostVehicle
+from api.viewset.victim import *
+from api.viewset.criminal import *
 from api.views import (
     index,
     emergency,
@@ -54,6 +56,8 @@ router.register('lost-vehicle', LostVehicleViewSet, basename='lost-vehicle')
 # router.register('comment', CommentViewSet, basename='comments')
 router.register('emergency', EmergencyViewListSet, basename='emergency')
 router.register('information', InformationViewSet, basename='information')
+router.register('victim', VictimViewSet, basename='victim')
+router.register('criminal', CriminalViewSet, basename='criminal')
 router.register(r'case/(?P<case_id>\d+)/comments', CommentViewSet, basename='case-comments')
 router.register(r'district/(?P<district_id>\d+)/emergency', EmergencyViewSet, basename='emergencies')
 
@@ -92,6 +96,7 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
     path('api/cases/create/', CaseCreateAPIView.as_view(), name='case-create'),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
 
     #User URL
     # path(r'register/', user_create, name="register"),

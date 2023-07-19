@@ -21,22 +21,23 @@ def generate_otp(user, digits=6) -> int:
     return otp
 
 
-def validate_otp(user, otp: int, digits=5) -> bool:
+def validate_otp(user, otp: int, digits=6) -> bool:
     base32_key = get_base32_key(user)
     return TOTP(base32_key, interval=OTP_VALIDITY_TIME, digits=digits).verify(otp)
 
 
 def send_otp_verification_code(user):
     otp_code = generate_otp(user)
-    text = f"{otp_code}. Use this opt code to verify your mobile"
+    print(otp_code, "OTPPPPPPPPPPPPPPPP")
+    text = f"{otp_code}. Use this code to verify your mobile."
     url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
     params = {
         "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
         "message": text,
         "senderId": "mnwalk",
         "routeId": 8,
-        "mobileNos": f'{user.mobile}',
-        "smsContentType": "english"
+        "mobileNos": "9729013259",  # for now send to shantam's no. f'{user.mobile}',
+        "smsContentType": "english",
     }
 
     requests.get(url, params=params)

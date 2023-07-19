@@ -31,3 +31,4 @@ crispy-bootstrap5==0.7
 pyotp==2.6.0
 pytesseract==0.3.10
 opencv-python==4.8.0.74
+django-ckeditor==6.6.1

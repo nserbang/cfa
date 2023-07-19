@@ -284,3 +284,16 @@ class CheckLostVehicleSerializer(serializers.Serializer):
         registration_numbers = []
         registration_numbers = detectVehicleNumber(image, registration_no)
         return registration_numbers
+
+
+class VictimSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Victim
+        fields = '__all__'
+
+class CriminalSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Criminal
+        fields='__all__'
+

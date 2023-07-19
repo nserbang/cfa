@@ -3,11 +3,12 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from api.models import Emergency
 from api.serializers import EmergencySerializer
+from api.viewset.permission import IsReadOnly
 
 class EmergencyViewSet(ModelViewSet):
     serializer_class = EmergencySerializer
     queryset = Emergency.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsReadOnly, )
 
     def get_queryset(self):
         district_id = self.kwargs['district_id']
@@ -18,4 +19,4 @@ class EmergencyViewSet(ModelViewSet):
 class EmergencyViewListSet(ModelViewSet):
     serializer_class = EmergencySerializer
     queryset = Emergency.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsReadOnly,)

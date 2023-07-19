@@ -4,7 +4,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 
 from api.models import Information
 from api.serializers import InformationSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from api.viewset.permission import IsReadOnly
 
 
 class InformationViewSet(ModelViewSet):
@@ -14,7 +14,7 @@ class InformationViewSet(ModelViewSet):
     filterset_fields = ['inid', 'information_type']
     search_fields = ['information_type', 'intro']
     ordering_fields = ['information_type', 'inid']
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsReadOnly,)
 
     def get_queryset(self):
         return super().get_queryset()

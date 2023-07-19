@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.geos import fromstr
 from api.utl import get_upload_path
+from .managers import CustomUserManager
 
 
 # Holds list of districts
@@ -37,6 +38,8 @@ class cUser(AbstractUser):
 
     REQUIRED_FIELDS = []
     USERNAME_FIELD = "mobile"
+
+    objects = CustomUserManager()
 
 
 # Holds list of police stations

@@ -13,19 +13,16 @@ class UserRegistrationForm(forms.ModelForm):
     class Meta:
         model = cUser
         fields = [
-            "mobile",
-            "password",
             "first_name",
             "last_name",
+            "mobile",
+            "password",
             "email",
-            "role",
             "address",
-            "pincode",
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["role"].choices = (("user", "User"), ("police", "Police"))
         self.fields["last_name"].required = True
         self.fields["last_name"].required = True
 

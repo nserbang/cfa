@@ -8,6 +8,7 @@ from .managers import CustomUserManager
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
 
+
 # Holds list of districts
 class District(models.Model):
     did = models.AutoField(primary_key=True)
@@ -35,9 +36,7 @@ class cUser(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLES, default="user")
     # Address of the user. Optional
     address = models.TextField(null=True)
-    # Pin code of the user. Optional
-    pincode = models.CharField(max_length=10, blank=True)
-    otp_code = models.CharField(max_length=6, default=None, null=True, blank=True)
+    profile_picture = models.ImageField(blank=True, null=True)
 
     REQUIRED_FIELDS = []
     USERNAME_FIELD = "mobile"
@@ -242,26 +241,38 @@ class Information(models.Model):
     heading = models.TextField(blank=False, null=False)
     content = models.TextField(blank=False, null=True)
 
+
 class Victim(models.Model):
-    Vtype = ( # Represent victim type
-        ('missing_children','Missing Children'), # information related Missing Children
-        ('children_found','Children Found'), # Information related to children lost found
-        ('missing_person','Missing Person'), # information related to missing person
-        ('dead_body','Dead Bodied Found'), # Information related to dead bodies found     
-        ('other','Any other case '), # Information related to any other case    
+    Vtype = (  # Represent victim type
+        (
+            "missing_children",
+            "Missing Children",
+        ),  # information related Missing Children
+        (
+            "children_found",
+            "Children Found",
+        ),  # Information related to children lost found
+        ("missing_person", "Missing Person"),  # information related to missing person
+        ("dead_body", "Dead Bodied Found"),  # Information related to dead bodies found
+        ("other", "Any other case "),  # Information related to any other case
     )
 
-    type = models.CharField(max_length=25, choices = Vtype, default='missing_children', blank=False)
+    type = models.CharField(
+        max_length=25, choices=Vtype, default="missing_children", blank=False
+    )
     created = models.DateTimeField(auto_now_add=True)
     content = RichTextUploadingField()
 
+
 class Criminal(models.Model):
-    Ctype = ( # Represent criminal type
-        ('offender','Habitual offender'),
-        ('wanted','Wanted'),
-        ('proclaimed','Proclaimed Offender'),
+    Ctype = (  # Represent criminal type
+        ("offender", "Habitual offender"),
+        ("wanted", "Wanted"),
+        ("proclaimed", "Proclaimed Offender"),
     )
 
-    type = models.CharField(max_length=25, choices = Ctype, default='offender', blank=False)
+    type = models.CharField(
+        max_length=25, choices=Ctype, default="offender", blank=False
+    )
     created = models.DateTimeField(auto_now_add=True)
     content = RichTextUploadingField()

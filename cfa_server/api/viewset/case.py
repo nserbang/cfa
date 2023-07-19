@@ -51,7 +51,10 @@ class CommentViewSet(ModelViewSet):
 
     def get_queryset(self):
         case_id = self.kwargs["case_id"]
-        return Comment.objects.filter(user=self.request.user, cid=case_id)
+        qs = Comment.objects.filter(cid=case_id)
+        if self.requet.user.is_authenticated:
+            qs = qs.filter(user=self.request.user)
+        return qs
 
 
 class CaseCreateAPIView(APIView):

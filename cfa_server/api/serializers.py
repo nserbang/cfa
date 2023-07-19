@@ -205,22 +205,6 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
 
-    def create(self, validated_data):
-        otp_code = randint(100000, 999999)
-
-        user = User(
-            username=validated_data.get("username"),
-            mobile=validated_data["mobile"],
-            role=validated_data.get("role", "user"),
-            address=validated_data.get("address", None),
-            pincode=validated_data.get("pincode", ""),
-            otp_code=validated_data.get("otp_code", otp_code),
-        )
-        if password := validated_data.get("password"):
-            user.set_password(password)
-        user.save()
-        return user
-
     class Meta:
         model = User
         fields = [
@@ -230,8 +214,32 @@ class UserSerializer(serializers.ModelSerializer):
             "password",
             "role",
             "address",
-            "pincode",
-            "otp_code",
+            "profile_pic",
+        ]
+
+    def create(self, validated_data):
+        user = User(
+            username=validated_data.get("username"),
+            mobile=validated_data["mobile"],
+            role=validated_data.get("role", "user"),
+            address=validated_data.get("address", None),
+        )
+        if password := validated_data.get("password"):
+            user.set_password(password)
+        user.save()
+        return user
+
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = cUser
+        fields = [
+            "first_name",
+            "last_name",
+            "mobile",
+            "email",
+            "address",
+            "profile_picture",
         ]
 
 
@@ -288,12 +296,11 @@ class CheckLostVehicleSerializer(serializers.Serializer):
 
 class VictimSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Victim
-        fields = '__all__'
+        model = Victim
+        fields = "__all__"
+
 
 class CriminalSerializer(serializers.ModelSerializer):
-
     class Meta:
-        model=Criminal
-        fields='__all__'
-
+        model = Criminal
+        fields = "__all__"

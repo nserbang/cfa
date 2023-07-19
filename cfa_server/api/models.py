@@ -37,6 +37,7 @@ class cUser(AbstractUser):
     # Address of the user. Optional
     address = models.TextField(null=True)
     profile_picture = models.ImageField(blank=True, null=True)
+    aadhar_card_no = models.CharField(max_length=56, blank=True)
 
     REQUIRED_FIELDS = []
     USERNAME_FIELD = "mobile"

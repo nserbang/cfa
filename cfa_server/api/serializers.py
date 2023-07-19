@@ -225,7 +225,9 @@ class UserSerializer(serializers.ModelSerializer):
         return data
 
 
-class UpdateProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = cUser
         fields = [
@@ -235,7 +237,18 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "email",
             "address",
             "profile_picture",
+            "aadhar_card_no",
+            "password",
         ]
+
+    def update(self, instance, data):
+        import ipdb
+
+        ipdb.set_trace()
+        password = data.pop("password", None)
+        if password:
+            instance.set_password(password)
+        return super().update(instance, data)
 
 
 class LoginSerializer(serializers.Serializer):

@@ -11,7 +11,7 @@ from api.serializers import (
     UserSerializer,
     LoginSerializer,
     OTPVerificationSerializer,
-    UpdateProfileSerializer,
+    UserProfileSerializer,
     ResendOTPSerializer,
 )
 from api.models import cUser
@@ -54,11 +54,14 @@ class UserLoginView(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
         token, created = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key})
+        serializer = UserProfileSerializer(user)
+        data = serializer.data
+        data["token"] = token.key
+        return Response(data=data)
 
 
 class UserProfileUpdateView(UpdateAPIView):
-    serializer_class = UpdateProfileSerializer
+    serializer_class = UserProfileSerializer
     permission_classes = (IsAuthenticated,)
     queryset = cUser.objects.all()
 

@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from api.models import Case, CaseHistory, LostVehicle, Comment, Media
+from django.db.models import Q
+
 from api.serializers import (
     CaseSerializer,
     CaseHistorySerializer,
@@ -16,8 +18,17 @@ from api.mixins import UserMixin
 
 class CaseViewSet(UserMixin, ModelViewSet):
     serializer_class = CaseSerializer
-    queryset = Case.objects.all()
+    # queryset = Case.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+
+        search = self.request.query_params.get('search', None)
+
+        data = Case.objects.all()
+        if search:
+            data=data.filter(Q(title__contains=search) | Q(cid__contains=search) | Q(description__contains=search))
+        return data
 
 
 class CaseHistoryViewSet(UserMixin, ModelViewSet):

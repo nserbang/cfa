@@ -22,12 +22,15 @@ class CaseViewSet(UserMixin, ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
-
-        search = self.request.query_params.get('search', None)
+        search = self.request.query_params.get("search", None)
 
         data = Case.objects.all()
         if search:
-            data=data.filter(Q(title__contains=search) | Q(cid__contains=search) | Q(description__contains=search))
+            data = data.filter(
+                Q(title__contains=search)
+                | Q(cid__contains=search)
+                | Q(description__contains=search)
+            )
         return data
 
 
@@ -72,7 +75,9 @@ class CaseCreateAPIView(APIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def post(self, request, format=None):
-        serializer = CaseSerializerCreate(data=request.data)
+        serializer = CaseSerializerCreate(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)

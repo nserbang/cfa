@@ -116,13 +116,10 @@ class CaseSerializer(serializers.ModelSerializer):
 
 
 class CaseSerializerCreate(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(
-        queryset=cUser.objects.all(), write_only=True
-    )  # Add user_id field for write-only
-
     class Meta:
         model = Case
         fields = [
+            "cid",
             "user",
             "type",
             "title",
@@ -134,6 +131,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        request = self.context["request"]
         case = Case(
             type=validated_data["type"],
             title=validated_data["title"],
@@ -150,12 +148,11 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             .order_by("radius")
             .first()
         )
-        # import pdb; pdb.set_trace()
         case.pid = police_station
         case.geo_location = geo_location
         officier = police_station.policeofficer_set.order_by("-rank").first()
         case.oid = officier
-        case.user = validated_data["user"]
+        case.user = request.user
         case.save()
         return case
 
@@ -202,6 +199,8 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    mobile = serializers.CharField(max_length=16)
+
     class Meta:
         model = User
         fields = ["id", "mobile"]

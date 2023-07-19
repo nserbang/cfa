@@ -242,9 +242,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, data):
-        import ipdb
-
-        ipdb.set_trace()
         password = data.pop("password", None)
         if password:
             instance.set_password(password)

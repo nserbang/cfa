@@ -395,3 +395,50 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         )
         comment.save()
         return comment
+
+
+class PasswordResetOtpSerializer(serializers.Serializer):
+    mobile = serializers.CharField(max_length=16)
+
+    def save(self):
+        mobile = self.validated_data["mobile"]
+        try:
+            user = cUser.objects.get(mobile=mobile)
+        except cUser.DoesNotExist:
+            pass
+        else:
+            send_otp_verification_code(user, verification=False)
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+    mobile = serializers.CharField(max_length=16)
+    new_password1 = serializers.CharField(max_length=128)
+    new_password2 = serializers.CharField(max_length=128)
+
+    def validate(self, data):
+        mobile = data["mobile"]
+        if data["new_password1"] != data["new_password2"]:
+            raise serializers.ValidationError(
+                {"new_password2": "Password did not match."}
+            )
+
+        try:
+            user = cUser.objects.get(mobile=mobile)
+        except cUser.DoesNotExist:
+            raise serializers.ValidationError({"mobile": "Mobile not registered."})
+        else:
+            if validate_otp(user=user, otp=data["otp"]):
+                data["user"] = user
+
+            else:
+                raise serializers.ValidationError(
+                    {"otp": "Otp is wrong or has expired."}
+                )
+        return data
+
+    def save(self):
+        user = self.validated_data["user"]
+        user.set_password(self.validated_data["new_password1"])
+        user.save()
+        return user

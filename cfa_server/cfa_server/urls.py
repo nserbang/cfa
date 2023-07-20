@@ -95,6 +95,16 @@ urlpatterns = [
         name="change_password",
     ),
     path(
+        "api/v1/send-reset-password-otp/",
+        PasswordResetOtpAPIView.as_view(),
+        name="send_reset_password_otp",
+    ),
+    path(
+        "api/v1/reset-password/",
+        PasswordResetAPIView.as_view(),
+        name="reset_password",
+    ),
+    path(
         "api/v1/profile/update/", UserProfileUpdateView.as_view(), name="profile_update"
     ),
     path("api/v1/check-vehicle/", CheckLostVehicle.as_view(), name="check_vehicle"),

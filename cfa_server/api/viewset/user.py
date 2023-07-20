@@ -14,6 +14,8 @@ from api.serializers import (
     UserProfileSerializer,
     ResendOTPSerializer,
     PasswordChangeSerializer,
+    PasswordResetOtpSerializer,
+    PasswordResetSerializer,
 )
 from api.models import cUser
 from api.otp import send_otp_verification_code
@@ -71,6 +73,8 @@ class UserProfileUpdateView(UpdateAPIView):
 
 
 class ChangePasswordAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def post(self, request, *args, **kwargs):
         serializer = PasswordChangeSerializer(
             data=request.data, context={"request": request}
@@ -78,3 +82,23 @@ class ChangePasswordAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "Password change successful."}, status=200)
+
+
+class PasswordResetOtpAPIView(APIView):
+    permission_classes = ()
+
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordResetOtpSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Otp for password reset sent."})
+
+
+class PasswordResetAPIView(APIView):
+    permission_classes = ()
+
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Password reset successful."})

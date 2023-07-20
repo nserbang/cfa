@@ -304,3 +304,31 @@ class CriminalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Criminal
         fields = "__all__"
+
+
+class CommentCreateSerializer(serializers.ModelSerializer):
+
+    content = serializers.CharField(required=True)
+
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=cUser.objects.all(), write_only=True
+    )
+    class Meta:
+        model = Comment
+        fields = [
+            'cid',
+            'user',
+            'content'
+        ]
+
+    def validate(self, attrs):
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        comment = Comment(
+            cid=validated_data['cid'],
+            user=validated_data['user'],
+            content=validated_data['content']
+        )
+        comment.save()
+        return comment

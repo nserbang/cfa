@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from api.models import Case, CaseHistory, LostVehicle, Comment, Media
 from django.db.models import Q
 
@@ -9,6 +9,7 @@ from api.serializers import (
     CaseSerializer,
     CaseHistorySerializer,
     CaseSerializerCreate,
+    CommentCreateSerializer,
     CommentSerializer,
     LostVehicleSerializer,
     MediaSerializer,
@@ -63,8 +64,6 @@ class CommentViewSet(ModelViewSet):
     def get_queryset(self):
         case_id = self.kwargs["case_id"]
         qs = Comment.objects.filter(cid=case_id)
-        if self.requet.user.is_authenticated:
-            qs = qs.filter(user=self.request.user)
         return qs
 
 
@@ -73,6 +72,24 @@ class CaseCreateAPIView(APIView):
 
     def post(self, request, format=None):
         serializer = CaseSerializerCreate(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+
+class CommentCUDViewSet(ModelViewSet):
+
+    serializer_class = CommentSerializer
+    queryset = Comment.objects.all()
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        qs = Comment.objects.all()
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)

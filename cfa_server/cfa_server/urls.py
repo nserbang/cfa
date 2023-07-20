@@ -62,11 +62,12 @@ router.register("information", InformationViewSet, basename="information")
 router.register("victim", VictimViewSet, basename="victim")
 router.register("criminal", CriminalViewSet, basename="criminal")
 router.register(
-    r"case/(?P<case_id>\d+)/comments", CommentViewSet, basename="case-comments"
+    r"case/(?P<case_id>\d+)/comment", CommentViewSet, basename="case-comment"
 )
 router.register(
     r"district/(?P<district_id>\d+)/emergency", EmergencyViewSet, basename="emergencies"
 )
+router.register("comment", CommentCUDViewSet, basename="comment")
 
 urlpatterns = [
     path("admin/", admin.site.urls),

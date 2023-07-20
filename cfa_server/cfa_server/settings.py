@@ -239,3 +239,7 @@ CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
 
 CKEDITOR_UPLOAD_PATH = "uploads/"
 # CKEDITOR_FILENAME_GENERATOR = 'utils.get_filename'
+
+MEDIA_ROOT = str(BASE_DIR / "media")
+
+MEDIA_URL = "/media/"

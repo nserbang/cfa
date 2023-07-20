@@ -238,7 +238,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "profile_picture",
             "aadhar_card_no",
             "password",
+            "role",
         ]
+        read_only_fields = ["role"]
 
     def update(self, instance, data):
         password = data.pop("password", None)

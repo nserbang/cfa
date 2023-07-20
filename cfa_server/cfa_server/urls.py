@@ -35,13 +35,13 @@ from api.views import (
     index,
     emergency,
     information,
-    login_view,
-    register_view,
     logout_view,
     UserRegistrationView,
     VerifyOtpView,
     HomePageView,
     CaseAddView,
+    UserRegistrationCompleteView,
+    ResendMobileVerificationOtpView,
 )
 
 router = routers.DefaultRouter()
@@ -111,10 +111,8 @@ urlpatterns = [
     # path('', index, name='index'),
     path("", HomePageView.as_view(), name="home"),
     path("home/", HomePageView.as_view(), name="home"),
-    path("<str:case_type>/", HomePageView.as_view(), name="case"),
     path("emergency/", emergency, name="emergency"),
     path("information/", information, name="information"),
-    path("login/", login_view, name="login"),
     path(
         "accounts/login/",
         auth_views.LoginView.as_view(template_name="api/login.html"),
@@ -126,12 +124,21 @@ urlpatterns = [
         name="signup",
     ),
     path(
-        "accounts/verify-otp/",
+        "accounts/verify-mobile/",
         VerifyOtpView.as_view(),
-        name="verify_otp",
+        name="verify_mobile",
+    ),
+    path(
+        "accounts/resend-verification-otp/",
+        ResendMobileVerificationOtpView.as_view(),
+        name="resend_verification_otp",
+    ),
+    path(
+        "accounts/complete-signup/",
+        UserRegistrationCompleteView.as_view(),
+        name="complete_signup",
     ),
     path("case/add/", CaseAddView.as_view(), name="add_case"),
-    path("register/", register_view, name="register"),
     path("logout/", logout_view, name="logout"),
     path("api/cases/create/", CaseCreateAPIView.as_view(), name="case-create"),
     path("ckeditor/", include("ckeditor_uploader.urls")),
@@ -201,6 +208,7 @@ urlpatterns = [
     # path('comment-delete/<int:pk>', comment_delete, name= "comment-delete"),
     # path('comment-update/<int:pk>', comment_update, name= "comment-update"), # no update for comment. Only delete
     # media url ends --
+    path("<str:case_type>/", HomePageView.as_view(), name="case"),
 ]
 
 

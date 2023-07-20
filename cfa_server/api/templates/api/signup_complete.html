@@ -1,17 +1,17 @@
 {% extends '_base.html' %}
 {% load crispy_forms_tags %}
-{% block title %}Signup{% endblock title %}
+{% block title %}Complete Registration{% endblock title %}
 
 {% block content %}
 
 <div class="d-flex justify-content-center align-items-center align-middle">
 <div class="card">
-    <h5 class="card-header">Signup</h5>
+    <h5 class="card-header">Complete Registration</h5>
     <div class="card-body">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form|crispy }}
-            <button type="submit" class="btn btn-primary">Signup</button>
+            <button type="submit" class="btn btn-primary">Crompete Registration</button>
         </form>
     </div>
 </div>

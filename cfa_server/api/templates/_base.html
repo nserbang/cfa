@@ -132,6 +132,9 @@
 
         <div class="text-end">
           {% if user.is_authenticated %}
+            <button type="button" class="btn btn-outline-light me-2"> {{ user.get_full_name|default:request.user }}</button>
+          {% endif %}
+          {% if user.is_authenticated %}
             <a type="button" class="btn btn-outline-light me-2" href="{% url 'logout' %}">Logout</a>
           {% else %}
             <a type="button" class="btn btn-outline-light me-2" href="{% url 'login' %}">Login</a>
@@ -142,7 +145,26 @@
     </div>
   </header>
   <div class="container">
+    <div class="row">
+      <div class="col-lg-2 col-sm-0 col-xs-0">
+      </div>
+      <div class="col-lg-8 col-sm-12 col-md-12 col-xs-12">
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {{ message|safe }}
+          </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+      <div class="col-lg-2 col-sm-0 col-xs-0">
+      </div>
+    </div>
+
+
     {% block content %}
+
     {% endblock content %}
   </div>
 

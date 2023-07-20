@@ -344,6 +344,23 @@ class VictimSerializer(serializers.ModelSerializer):
         model = Victim
         fields = "__all__"
 
+class PrivacySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Privacy
+        fields = "__all__"
+
+
+class TermsConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TermsCondition
+        fields = "__all__"
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = "__all__"
+
 
 class CriminalSerializer(serializers.ModelSerializer):
     class Meta:

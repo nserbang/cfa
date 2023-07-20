@@ -21,6 +21,7 @@ from django.contrib import admin
 from rest_framework import routers
 from django.conf import settings
 from django.contrib.auth import views as auth_views
+from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 
 from api.viewset.case import *  # noqa
 from api.viewset.district import *
@@ -43,6 +44,9 @@ from api.views import (
     UserRegistrationCompleteView,
     ResendMobileVerificationOtpView,
 )
+from api.viewset.privacy import PrivacyViewSet
+from api.viewset.termscondition import TermsConditionViewSet
+from api.viewset.contact import ContactViewSet
 
 router = routers.DefaultRouter()
 router.register("district", DistrictViewSet, basename="district")
@@ -60,6 +64,9 @@ router.register("lost-vehicle", LostVehicleViewSet, basename="lost-vehicle")
 router.register("emergency", EmergencyViewListSet, basename="emergency")
 router.register("information", InformationViewSet, basename="information")
 router.register("victim", VictimViewSet, basename="victim")
+router.register("privacy", PrivacyViewSet, basename="privacy")
+router.register("terms-condition", TermsConditionViewSet, basename="terms-condition")
+router.register("contact", ContactViewSet, basename="contact")
 router.register("criminal", CriminalViewSet, basename="criminal")
 router.register(
     r"case/(?P<case_id>\d+)/comment", CommentViewSet, basename="case-comment"
@@ -68,6 +75,7 @@ router.register(
     r"district/(?P<district_id>\d+)/emergency", EmergencyViewSet, basename="emergencies"
 )
 router.register("comment", CommentCUDViewSet, basename="comment")
+router.register('devices', FCMDeviceAuthorizedViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

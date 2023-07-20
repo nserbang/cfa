@@ -277,3 +277,19 @@ class Criminal(models.Model):
     )
     created = models.DateTimeField(auto_now_add=True)
     content = RichTextUploadingField()
+
+
+class Privacy(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    content = RichTextUploadingField()
+
+
+class TermsCondition(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    content = RichTextUploadingField()
+
+
+class Contact(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    content = RichTextUploadingField()
+

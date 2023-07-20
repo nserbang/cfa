@@ -75,21 +75,26 @@ urlpatterns = [
     path(
         "api/v1/register/",
         UserRegistrationViewApiView.as_view(),
-        name="user-registration",
+        name="user_registration",
     ),
     path(
         "api/v1/verify-otp/",
         VerifyOtpAPIView.as_view(),
-        name="verify-otp",
+        name="verify_otp",
     ),
     path(
         "api/v1/resend-otp/",
         ResendOtpAPIView.as_view(),
-        name="resend-otp",
+        name="resend_otp",
     ),
     path("api/v1/login/", UserLoginView.as_view(), name="user-login"),
     path(
-        "api/v1/profile/update/", UserProfileUpdateView.as_view(), name="profile-update"
+        "api/v1/change-password/",
+        ChangePasswordAPIView.as_view(),
+        name="change_password",
+    ),
+    path(
+        "api/v1/profile/update/", UserProfileUpdateView.as_view(), name="profile_update"
     ),
     path("api/v1/check-vehicle/", CheckLostVehicle.as_view(), name="check_vehicle"),
     # path('', index, name='index'),

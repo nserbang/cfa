@@ -347,3 +347,27 @@ class CriminalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Criminal
         fields = "__all__"
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(max_length=128)
+    new_password1 = serializers.CharField(max_length=128)
+    new_password2 = serializers.CharField(max_length=128)
+
+    def validate(self, data):
+        user = self.context["request"].user
+        if not user.check_password(data.get("old_password")):
+            raise serializers.ValidationError(
+                {"old_password": "Your current password is incorrect."}
+            )
+        if data["new_password1"] != data["new_password2"]:
+            raise serializers.ValidationError(
+                {"new_password2": "Password did not match."}
+            )
+        return data
+
+    def save(self):
+        user = self.context["request"].user
+        user.set_password(self.validated_data["new_password1"])
+        user.save()
+        return user

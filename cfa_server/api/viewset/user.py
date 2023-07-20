@@ -13,6 +13,7 @@ from api.serializers import (
     OTPVerificationSerializer,
     UserProfileSerializer,
     ResendOTPSerializer,
+    PasswordChangeSerializer,
 )
 from api.models import cUser
 from api.otp import send_otp_verification_code
@@ -67,3 +68,13 @@ class UserProfileUpdateView(UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class ChangePasswordAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordChangeSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Password change successful."}, status=200)

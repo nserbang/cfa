@@ -30,13 +30,14 @@ class cUser(AbstractUser):
         ("admin", "Admin"),
     )
     mobile = models.CharField(max_length=26, unique=True)
-    # is_verified = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
 
     # Role of the user
     role = models.CharField(max_length=10, choices=ROLES, default="user")
     # Address of the user. Optional
     address = models.TextField(null=True)
     profile_picture = models.ImageField(blank=True, null=True)
+    aadhar_card_no = models.CharField(max_length=56, blank=True)
 
     REQUIRED_FIELDS = []
     USERNAME_FIELD = "mobile"

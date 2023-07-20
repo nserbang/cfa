@@ -10,56 +10,40 @@ from rest_framework.permissions import IsAuthenticated
 from api.serializers import (
     UserSerializer,
     LoginSerializer,
-    OTPSerializer,
-    UpdateProfileSerializer,
+    OTPVerificationSerializer,
+    UserProfileSerializer,
+    ResendOTPSerializer,
 )
 from api.models import cUser
+from api.otp import send_otp_verification_code
 
 
 class UserRegistrationViewApiView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
-            params = {
-                "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
-                "message": "OTP CODE :{}".format(user.otp_code),
-                "senderId": "mnwalk",
-                "routeId": 8,
-                "mobileNos": "9729013259",
-                "smsContentType": "english",
-            }
-            x = requests.get(url, params=params)
-
-            return Response({"user_id": user.id}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request):
-        serializer = OTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user_id = serializer.validated_data["user_id"]
-        otp_code = serializer.validated_data["otp_code"]
+        user = serializer.save()
+        send_otp_verification_code(user)
+        return Response(serializer.data)
 
-        try:
-            user = cUser.objects.get(id=user_id)
-        except cUser.DoesNotExist:
-            return Response(
-                {"error": "Invalid user_id"}, status=status.HTTP_400_BAD_REQUEST
-            )
 
-        # if user.otp_code != otp_code:
-        if user.otp_code != otp_code:
-            return Response(
-                {"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # OTP verification successful, you can activate the user or perform any other necessary actions
-        user.is_active = True
-        user.save()
-
+class VerifyOtpAPIView(APIView):
+    def post(self, request):
+        serializer = OTPVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.save()
         return Response(
-            {"message": "User registration completed successfully"},
+            data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class ResendOtpAPIView(APIView):
+    def post(self, request):
+        serializer = ResendOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(
+            {"message": "Verification otp resent."},
             status=status.HTTP_200_OK,
         )
 
@@ -70,11 +54,14 @@ class UserLoginView(ObtainAuthToken):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
         token, created = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key})
+        serializer = UserProfileSerializer(user)
+        data = serializer.data
+        data["token"] = token.key
+        return Response(data=data)
 
 
 class UserProfileUpdateView(UpdateAPIView):
-    serializer_class = UpdateProfileSerializer
+    serializer_class = UserProfileSerializer
     permission_classes = (IsAuthenticated,)
     queryset = cUser.objects.all()
 

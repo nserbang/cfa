@@ -1,14 +1,13 @@
-import cv2 as cv
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 from django.contrib.gis.geos import fromstr
-from django.db.models.functions import Lower
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth import get_user_model
 from .models import *
 from django.contrib.auth import authenticate
-from random import randint, randrange
 from api.models import Case, PoliceStation, cUser
 from api.npr import detectVehicleNumber
+from api.otp import validate_otp, send_otp_verification_code
 
 
 class DistrictSerializer(serializers.ModelSerializer):
@@ -117,13 +116,10 @@ class CaseSerializer(serializers.ModelSerializer):
 
 
 class CaseSerializerCreate(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(
-        queryset=cUser.objects.all(), write_only=True
-    )  # Add user_id field for write-only
-
     class Meta:
         model = Case
         fields = [
+            "cid",
             "user",
             "type",
             "title",
@@ -135,6 +131,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        request = self.context["request"]
         case = Case(
             type=validated_data["type"],
             title=validated_data["title"],
@@ -151,12 +148,11 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             .order_by("radius")
             .first()
         )
-        # import pdb; pdb.set_trace()
         case.pid = police_station
         case.geo_location = geo_location
         officier = police_station.policeofficer_set.order_by("-rank").first()
         case.oid = officier
-        case.user = validated_data["user"]
+        case.user = request.user
         case.save()
         return case
 
@@ -203,34 +199,34 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=False)
+    mobile = serializers.CharField(max_length=16)
 
     class Meta:
         model = User
-        fields = [
-            "id",
-            "mobile",
-            "username",
-            "password",
-            "role",
-            "address",
-            "profile_pic",
-        ]
+        fields = ["id", "mobile"]
 
-    def create(self, validated_data):
-        user = User(
-            username=validated_data.get("username"),
-            mobile=validated_data["mobile"],
-            role=validated_data.get("role", "user"),
-            address=validated_data.get("address", None),
-        )
-        if password := validated_data.get("password"):
-            user.set_password(password)
-        user.save()
-        return user
+    def validate(self, data):
+        if user := cUser.objects.filter(mobile=data["mobile"]).first():
+            if user.is_verified:
+                raise serializers.ValidationError(
+                    {
+                        "mobile": "This mobile is already registered",
+                        "is_verified": True,
+                    }
+                )
+            else:
+                raise serializers.ValidationError(
+                    {
+                        "mobile": "This mobile is already registered.",
+                        "is_verified": False,
+                    }
+                )
+        return data
 
 
-class UpdateProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = cUser
         fields = [
@@ -240,7 +236,15 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             "email",
             "address",
             "profile_picture",
+            "aadhar_card_no",
+            "password",
         ]
+
+    def update(self, instance, data):
+        password = data.pop("password", None)
+        if password:
+            instance.set_password(password)
+        return super().update(instance, data)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -268,9 +272,48 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
-class OTPSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
+class OTPVerificationSerializer(serializers.Serializer):
+    mobile = serializers.CharField(max_length=16)
     otp_code = serializers.CharField(max_length=6)
+
+    def validate(self, data):
+        mobile = data["mobile"]
+        otp_code = data["otp_code"]
+
+        user = cUser.objects.filter(mobile=mobile).first()
+        if user:
+            if not validate_otp(user, otp_code):
+                raise serializers.ValidationError(
+                    {"otp_code": "Invalid or expired otp code."}
+                )
+        else:
+            raise serializers.ValidationError({"mobile": "Invalid mobile"})
+        data["user"] = user
+        return data
+
+    def save(self):
+        user = self.validated_data["user"]
+        user.is_verified = True
+        user.save()
+        token, _ = Token.objects.get_or_create(user=user)
+        return {
+            "message": "Otp verification successful.",
+            "user_id": user.id,
+            "mobile": user.mobile,
+            "token": token.key,
+        }
+
+
+class ResendOTPSerializer(serializers.Serializer):
+    mobile = serializers.CharField(max_length=16)
+
+    def validate(self, data):
+        mobile = data["mobile"]
+        user, _ = cUser.objects.get_or_create(mobile=mobile)
+        if user.is_verified:
+            raise serializers.ValidationError({"mobile": "Mobile already verified"})
+        send_otp_verification_code(user)
+        return data
 
 
 class CheckLostVehicleSerializer(serializers.Serializer):

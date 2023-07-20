@@ -78,6 +78,16 @@ urlpatterns = [
         UserRegistrationViewApiView.as_view(),
         name="user-registration",
     ),
+    path(
+        "api/v1/verify-otp/",
+        VerifyOtpAPIView.as_view(),
+        name="verify-otp",
+    ),
+    path(
+        "api/v1/resend-otp/",
+        ResendOtpAPIView.as_view(),
+        name="resend-otp",
+    ),
     path("api/v1/login/", UserLoginView.as_view(), name="user-login"),
     path(
         "api/v1/profile/update/", UserProfileUpdateView.as_view(), name="profile-update"

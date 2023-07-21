@@ -65,6 +65,7 @@ class ResendMobileVerificationOtpForm(forms.Form):
         try:
             user = cUser.objects.get(mobile=self.cleaned_data["mobile"])
         except cUser.DoesNotExist:
-            pass
+            user = None
         else:
             send_otp_verification_code(user)
+        return None

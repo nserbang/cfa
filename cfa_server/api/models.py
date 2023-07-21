@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.db import transaction
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.geos import fromstr
 from api.utl import get_upload_path
@@ -144,9 +145,61 @@ class Case(models.Model):
     # Follow me flag
     follow = models.BooleanField(default=False)
 
-    def save(self, **kwargs):
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            # If the instance is being created, record the creation in CaseHistory
+            with transaction.atomic():
+                super().save(*args, **kwargs)
+                case_history = CaseHistory.objects.create(
+                    cid=self,
+                    user=self.user,
+                    cstate=self.cstate,
+                    description="Case created."
+                )
+                case_history.save()
+        else:
+            original_case = Case.objects.get(pk=self.pk)
+
+            # Check for changes in cstate, pid, and oid
+            cstate_changed = self.cstate != original_case.cstate
+            pid_changed = self.pid_id != original_case.pid_id
+            oid_changed = self.oid_id != original_case.oid_id
+
+            with transaction.atomic():
+                super().save(*args, **kwargs)
+
+                # Create CaseHistory entry for each change
+                if cstate_changed:
+                    case_history = CaseHistory.objects.create(
+                        cid=self,
+                        user=self.user,
+                        cstate=self.cstate,
+                        description="Case state updated from {} to {}".format(original_case.cstate, self.cstate)
+                    )
+                    case_history.save()
+
+                if pid_changed:
+                    case_history = CaseHistory.objects.create(
+                        cid=self,
+                        user=self.user,
+                        pid=self.pid,
+                        description="Police station updated."
+                    )
+                    case_history.save()
+
+                if oid_changed:
+                    case_history = CaseHistory.objects.create(
+                        cid=self,
+                        user=self.user,
+                        oid=self.oid,
+                        description="Police officer updated."
+                    )
+                    case_history.save()
+
+        # Update the geo_location field based on lat and long
         self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
-        return super().save(**kwargs)
+
+        return super().save(*args, **kwargs)
 
 
 class CaseHistory(models.Model):

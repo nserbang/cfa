@@ -40,6 +40,10 @@ class CaseHistoryViewSet(UserMixin, ModelViewSet):
     queryset = CaseHistory.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
+    def get_queryset(self):
+        case_id = int(self.kwargs["case_id"])
+        qs = CaseHistory.objects.filter(cid=case_id)
+        return qs
 
 class MediaViewSet(ModelViewSet):
     serializer_class = MediaSerializer

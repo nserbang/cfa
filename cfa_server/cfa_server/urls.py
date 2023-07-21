@@ -57,7 +57,7 @@ router.register(
 )
 router.register(r"case", CaseViewSet, basename="case")
 # router.register(r'case/create', CaseCreateAPIView.as_view(), basename= 'case-create')
-router.register("case-history", CaseHistoryViewSet, basename="case-history")
+# router.register("case-history", CaseHistoryViewSet, basename="case-history")
 router.register("media", MediaViewSet, basename="media")
 router.register("lost-vehicle", LostVehicleViewSet, basename="lost-vehicle")
 # router.register('comment', CommentViewSet, basename='comments')
@@ -68,6 +68,9 @@ router.register("privacy", PrivacyViewSet, basename="privacy")
 router.register("terms-condition", TermsConditionViewSet, basename="terms-condition")
 router.register("contact", ContactViewSet, basename="contact")
 router.register("criminal", CriminalViewSet, basename="criminal")
+router.register(
+    r"case/(?P<case_id>\d+)/history", CaseHistoryViewSet, basename="case-history"
+)
 router.register(
     r"case/(?P<case_id>\d+)/comment", CommentViewSet, basename="case-comment"
 )

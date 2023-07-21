@@ -168,7 +168,7 @@ class CommentSerializer(serializers.ModelSerializer):
     user_detail = cUserSerializer(source="user")
     class Meta:
         model = Comment
-        fields = ["cmtid", "content","cid","user_detail"]
+        fields = ["cmtid", "content","cid","user_detail","created"]
 
 
 

@@ -254,6 +254,7 @@ class Comment(models.Model):
     cid = models.ForeignKey(Case, on_delete=models.CASCADE)
     user = models.ForeignKey(cUser, on_delete=models.CASCADE)
     content = models.TextField(null=True)
+    created = models.DateTimeField(auto_now_add=True)
 
 
 """ cmtid, cid, content, user

@@ -1,4 +1,4 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -35,11 +35,15 @@ class CaseViewSet(UserMixin, ModelViewSet):
         return data
 
 
-class CaseHistoryViewSet(UserMixin, ModelViewSet):
+class CaseHistoryViewSet(UserMixin, ReadOnlyModelViewSet):
     serializer_class = CaseHistorySerializer
     queryset = CaseHistory.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
+    def get_queryset(self):
+        case_id = int(self.kwargs["case_id"])
+        qs = CaseHistory.objects.filter(cid=case_id)
+        return qs
 
 class MediaViewSet(ModelViewSet):
     serializer_class = MediaSerializer

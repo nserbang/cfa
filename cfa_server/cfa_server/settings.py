@@ -10,8 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 import logging
+
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import initialize_app
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -49,6 +54,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "ckeditor",
     "ckeditor_uploader",
+    "fcm_django"
 ]
 
 MIDDLEWARE = [
@@ -244,3 +250,23 @@ CKEDITOR_UPLOAD_PATH = "uploads/"
 MEDIA_ROOT = str(BASE_DIR / "media")
 
 MEDIA_URL = "/media/"
+FCM_DJANGO_SETTINGS = {
+     # an instance of firebase_admin.App to be used as default for all fcm-django requests
+     # default: None (the default Firebase app)
+    "DEFAULT_FIREBASE_APP": None,
+     # default: _('FCM Django')
+    "APP_VERBOSE_NAME": "CFA Firebase",
+     # true if you want to have only one active device per registered user at a time
+     # default: False
+    "ONE_DEVICE_PER_USER": False,
+     # devices to which notifications cannot be sent,
+     # are deleted upon receiving error response from FCM
+     # default: False
+    "DELETE_INACTIVE_DEVICES": True,
+    # "FCM_SERVER_KEY": "AAAAUBWqdfo:APA91bEm3ib6_TlLIJ5YpAU6BjyQ7X9GoXeghkgqiBwNPPkr_FP9NjdhVk8EZqCUvgWUIf2vhk5eUnSkJELy7JtJfv1qOGM_UZtxu0FI3BkpUQMxdX-aO3xdvfTKteAkbAc2vXy1xCXu"
+
+}
+
+
+cred = credentials.Certificate('credentials.json')
+firebase_admin.initialize_app(cred)

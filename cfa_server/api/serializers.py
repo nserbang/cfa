@@ -164,9 +164,12 @@ class LostVehicleSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+
+    user_detail = cUserSerializer(source="user")
     class Meta:
         model = Comment
-        fields = "__all__"
+        fields = ["cmtid", "content","cid","user_detail","created"]
+
 
 
 class EmergencySerializer(serializers.ModelSerializer):
@@ -342,6 +345,23 @@ class CheckLostVehicleSerializer(serializers.Serializer):
 class VictimSerializer(serializers.ModelSerializer):
     class Meta:
         model = Victim
+        fields = "__all__"
+
+class PrivacySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Privacy
+        fields = "__all__"
+
+
+class TermsConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TermsCondition
+        fields = "__all__"
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
         fields = "__all__"
 
 

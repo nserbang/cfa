@@ -267,5 +267,5 @@ FCM_DJANGO_SETTINGS = {
 }
 
 
-cred = credentials.Certificate(os.path.join('credentials.json'))
+cred = credentials.Certificate('credentials.json')
 firebase_admin.initialize_app(cred)

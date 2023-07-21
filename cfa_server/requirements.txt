@@ -32,3 +32,4 @@ pyotp==2.6.0
 pytesseract==0.3.10
 opencv-python==4.8.0.74
 django-ckeditor==6.6.1
+fcm-django==2.0.0

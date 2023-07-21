@@ -164,9 +164,12 @@ class LostVehicleSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+
+    user_detail = cUserSerializer(source="user")
     class Meta:
         model = Comment
-        fields = "__all__"
+        fields = ["cmtid", "content","cid","user_detail"]
+
 
 
 class EmergencySerializer(serializers.ModelSerializer):

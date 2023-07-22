@@ -5,6 +5,11 @@ from django.contrib.gis.geos import fromstr
 from api.utl import get_upload_path
 from .managers import CustomUserManager
 
+from firebase_admin.messaging import Message, Notification
+from fcm_django.models import FCMDevice
+
+from django.db.models import Q
+
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
@@ -197,6 +202,16 @@ class Case(models.Model):
                         description="Police officer updated.",
                     )
                     case_history.save()
+
+        try:
+            message = Message(
+                notification= Notification(title="Test", body="Body")
+            )
+
+            devices = FCMDevice.objects.filter(Q(user__id=self.cid) | Q(user__id=self.oid_id))
+            devices.send_message(message)
+        except:
+            pass
 
         # Update the geo_location field based on lat and long
         self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)

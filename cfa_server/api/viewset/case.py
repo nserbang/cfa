@@ -115,6 +115,7 @@ class LikeViewSet(ModelViewSet):
     
     serializer_class = LikeSerializer
     queryset = Like.objects.all()
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
         case_id = int(self.kwargs["case_id"])

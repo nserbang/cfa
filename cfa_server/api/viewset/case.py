@@ -36,7 +36,7 @@ class CaseViewSet(UserMixin, ModelViewSet):
             request_user_id = self.request.user.id
             data = data.filter(
                 Q(user=request_user_id)
-                | Q(oid=request_user_id)
+                | Q(oid__user=request_user_id)
             )
         return data
 

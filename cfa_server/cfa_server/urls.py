@@ -46,6 +46,7 @@ from api.views import (
     AddCommentView,
     AddLikeView,
     ChangeCaseStateUpdateView,
+    GetCaseHistory,
 )
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
@@ -160,6 +161,11 @@ urlpatterns = [
     path("case/add/", CaseAddView.as_view(), name="add_case"),
     path("comment/add/<int:case_id>/", AddCommentView.as_view(), name="add_comment"),
     path("like/add/<int:case_id>/", AddLikeView.as_view(), name="add_like"),
+    path(
+        "get/case-history/<int:case_id>/",
+        GetCaseHistory.as_view(),
+        name="get_case_hsitory",
+    ),
     path(
         "change-status/<int:case_id>/",
         ChangeCaseStateUpdateView.as_view(),

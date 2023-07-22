@@ -225,6 +225,20 @@ class Media(models.Model):
     path = models.FileField(upload_to=get_upload_path)
     description = models.TextField(null=True)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # Create CaseHistory entry when a new media object is created
+        if not self.pk:
+            case_history = CaseHistory.objects.create(
+                cid=self.cid_history.cid,
+                user=self.cid_history.user,
+                cstate=self.cid_history.cstate,
+                description="Media uploaded.",
+                media_id=self
+            )
+            case_history.save()
+
 class CaseHistory(models.Model):
     chid = models.BigAutoField(primary_key=True)
     # which case history

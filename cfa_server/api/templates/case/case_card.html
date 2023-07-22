@@ -1,0 +1,16 @@
+<div class="card mb-2">
+    <div class="card-body">
+      <h5 class="card-title">{{ case.title }}</h5>
+      <ul class="list-unstyled">
+        <li class=""> <span class="fw-bold">Case No.</span>: {{ case.cid }}</li>
+        <li class=""><span class="fw-bold">Case Type</span>: {{ case.type }}</li>
+        <li class=""><span class="fw-bold">Case Status</span>: {{ case.cstate }}</li>
+        <li class=""><span class="fw-bold">Police Station</span>: {{ case.pid.name }}</li>
+      </ul>
+    </div>
+    <div class="card-footer text-body-secondary d-flex flex-row justify-content-between pb-0">
+        <p>Like: {{ case.likes }}</p>
+        <p>Like: {{ case.comments }}</p>
+        <a href="" class="button">Case history</a>
+    </div>
+</div>

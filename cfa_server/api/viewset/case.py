@@ -32,7 +32,7 @@ class CaseViewSet(UserMixin, ModelViewSet):
                 | Q(cid__contains=search)
                 | Q(description__contains=search)
             )
-        if my_case.lower() == "true":
+        if my_case is not None and my_case.lower() == "true":
             request_user_id = self.request.user.id
             data = data.filter(
                 Q(user=request_user_id)

@@ -203,21 +203,6 @@ class Case(models.Model):
 
         return super().save(*args, **kwargs)
 
-
-class CaseHistory(models.Model):
-    chid = models.BigAutoField(primary_key=True)
-    # which case history
-    cid = models.ForeignKey(Case, on_delete=models.DO_NOTHING)
-    # Who has entered this entry
-    user = models.ForeignKey(cUser, on_delete=models.DO_NOTHING)
-    # state of the case during this time
-    cstate = models.CharField(max_length=15, choices=Case.cState)
-    # Date and time when complaint was reported
-    created = models.DateTimeField(auto_now_add=True)
-    # Description added
-    description = models.TextField(null=True)
-
-
 class Media(models.Model):
     mid = models.BigAutoField(primary_key=True)
     # chid =  models.ForeignKey(CaseHistory,,db_column="case_history_chid",on_delete=models.CASCADE)
@@ -239,6 +224,21 @@ class Media(models.Model):
     # media path
     path = models.FileField(upload_to=get_upload_path)
     description = models.TextField(null=True)
+
+class CaseHistory(models.Model):
+    chid = models.BigAutoField(primary_key=True)
+    # which case history
+    cid = models.ForeignKey(Case, on_delete=models.DO_NOTHING)
+    # Who has entered this entry
+    user = models.ForeignKey(cUser, on_delete=models.DO_NOTHING)
+    # state of the case during this time
+    cstate = models.CharField(max_length=15, choices=Case.cState)
+    # Date and time when complaint was reported
+    created = models.DateTimeField(auto_now_add=True)
+    # Description added
+    description = models.TextField(null=True)
+    
+    media = models.ForeignKey(Media, on_delete=models.SET_NULL, null=True)
 
 
 class LostVehicle(models.Model):
@@ -336,17 +336,17 @@ class Criminal(models.Model):
 
 
 class Privacy(models.Model):
-    id = models.BigIntegerField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     content = RichTextUploadingField()
 
 
 class TermsCondition(models.Model):
-    id = models.BigIntegerField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     content = RichTextUploadingField()
 
 
 class Contact(models.Model):
-    id = models.BigIntegerField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     content = RichTextUploadingField()
 
 

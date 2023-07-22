@@ -46,7 +46,7 @@
                 </div>
             {% endif %}
 
-            <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" data-bs-target="#history-{{case.pk}}" data-bs-toggle="collapse">Case history</a>
+            <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" data-bs-target="#history-{{case.pk}}" data-bs-toggle="collapse" onclick="getCaseHistory(event, {{case.pk}})">Case history</a>
         </div>
         <div id="comment-{{case.pk}}" class="collapse pt-2">
             <form action="{% if user.is_authenticated %}{% url 'add_comment' case.pk %}{% endif %}"  method="post">
@@ -62,37 +62,8 @@
         </div>
 
 
-        <div class="container collapse" id="history-{{case.pk}}">
-            <!-- timeline item 1 -->
-            {% for history in case.casehistory_set.all %}
-            <div class="row">
-                <!-- timeline item 1 left dot -->
-                <div class="col-auto text-center flex-column d-none d-sm-flex">
-                    <div class="row h-50">
-                        <div class="col">&nbsp;</div>
-                        <div class="col">&nbsp;</div>
-                    </div>
-                    <h6 class="m-2">
-                        <span class="badge rounded-pill bg-success border">&nbsp;</span>
-                    </h6>
-                    <div class="row h-50">
-                        <div class="col border-end order">&nbsp;</div>
-                        <div class="col">&nbsp;</div>
-                    </div>
-                </div>
-                <!-- timeline item 1 event content -->
-                <div class="col py-2">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="float-end text-muted">{{ case.created }}</div>
-                            <h4 class="card-title text-muted">Day 1 Orientation</h4>
-                            <p class="card-text">Welcome to the campus, introduction and get started with the tour.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!--/row-->
-            {% endfor %}
+        <div class="container" id="history-{{case.pk}}">
+
         </div>
 
     </div>

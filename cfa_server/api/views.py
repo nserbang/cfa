@@ -1,13 +1,14 @@
 # from view_includes import *
 
 from django.urls import reverse_lazy
-from django.db.models import Count, Value, Case as MCase, When, Q
+from django.db.models import Count, Value, Case as MCase, When, Q, OuterRef, Exists
 from django.http import HttpResponseRedirect, JsonResponse
 from django.utils import timezone
 from datetime import datetime
 from django.shortcuts import render, reverse, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -22,7 +23,7 @@ from .user_forms import (
 )
 from .otp import send_otp_verification_code
 
-from api.models import Case, cUser, Like, Comment
+from api.models import Case, cUser, Like, Comment, CaseHistory
 
 # from rest_framework.request import Request
 from api.view.district_views import *
@@ -176,8 +177,8 @@ class HomePageView(View):
         user = self.request.user
         cases = (
             Case.objects.annotate(
-                comment_count=Count("comment"),
-                like_count=Count("likes"),
+                comment_count=Count("comment", distinct=True),
+                like_count=Count("likes", distinct=True),
                 is_location_visible=MCase(
                     When(
                         cstate="pending",
@@ -193,10 +194,23 @@ class HomePageView(View):
         case_type = self.get_case_type()
         if case_type:
             cases = cases.filter(type=case_type)
-        if self.request.user.is_authenticated:
+        if user.is_authenticated:
+            liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)
             cases = cases.annotate(
-                has_liked=Count("likes", filter=Q(user=self.request.user)),
-            )  # .filter(user=self.request.user)
+                has_liked=Exists(liked),
+            )  # .filter(user=user)
+        if q := self.request.GET.get("q"):
+            search_filter = (
+                Q(lostvehicle__regNumber=q)
+                | Q(lostvehicle__chasisNumber=q)
+                | Q(lostvehicle__engineNumber=q)
+            )
+            try:
+                int(q)
+                search_filter |= Q(cid=q)
+            except ValueError:
+                pass
+            cases = cases.filter(search_filter)
         return cases
 
     def get(self, request, *args, **kwargs):
@@ -342,3 +356,17 @@ class ChangeCaseStateUpdateView(View):
         case.save()
         messages.success(request, f"Status changed sucesfully to {case.cstate}.")
         return redirect("/")
+
+
+class GetCaseHistory(View):
+    def get(self, request, *args, **kwargs):
+        case_id = kwargs["case_id"]
+        case_histories = CaseHistory.objects.filter(cid=case_id).order_by("created")
+        from itertools import pairwise
+
+        history_pairs = list(pairwise(case_histories))
+        context = {"history_pairs": history_pairs}
+        html = render_to_string(
+            "case/case_history_json.html", request=request, context=context
+        )
+        return JsonResponse({"html": html})

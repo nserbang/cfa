@@ -1,0 +1,58 @@
+{% for old, new in history_pairs %}
+    {% if forloop.first %}
+    <div class="row pt-1">
+        <div class="col-auto text-center flex-column d-none d-sm-flex">
+            <div class="row h-50">
+                <div class="col">&nbsp;</div>
+                <div class="col">&nbsp;</div>
+            </div>
+            <p class="m-1 text-sm">
+                <span class="badge rounded-pill bg-success border">&nbsp;</span>
+            </p>
+            <div class="row h-50">
+                <div class="col border-end order">&nbsp;</div>
+                <div class="col">&nbsp;</div>
+            </div>
+        </div>
+
+        <div class="col py-1">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted"> <span class="fw-bold">Reported </span>: {{ old.created }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row pt-1">
+        <div class="col-auto text-center flex-column d-none d-sm-flex">
+            <div class="row h-50">
+                <div class="col">&nbsp;</div>
+                <div class="col">&nbsp;</div>
+            </div>
+            <p class="m-1 text-sm">
+                <span class="badge rounded-pill bg-success border">&nbsp;</span>
+            </p>
+            <div class="row h-50">
+                <div class="col border-end order">&nbsp;</div>
+                <div class="col">&nbsp;</div>
+            </div>
+        </div>
+
+        <div class="col py-1">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted">{{ old.cstate }} => {{ new.cstate }}</div>
+                    <h4 class="card-title text-muted">{{ new.created }}</h4>
+                    <h4 class="card-title text-muted">{{ new.user }}</h4>
+                    <p class="card-text">{{ new.discription }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% empty %}
+<div class="row pt-2">
+    No history found.
+</div>
+{% endfor %}

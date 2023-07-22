@@ -77,6 +77,9 @@ router.register(
 router.register(
     r"district/(?P<district_id>\d+)/emergency", EmergencyViewSet, basename="emergencies"
 )
+router.register(
+    r"district/(?P<district_id>\d+)/police-station", DistrictPoliceStationViewSet, basename="district-police-station"
+)
 router.register("comment", CommentCUDViewSet, basename="comment")
 router.register('devices', FCMDeviceAuthorizedViewSet)
 

@@ -1,4 +1,4 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from api.models import (
@@ -30,3 +30,13 @@ class PoliceOfficerViewSet(ModelViewSet):
     serializer_class = PoliceOfficerSerializer
     queryset = PoliceOfficer.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+class DistrictPoliceStationViewSet(ReadOnlyModelViewSet):
+
+    serializer_class = PoliceStationSerializer
+    queryset = PoliceStation.objects.all()
+
+    def get_queryset(self):
+        district_id = self.kwargs['district_id']
+        queryset = PoliceStation.objects.filter(did=district_id)
+        return queryset

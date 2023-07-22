@@ -234,7 +234,9 @@ class ResendMobileVerificationOtpView(FormView):
     success_url = reverse_lazy("verify_mobile")
 
     def form_valid(self, form):
-        form.save()
+        user = form.save()
+        if user:
+            self.request.session["mobile"] = user.mobile
         return HttpResponseRedirect(self.get_success_url())
 
 
@@ -270,7 +272,10 @@ class VerifyOtpView(View):
                 "Mobile verification successful."
                 " Complete your registration and add your password now.",
             )
-            del request.session["mobile"]
+            try:
+                del request.session["mobile"]
+            except KeyError:
+                pass
             login(request, user)
             return redirect(reverse("complete_signup"))
         return render(request, "api/verify_otp.html", {"form": form})

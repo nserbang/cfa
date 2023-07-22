@@ -8,7 +8,7 @@
         <li class=""><span class="fw-bold">Police Station</span> :
             <a class="btn btn-primary btn-xs text-xs"
                 rel="noreferrer"
-                href="https://maps.google.com/?q={{ case.pid.lat }},{{ case.pid.long }}"
+                href="https://www.google.com/maps/dir/?api=1&destination={{ case.pid.lat }},{{ case.pid.long }}"
                 style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
             >
                 {{ case.pid.name }}
@@ -26,9 +26,9 @@
 
             {% if user.is_authenticated %}
                 {% if case.cstate == 'pending' and case.is_location_visible %}
-                <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Location</a>
+                    <a rel="noreferrer" href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Location</a>
                 {% elif case.cstate != 'pending' and case.user_id == user.id or case.oid.user_id == user.id %}
-                <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Location</a>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Location</a>
                 {% endif %}
             {% endif %}
 

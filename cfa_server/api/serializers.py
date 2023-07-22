@@ -464,3 +464,17 @@ class PasswordResetSerializer(serializers.Serializer):
         user.set_password(self.validated_data["new_password1"])
         user.save()
         return user
+
+
+class LikeSerializer(serializers.ModelSerializer):
+
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=cUser.objects.all(), write_only=True
+    )
+
+    class Meta:
+        model = Like
+        fields = ['case_id','user']
+
+    def get_case_id(self, case):
+        return case.cid

@@ -79,6 +79,9 @@ router.register(
     r"case/(?P<case_id>\d+)/comment", CommentViewSet, basename="case-comment"
 )
 router.register(
+    r"case/(?P<case_id>\d+)/like", LikeViewSet, basename="case-like"
+)
+router.register(
     r"district/(?P<district_id>\d+)/emergency", EmergencyViewSet, basename="emergencies"
 )
 router.register(

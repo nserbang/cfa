@@ -2,7 +2,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from api.models import Case, CaseHistory, LostVehicle, Comment, Media
+from api.models import Case, CaseHistory, LostVehicle, Comment, Media, Like
 from django.db.models import Q
 
 from api.serializers import (
@@ -11,6 +11,7 @@ from api.serializers import (
     CaseSerializerCreate,
     CommentCreateSerializer,
     CommentSerializer,
+    LikeSerializer,
     LostVehicleSerializer,
     MediaSerializer,
 )
@@ -109,3 +110,13 @@ class CommentCUDViewSet(ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+    
+class LikeViewSet(ModelViewSet):
+    
+    serializer_class = LikeSerializer
+    queryset = Like.objects.all()
+
+    def get_queryset(self):
+        case_id = int(self.kwargs["case_id"])
+        qs = Like.objects.filter(case__cid=case_id)
+        return qs

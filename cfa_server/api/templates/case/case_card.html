@@ -1,16 +1,99 @@
-<div class="card mb-2">
+<div class="card mb-3 shadow">
     <div class="card-body">
       <h5 class="card-title">{{ case.title }}</h5>
       <ul class="list-unstyled">
-        <li class=""> <span class="fw-bold">Case No.</span>: {{ case.cid }}</li>
-        <li class=""><span class="fw-bold">Case Type</span>: {{ case.type }}</li>
-        <li class=""><span class="fw-bold">Case Status</span>: {{ case.cstate }}</li>
-        <li class=""><span class="fw-bold">Police Station</span>: {{ case.pid.name }}</li>
+        <li class=""> <span class="fw-bold">Case No.</span> : {{ case.cid }}</li>
+        <li class=""><span class="fw-bold">Case Type</span> : {{ case.type }}</li>
+        <li class=""><span class="fw-bold">Case Status</span> : {{ case.cstate }}</li>
+        <li class=""><span class="fw-bold">Police Station</span> :
+            <a class="btn btn-primary btn-xs text-xs"
+                rel="noreferrer"
+                href="https://maps.google.com/?q={{ case.pid.lat }},{{ case.pid.long }}"
+                style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+            >
+                {{ case.pid.name }}
+            </a>
+        <li class=""><span class="fw-bold">Description</span> :</li>
+        <div><p class="pt-0">{{ case.description }}</p></div>
+        </li>
       </ul>
     </div>
-    <div class="card-footer text-body-secondary d-flex flex-row justify-content-between pb-0">
-        <p>Like: {{ case.likes }}</p>
-        <p>Like: {{ case.comments }}</p>
-        <a href="" class="button">Case history</a>
+    <div class="card-footer text-body-secondary">
+        <div class="d-flex flex-row justify-content-between">
+            <a href="{% if user.is_authenticated %}{% url 'add_like' case.pk %}{% endif %}" class="btn btn-primary btn-sm {% if not user.is_authenticated or case.has_liked %}disabled{% endif %}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Like: {{ case.like_count }}</a>
+
+            <button data-bs-target="#comment-{{case.pk}}" data-bs-toggle="collapse" class="comment-{{ case.pk }} btn btn-primary btn-sm {% if not user.is_authenticated %}disabled{% endif %}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Comment: {{ case.comment_count }}</button>
+
+            {% if user.is_authenticated %}
+                {% if case.cstate == 'pending' and case.is_location_visible %}
+                <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Location</a>
+                {% elif case.cstate != 'pending' and case.user_id == user.id or case.oid.user_id == user.id %}
+                <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Location</a>
+                {% endif %}
+            {% endif %}
+
+            {% if case.is_location_visible or case.oid.user_id == user.id %}
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Action</button>
+                    <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=pending">Pending</a></li>
+                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=accepted">Accepted</a></li>
+                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=assigned">Assigned</a></li>
+                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=transfer">Transfer</a></li>
+                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=resolve">Resolved</a></li>
+                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=info">Info</a></li>
+                    </ul>
+                </div>
+            {% endif %}
+
+            <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" data-bs-target="#history-{{case.pk}}" data-bs-toggle="collapse">Case history</a>
+        </div>
+        <div id="comment-{{case.pk}}" class="collapse pt-2">
+            <form action="{% if user.is_authenticated %}{% url 'add_comment' case.pk %}{% endif %}"  method="post">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <label for="comment" class="form-label">Add your comment here.</label>
+                    <textarea name="comment" class="form-control" id="comment" rows="2"></textarea>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                </div>
+            </form>
+        </div>
+
+
+        <div class="container collapse" id="history-{{case.pk}}">
+            <!-- timeline item 1 -->
+            {% for history in case.casehistory_set.all %}
+            <div class="row">
+                <!-- timeline item 1 left dot -->
+                <div class="col-auto text-center flex-column d-none d-sm-flex">
+                    <div class="row h-50">
+                        <div class="col">&nbsp;</div>
+                        <div class="col">&nbsp;</div>
+                    </div>
+                    <h6 class="m-2">
+                        <span class="badge rounded-pill bg-success border">&nbsp;</span>
+                    </h6>
+                    <div class="row h-50">
+                        <div class="col border-end order">&nbsp;</div>
+                        <div class="col">&nbsp;</div>
+                    </div>
+                </div>
+                <!-- timeline item 1 event content -->
+                <div class="col py-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="float-end text-muted">{{ case.created }}</div>
+                            <h4 class="card-title text-muted">Day 1 Orientation</h4>
+                            <p class="card-text">Welcome to the campus, introduction and get started with the tour.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--/row-->
+            {% endfor %}
+        </div>
+
     </div>
 </div>

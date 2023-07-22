@@ -63,10 +63,10 @@ class cUserModel(auth_admin.UserAdmin):
         ),
     )
     list_display = [
+        "mobile",
         "email",
         "first_name",
         "last_name",
-        "mobile",
         "is_superuser",
         "role",
     ]

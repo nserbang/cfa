@@ -1,12 +1,13 @@
 # from view_includes import *
 
 from django.urls import reverse_lazy
-from django.db.models import Count, Value
-from django.http import HttpResponseRedirect
+from django.db.models import Count, Value, Case as MCase, When, Q
+from django.http import HttpResponseRedirect, JsonResponse
 from django.utils import timezone
 from datetime import datetime
 from django.shortcuts import render, reverse, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -21,7 +22,7 @@ from .user_forms import (
 )
 from .otp import send_otp_verification_code
 
-from api.models import Case, cUser
+from api.models import Case, cUser, Like, Comment
 
 # from rest_framework.request import Request
 from api.view.district_views import *
@@ -152,7 +153,7 @@ class HomePageView(View):
             "missing_child": "Missing Children",
             "unidentified_child": "Un-identified Children Found",
             "missing_person": "Missing Persons",
-            "unindentified_daad": "Unidentified Dead Bodies",
+            "unindentified_dead": "Unidentified Dead Bodies",
             "unidentified_person": "Unidentified Person",
         }
         return header_map.get(self.request.GET.get("title", "complaints"))
@@ -172,15 +173,30 @@ class HomePageView(View):
         return "home.html"
 
     def get_queryset(self):
-        cases = Case.objects.annotate(
-            comments=Count("comment"),
-            likes=Value(0),
-        ).select_related("pid")
+        user = self.request.user
+        cases = (
+            Case.objects.annotate(
+                comment_count=Count("comment"),
+                like_count=Count("likes"),
+                is_location_visible=MCase(
+                    When(
+                        cstate="pending",
+                        pid__policeofficer__user_id=user.id,
+                        then=True,
+                    ),
+                    default=False,
+                ),
+            )
+            .select_related("pid", "oid")
+            .prefetch_related("casehistory_set")
+        )
         case_type = self.get_case_type()
         if case_type:
             cases = cases.filter(type=case_type)
         if self.request.user.is_authenticated:
-            cases = cases.filter(user=self.request.user)
+            cases = cases.annotate(
+                has_liked=Count("likes", filter=Q(user=self.request.user)),
+            )  # .filter(user=self.request.user)
         return cases
 
     def get(self, request, *args, **kwargs):
@@ -295,3 +311,34 @@ class CaseAddView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.save()
         return redirect(reverse("home"))
+
+
+class AddCommentView(View):
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.warning(request, "Login to add comment.")
+            return redirect("/")
+        data = request.POST
+        case_id = kwargs["case_id"]
+        comment = data["comment"]
+        Comment.objects.create(cid_id=case_id, content=comment, user=request.user)
+        return redirect("/")
+
+
+class AddLikeView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        case_id = kwargs["case_id"]
+        Like.objects.get_or_create(case_id=case_id, user=request.user)
+        messages.success(request, "Your like is added.")
+        return redirect("/")
+
+
+class ChangeCaseStateUpdateView(View):
+    def get(self, request, *args, **kwargs):
+        case_id = kwargs["case_id"]
+        status = request.GET.get("status")
+        case = get_object_or_404(Case, pk=case_id)
+        case.cstate = status
+        case.save()
+        messages.success(request, f"Status changed sucesfully to {case.cstate}.")
+        return redirect("/")

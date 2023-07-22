@@ -24,13 +24,19 @@ class CaseViewSet(UserMixin, ModelViewSet):
 
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
-
+        my_case = self.request.query_params.get("my_case", None)
         data = Case.objects.all()
         if search:
             data = data.filter(
                 Q(title__contains=search)
                 | Q(cid__contains=search)
                 | Q(description__contains=search)
+            )
+        if my_case.lower() == "true":
+            request_user_id = self.request.user.id
+            data = data.filter(
+                Q(user=request_user_id)
+                | Q(oid=request_user_id)
             )
         return data
 

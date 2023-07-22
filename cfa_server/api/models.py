@@ -154,7 +154,7 @@ class Case(models.Model):
                     cid=self,
                     user=self.user,
                     cstate=self.cstate,
-                    description="Case created."
+                    description="Case created.",
                 )
                 case_history.save()
         else:
@@ -174,7 +174,9 @@ class Case(models.Model):
                         cid=self,
                         user=self.user,
                         cstate=self.cstate,
-                        description="Case state updated from {} to {}".format(original_case.cstate, self.cstate)
+                        description="Case state updated from {} to {}".format(
+                            original_case.cstate, self.cstate
+                        ),
                     )
                     case_history.save()
 
@@ -183,7 +185,7 @@ class Case(models.Model):
                         cid=self,
                         user=self.user,
                         pid=self.pid,
-                        description="Police station updated."
+                        description="Police station updated.",
                     )
                     case_history.save()
 
@@ -192,7 +194,7 @@ class Case(models.Model):
                         cid=self,
                         user=self.user,
                         oid=self.oid,
-                        description="Police officer updated."
+                        description="Police officer updated.",
                     )
                     case_history.save()
 
@@ -347,3 +349,7 @@ class Contact(models.Model):
     id = models.BigIntegerField(primary_key=True)
     content = RichTextUploadingField()
 
+
+class Like(models.Model):
+    case = models.ForeignKey(Case, related_name="likes", on_delete=models.CASCADE)
+    user = models.ForeignKey(cUser, related_name="likes", on_delete=models.CASCADE)

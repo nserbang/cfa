@@ -43,6 +43,9 @@ from api.views import (
     CaseAddView,
     UserRegistrationCompleteView,
     ResendMobileVerificationOtpView,
+    AddCommentView,
+    AddLikeView,
+    ChangeCaseStateUpdateView,
 )
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
@@ -78,10 +81,12 @@ router.register(
     r"district/(?P<district_id>\d+)/emergency", EmergencyViewSet, basename="emergencies"
 )
 router.register(
-    r"district/(?P<district_id>\d+)/police-station", DistrictPoliceStationViewSet, basename="district-police-station"
+    r"district/(?P<district_id>\d+)/police-station",
+    DistrictPoliceStationViewSet,
+    basename="district-police-station",
 )
 router.register("comment", CommentCUDViewSet, basename="comment")
-router.register('devices', FCMDeviceAuthorizedViewSet)
+router.register("devices", FCMDeviceAuthorizedViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -153,6 +158,13 @@ urlpatterns = [
         name="complete_signup",
     ),
     path("case/add/", CaseAddView.as_view(), name="add_case"),
+    path("comment/add/<int:case_id>/", AddCommentView.as_view(), name="add_comment"),
+    path("like/add/<int:case_id>/", AddLikeView.as_view(), name="add_like"),
+    path(
+        "change-status/<int:case_id>/",
+        ChangeCaseStateUpdateView.as_view(),
+        name="change_status",
+    ),
     path("logout/", logout_view, name="logout"),
     path("api/cases/create/", CaseCreateAPIView.as_view(), name="case-create"),
     path("ckeditor/", include("ckeditor_uploader.urls")),

@@ -13,30 +13,9 @@
                 <a href="{% url 'add_case' %}">Add Case</a>
             {% endif %}
         </div>
-        <table class="table pt-2">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Police Station</th>
-                    <th scope="col">Reported Date</th>
-                    <th scope="col">Likes</th>
-                    <th scope="col">Comments</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for case in cases %}
-                <tr>
-                    <th scope="row">{{ case.cid }}</th>
-                    <td>{{ case.cstate }}</td>
-                    <td>{{ case.pid.name }}</td>
-                    <td>{{ case.created|date }}</td>
-                    <td>{{ case.likes }}</td>
-                    <td>{{ case.comments }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% for case in cases %}
+        {% include 'case/case_card.html' %}
+        {% endfor %}
     </div>
 </div>
 

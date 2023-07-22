@@ -11,10 +11,14 @@
     <!-- <link rel="shortcut icon" href= "{% static 'images/favicon.ico' %}"> -->
 
     <link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
+    <style>
+      .side-menu a {
+        font-size: .80rem !important;
+      }
+    </style>
 
     <!-- Favicons -->
     <meta name="theme-color" content="#000">
-
   </head>
 <body>
 
@@ -71,9 +75,8 @@
   </header>
   <div class="container">
     <div class="row pb-2 mb-2">
-      <div class="col-lg-2 col-sm-0 col-xs-0">
-      </div>
-      <div class="col-lg-8 col-sm-12 col-md-12 col-xs-12">
+      <div class="col-lg-2 col-sm-0 col-xs-0"></div>
+      <div class="col-lg-8 col-sm-12 col-md-12 col-xs-12 pt-2">
         {% if messages %}
           {% for message in messages %}
           <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
@@ -83,8 +86,7 @@
           {% endfor %}
         {% endif %}
       </div>
-      <div class="col-lg-2 col-sm-0 col-xs-0">
-      </div>
+      <div class="col-lg-2 col-sm-0 col-xs-0"></div>
     </div>
 
 
@@ -94,7 +96,12 @@
   </div>
 
 </main>
+
 <script src="https://getbootstrap.com/docs/5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{% static 'js/custom.js' %}"></script>
+
+{% block javascript %}
+{% endblock javascript %}
 
 </body>
 </html>

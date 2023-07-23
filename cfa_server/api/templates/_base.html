@@ -47,7 +47,7 @@
 </svg>
 
 <main>
-  <header class="p-3 bg-primary">
+  <header class="p-2 bg-primary">
     <div class="container">
       <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
         <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
@@ -61,13 +61,13 @@
 
         <div class="text-end">
           {% if user.is_authenticated %}
-            <button type="button" class="btn btn-outline-light me-2"> {{ user.get_full_name|default:request.user }}</button>
+            <button type="button" class="btn btn-outline-light btn-sm me-2"> {{ user.get_full_name|default:request.user }}</button>
           {% endif %}
           {% if user.is_authenticated %}
-            <a type="button" class="btn btn-outline-light me-2" href="{% url 'logout' %}">Logout</a>
+            <a type="button" class="btn btn-outline-light btn-sm me-2" href="{% url 'logout' %}">Logout</a>
           {% else %}
-            <a type="button" class="btn btn-outline-light me-2" href="{% url 'login' %}">Login</a>
-            <a type="button" class="btn btn-warning" href="{% url 'signup' %}">Sign-up</a>
+            <a type="button" class="btn btn-outline-light btn-sm me-2" href="{% url 'login' %}">Login</a>
+            <a type="button" class="btn btn-warning btn-sm" href="{% url 'signup' %}">Sign-up</a>
           {% endif %}
         </div>
       </div>

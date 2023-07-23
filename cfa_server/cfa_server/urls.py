@@ -47,6 +47,7 @@ from api.views import (
     AddLikeView,
     ChangeCaseStateUpdateView,
     GetCaseHistory,
+    CrimeListView,
 )
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
@@ -174,6 +175,11 @@ urlpatterns = [
         "change-status/<int:case_id>/",
         ChangeCaseStateUpdateView.as_view(),
         name="change_status",
+    ),
+    path(
+        "page/<str:crime_type>/",
+        CrimeListView.as_view(),
+        name="crime_list",
     ),
     path("logout/", logout_view, name="logout"),
     path("api/cases/create/", CaseCreateAPIView.as_view(), name="case-create"),

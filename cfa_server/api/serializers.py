@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import MethodNotAllowed
 from django.contrib.gis.geos import fromstr
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth import get_user_model
@@ -466,15 +467,34 @@ class PasswordResetSerializer(serializers.Serializer):
         return user
 
 
-class LikeSerializer(serializers.ModelSerializer):
+class LikeSerializer(serializers.Serializer):
+    case_id = serializers.PrimaryKeyRelatedField(queryset=Case.objects.all())
+    user_id = serializers.PrimaryKeyRelatedField(queryset=cUser.objects.all())
+    created = serializers.DateTimeField(read_only=True)
 
-    user = serializers.PrimaryKeyRelatedField(
-        queryset=cUser.objects.all(), write_only=True
-    )
+    def create(self, validated_data):
+        return Like.objects.create(**validated_data)
+
+    def list(self, queryset):
+        return queryset
+
+    def retrieve(self, instance):
+        return instance
+
+    def delete(self, instance):
+        instance.delete()
+
+
+class LikeCreateDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['case', 'user']
+
+
+class LikeListSerializer(serializers.ModelSerializer):
+    user = cUserSerializer()
 
     class Meta:
         model = Like
-        fields = ['case_id','user']
+        fields = ['case', 'user', 'created']
 
-    def get_case_id(self, case):
-        return case.cid

@@ -1,6 +1,9 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from api.models import Case, CaseHistory, LostVehicle, Comment, Media, Like
 from django.db.models import Q
@@ -11,6 +14,8 @@ from api.serializers import (
     CaseSerializerCreate,
     CommentCreateSerializer,
     CommentSerializer,
+    LikeCreateDeleteSerializer,
+    LikeListSerializer,
     LikeSerializer,
     LostVehicleSerializer,
     MediaSerializer,
@@ -110,14 +115,50 @@ class CommentCUDViewSet(ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
-    
+
 class LikeViewSet(ModelViewSet):
     
-    serializer_class = LikeSerializer
     queryset = Like.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return LikeListSerializer
+        elif self.action == 'create':
+            return LikeCreateDeleteSerializer
+        elif self.action == 'delete':
+            return LikeCreateDeleteSerializer
+        return LikeListSerializer  # Use LikeListSerializer for other actions
+
     def get_queryset(self):
-        case_id = int(self.kwargs["case_id"])
-        qs = Like.objects.filter(case__cid=case_id)
-        return qs
+        # Fetch the case_id from the URL
+        case_id = self.kwargs['case_id']
+        # Filter the queryset to get likes for the specific case_id
+        queryset = Like.objects.filter(case_id=case_id)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        # Fetch the case_id from the URL
+        case_id = self.kwargs.get('case_id')
+        # Add the case_id to the request data
+        request.data['case'] = case_id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=201)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        case_id = self.kwargs.get('case_id')
+        user_id = request.data.get('user')  # Assuming user_id is passed as 'user' in the request body
+        
+        if not user_id:
+            return Response({"user": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
+        
+        instance = get_object_or_404(Like, case_id=case_id, user_id=user_id)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

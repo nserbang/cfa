@@ -382,6 +382,7 @@ class Contact(models.Model):
 class Like(models.Model):
     case = models.ForeignKey(Case, related_name="likes", on_delete=models.CASCADE)
     user = models.ForeignKey(cUser, related_name="likes", on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together= ('case', 'user')

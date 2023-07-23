@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.views import View
-from django.views.generic import CreateView, FormView
+from django.views.generic import CreateView, FormView, ListView
 
 from .user_forms import (
     UserRegistrationForm,
@@ -23,7 +23,7 @@ from .user_forms import (
 )
 from .otp import send_otp_verification_code
 
-from api.models import Case, cUser, Like, Comment, CaseHistory
+from api.models import Case, cUser, Like, Comment, CaseHistory, Victim, Criminal
 
 # from rest_framework.request import Request
 from api.view.district_views import *
@@ -146,18 +146,12 @@ def logout_view(request):
 class HomePageView(View):
     def get_header(self):
         header_map = {
-            "complaints": "My complaints",
+            "my-complaints": "My complaints",
             "stolen_vechicle": "Stollen Vehicle",
-            "seized_vehicle": "Unclaimed/Seized Vehicle",
             "drug_case": "Drug Case Reported",
             "extortion_case": "Extortion Case Reported",
-            "missing_child": "Missing Children",
-            "unidentified_child": "Un-identified Children Found",
-            "missing_person": "Missing Persons",
-            "unindentified_dead": "Unidentified Dead Bodies",
-            "unidentified_person": "Unidentified Person",
         }
-        return header_map.get(self.request.GET.get("title", "complaints"))
+        return header_map.get(self.kwargs.get("title", "my-complaints"))
 
     def get_case_type(self):
         case_type = {
@@ -192,8 +186,11 @@ class HomePageView(View):
             .prefetch_related("casehistory_set")
         )
         case_type = self.get_case_type()
+        print(case_type, "sdjflskdfjlksdfjslkdfjlksdfjkdlsfjksdlfjlks")
         if case_type:
             cases = cases.filter(type=case_type)
+        elif not case_type and user.is_authenticated:
+            cases = cases.filter(user=user)
         if user.is_authenticated:
             liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)
             cases = cases.annotate(
@@ -370,3 +367,44 @@ class GetCaseHistory(View):
             "case/case_history_json.html", request=request, context=context
         )
         return JsonResponse({"html": html})
+
+
+class CrimeListView(ListView):
+    def get_queryset(self):
+        model = self.get_model()
+        qs = model.objects.all()
+        crime_type = self.get_crime_type()
+        if crime_type:
+            qs = qs.filter(type=crime_type)
+        return qs
+
+    def get_crime_type(self):
+        crime_type = {
+            "missing-children": "missing_children",
+            "children-found": "children_found",
+            "missing-person": "missing_person",
+            "dead-body": "dead_body",
+            "other": "other",
+            "offender": "offender",
+            "wanted": "wanted",
+            "proclaimed": "proclaimed",
+        }
+        return crime_type.get(self.kwargs["crime_type"])
+
+    def get_model(self):
+        crime_type = self.get_crime_type()
+        victims = [
+            "missing_children",
+            "children_found",
+            "missing_person",
+            "dead_body",
+            "other",
+        ]
+        if crime_type is None or crime_type in victims:
+            return Victim
+        else:
+            return Criminal
+
+    def get_template_names(self):
+        crime_type = self.get_crime_type() or "missing_children"
+        return [f"case/{crime_type}.html"]

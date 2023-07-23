@@ -1,12 +1,9 @@
 <div class="list-group text-sm fs-6 side-menu">
-    <a href="{% url 'home' %}?title=complaints" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    <a href="{% url 'case' 'my-complaints' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     My Complaints
     </a>
     <a href="{% url 'case' 'stolen-vehicle' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Stolen Vehicles
-    </a>
-    <a href="{% url 'home' %}?title=seized_vehicle" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-    Unclaimed/Seized Vehicle
     </a>
     <a href="{% url 'case' 'drug-case' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Drug Case Reported
@@ -14,19 +11,28 @@
     <a href="{% url 'case' 'extortion-case' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Extortion Case Reported
     </a>
-    <a href="{% url 'home' %}?title=missing_child" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    <a href="{% url 'crime_list' 'missing-children' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Missing Children
     </a>
-    <a href="{% url 'home' %}?title=unidentified_child" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-    Un-identified Children Found
+    <a href="{% url 'crime_list' 'children-found' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    Children Found
     </a>
-    <a href="{% url 'home' %}?title=missing_person" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    <a href="{% url 'crime_list' 'missing-person' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Missing Persons
     </a>
-    <a href="{% url 'home' %}?title=unindentified_dead" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-    Unidentified Dead Bodies
+    <a href="{% url 'crime_list' 'dead-body' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    Dead Bodies
     </a>
-    <a href="{% url 'home' %}?title=unidentified_person " class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    <a href="{% url 'crime_list' 'other' %} " class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Unidentified Person
+    </a>
+    <a href="{% url 'crime_list' 'offenders' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    Habitual Offenders
+    </a>
+    <a href="{% url 'crime_list' 'wanted' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    Wanted
+    </a>
+    <a href="{% url 'crime_list' 'proclaimed' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    Proclaimed Offenders
     </a>
 </div>

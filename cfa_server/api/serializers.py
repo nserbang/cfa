@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import MethodNotAllowed
 from django.contrib.gis.geos import fromstr
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth import get_user_model
@@ -87,6 +88,7 @@ class CaseSerializer(serializers.ModelSerializer):
     police_officer = PoliceOfficerSerializer(source="oid")
     comment_count = serializers.SerializerMethodField()
     user_detail = cUserSerializer(source="user")
+    like_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Case
@@ -103,6 +105,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "description",
             "follow",
             "comment_count",
+            "like_count",
         ]
 
     def get_case_type(self, case):
@@ -113,7 +116,9 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_comment_count(self, case):
         return case.comment_set.count()
-
+    
+    def get_like_count(self, case):
+        return case.likes.count()
 
 class CaseSerializerCreate(serializers.ModelSerializer):
     class Meta:
@@ -233,6 +238,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = cUser
         fields = [
+            "id",
             "first_name",
             "last_name",
             "mobile",
@@ -464,3 +470,41 @@ class PasswordResetSerializer(serializers.Serializer):
         user.set_password(self.validated_data["new_password1"])
         user.save()
         return user
+
+
+class LikeSerializer(serializers.Serializer):
+    case_id = serializers.PrimaryKeyRelatedField(queryset=Case.objects.all())
+    user_id = serializers.PrimaryKeyRelatedField(queryset=cUser.objects.all())
+    created = serializers.DateTimeField(read_only=True)
+
+    def create(self, validated_data):
+        return Like.objects.create(**validated_data)
+
+    def list(self, queryset):
+        return queryset
+
+    def retrieve(self, instance):
+        return instance
+
+    def delete(self, instance):
+        instance.delete()
+
+
+class LikeCreateDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ['case', 'user']
+
+
+class LikeListSerializer(serializers.ModelSerializer):
+    user = cUserSerializer()
+
+    class Meta:
+        model = Like
+        fields = ['case', 'user', 'created']
+
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = "__all__"

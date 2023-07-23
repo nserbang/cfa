@@ -52,6 +52,7 @@ from api.views import (
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
 from api.viewset.contact import ContactViewSet
+from api.viewset.banner import BannerViewSet
 
 router = routers.DefaultRouter()
 router.register("district", DistrictViewSet, basename="district")
@@ -80,6 +81,9 @@ router.register(
     r"case/(?P<case_id>\d+)/comment", CommentViewSet, basename="case-comment"
 )
 router.register(
+    r"case/(?P<case_id>\d+)/like", LikeViewSet, basename="case-like"
+)
+router.register(
     r"district/(?P<district_id>\d+)/emergency", EmergencyViewSet, basename="emergencies"
 )
 router.register(
@@ -89,7 +93,7 @@ router.register(
 )
 router.register("comment", CommentCUDViewSet, basename="comment")
 router.register("devices", FCMDeviceAuthorizedViewSet)
-
+router.register("banner", BannerViewSet, basename="banner")
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", include(router.urls)),

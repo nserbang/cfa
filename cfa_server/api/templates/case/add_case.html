@@ -20,19 +20,25 @@
 
 {% endblock content %}
 
-{% block jasascript %}
-<script>
+{% block javascript %}
+<script type="text/javascript">
     const successCallback = (position) => {
-    console.log(position);
+        console.log(position.coords);
+        latitude = position.coords.latitude
+        longitude = position.coords.longitude
+        lat = document.getElementById('id_lat')
+        lat.value = latitude.toFixed(4)
+        long = document.getElementById('id_long')
+        long.value = longitude.toFixed(4)
     };
 
     const errorCallback = (error) => {
-    console.log(error);
+        console.log(error);
     };
 
     navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
 
 </script>
-{% endblock jasascript %}
+{% endblock javascript %}
 
 

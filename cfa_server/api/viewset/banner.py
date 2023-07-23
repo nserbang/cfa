@@ -12,4 +12,4 @@ from django.db.models import Q
 class BannerViewSet(ReadOnlyModelViewSet):
 
     serializer_class = BannerSerializer
-    queryset = Banner
+    queryset = Banner.objects.all()

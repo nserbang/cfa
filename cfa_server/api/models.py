@@ -256,6 +256,8 @@ class Media(models.Model):
             case_history.save()
 
 
+
+
 class CaseHistory(models.Model):
     chid = models.BigAutoField(primary_key=True)
     # which case history

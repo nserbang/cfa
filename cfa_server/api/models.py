@@ -386,3 +386,18 @@ class Like(models.Model):
 
     class Meta:
         unique_together= ('case', 'user')
+
+
+class Banner(models.Model):
+    bid = models.BigAutoField(primary_key=True)
+    Mtype = (  # what kind of media is this
+        ("video", "Video"),
+        ("photo", "Photo"),
+        ("audio", "Audio"),
+        ("document", "Document"),
+    )
+    # media type
+    mtype = models.CharField(max_length=10, choices=Mtype, default="Photo")
+    # media path
+    path = models.FileField(upload_to=get_upload_path)
+    description = models.TextField(null=True)

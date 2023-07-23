@@ -503,3 +503,8 @@ class LikeListSerializer(serializers.ModelSerializer):
         model = Like
         fields = ['case', 'user', 'created']
 
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = "__all__"

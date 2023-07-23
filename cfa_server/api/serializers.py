@@ -88,6 +88,7 @@ class CaseSerializer(serializers.ModelSerializer):
     police_officer = PoliceOfficerSerializer(source="oid")
     comment_count = serializers.SerializerMethodField()
     user_detail = cUserSerializer(source="user")
+    like_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Case
@@ -104,6 +105,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "description",
             "follow",
             "comment_count",
+            "like_count",
         ]
 
     def get_case_type(self, case):
@@ -114,7 +116,9 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_comment_count(self, case):
         return case.comment_set.count()
-
+    
+    def get_like_count(self, case):
+        return case.likes.count()
 
 class CaseSerializerCreate(serializers.ModelSerializer):
     class Meta:

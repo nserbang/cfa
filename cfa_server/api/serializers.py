@@ -89,6 +89,7 @@ class CaseSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
     user_detail = cUserSerializer(source="user")
     like_count = serializers.SerializerMethodField()
+    liked = serializers.SerializerMethodField()
 
     class Meta:
         model = Case
@@ -106,6 +107,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "follow",
             "comment_count",
             "like_count",
+            "liked",
         ]
 
     def get_case_type(self, case):
@@ -119,6 +121,15 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_like_count(self, case):
         return case.likes.count()
+    
+    def get_liked(self, case):
+
+        user = self.context['request'].user
+
+        if user:
+        # Check if the user has liked the case
+            return case.likes.filter(user=user).exists()
+        return False
 
 
 class CaseSerializerCreate(serializers.ModelSerializer):

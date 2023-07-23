@@ -204,13 +204,21 @@ class Case(models.Model):
                     case_history.save()
 
         try:
-            message = Message(notification=Notification(title="Test", body="Body"))
+            title = self.title
+            body = {
+                'case_id':self.cid,
+                'description': self.description,
+                'type':self.type,
+                'state':self.cstate,
+                'created':str(self.created),
+            }
+            message = Message(notification=Notification(title=title, body=str(body)))
 
             devices = FCMDevice.objects.filter(
                 Q(user__id=self.cid) | Q(user__id=self.oid_id)
             )
             devices.send_message(message)
-        except:
+        except Exception as e:
             pass
 
         # Update the geo_location field based on lat and long

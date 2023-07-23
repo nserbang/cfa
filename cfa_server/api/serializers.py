@@ -116,19 +116,17 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_comment_count(self, case):
         return case.comment_set.count()
-    
+
     def get_like_count(self, case):
         return case.likes.count()
+
 
 class CaseSerializerCreate(serializers.ModelSerializer):
     class Meta:
         model = Case
         fields = [
             "cid",
-            "user",
             "type",
-            "title",
-            "cstate",
             "lat",
             "long",
             "description",
@@ -139,8 +137,6 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         request = self.context["request"]
         case = Case(
             type=validated_data["type"],
-            title=validated_data["title"],
-            cstate=validated_data["cstate"],
             lat=validated_data["lat"],
             long=validated_data["long"],
             description=validated_data["description"],
@@ -169,12 +165,11 @@ class LostVehicleSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-
     user_detail = cUserSerializer(source="user")
+
     class Meta:
         model = Comment
-        fields = ["cmtid", "content","cid","user_detail","created"]
-
+        fields = ["cmtid", "content", "cid", "user_detail", "created"]
 
 
 class EmergencySerializer(serializers.ModelSerializer):
@@ -353,6 +348,7 @@ class VictimSerializer(serializers.ModelSerializer):
         model = Victim
         fields = "__all__"
 
+
 class PrivacySerializer(serializers.ModelSerializer):
     class Meta:
         model = Privacy
@@ -493,7 +489,7 @@ class LikeSerializer(serializers.Serializer):
 class LikeCreateDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
-        fields = ['case', 'user']
+        fields = ["case", "user"]
 
 
 class LikeListSerializer(serializers.ModelSerializer):
@@ -501,7 +497,7 @@ class LikeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Like
-        fields = ['case', 'user', 'created']
+        fields = ["case", "user", "created"]
 
 
 class BannerSerializer(serializers.ModelSerializer):

@@ -204,11 +204,11 @@ class Case(models.Model):
                     case_history.save()
 
         try:
-            message = Message(
-                notification= Notification(title="Test", body="Body")
-            )
+            message = Message(notification=Notification(title="Test", body="Body"))
 
-            devices = FCMDevice.objects.filter(Q(user__id=self.cid) | Q(user__id=self.oid_id))
+            devices = FCMDevice.objects.filter(
+                Q(user__id=self.cid) | Q(user__id=self.oid_id)
+            )
             devices.send_message(message)
         except:
             pass
@@ -217,6 +217,7 @@ class Case(models.Model):
         self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
 
         return super().save(*args, **kwargs)
+
 
 class Media(models.Model):
     mid = models.BigAutoField(primary_key=True)
@@ -250,9 +251,10 @@ class Media(models.Model):
                 user=self.cid_history.user,
                 cstate=self.cid_history.cstate,
                 description="Media uploaded.",
-                media_id=self
+                media_id=self,
             )
             case_history.save()
+
 
 class CaseHistory(models.Model):
     chid = models.BigAutoField(primary_key=True)
@@ -266,7 +268,7 @@ class CaseHistory(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     # Description added
     description = models.TextField(null=True)
-    
+
     media = models.ForeignKey(Media, on_delete=models.SET_NULL, null=True)
 
 
@@ -385,7 +387,7 @@ class Like(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together= ('case', 'user')
+        unique_together = ("case", "user")
 
 
 class Banner(models.Model):

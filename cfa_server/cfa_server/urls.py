@@ -20,7 +20,9 @@ from django.urls import path, include
 from django.contrib import admin
 from rest_framework import routers
 from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 
 from api.viewset.case import *  # noqa
@@ -80,9 +82,7 @@ router.register(
 router.register(
     r"case/(?P<case_id>\d+)/comment", CommentViewSet, basename="case-comment"
 )
-router.register(
-    r"case/(?P<case_id>\d+)/like", LikeViewSet, basename="case-like"
-)
+router.register(r"case/(?P<case_id>\d+)/like", LikeViewSet, basename="case-like")
 router.register(
     r"district/(?P<district_id>\d+)/emergency", EmergencyViewSet, basename="emergencies"
 )
@@ -185,10 +185,11 @@ urlpatterns = [
     path("api/cases/create/", CaseCreateAPIView.as_view(), name="case-create"),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<str:case_type>/", HomePageView.as_view(), name="case"),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()
     urlpatterns += [
         path("__debug__/", include("debug_toolbar.urls")),
     ]

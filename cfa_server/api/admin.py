@@ -27,7 +27,15 @@ class cUserModel(auth_admin.UserAdmin):
         ),
         (
             ("Personal info"),
-            {"fields": ("first_name", "last_name", "mobile", "address")},
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "mobile",
+                    "address",
+                    "profile_picture",
+                )
+            },
         ),
         (
             ("Permissions"),
@@ -52,6 +60,7 @@ class cUserModel(auth_admin.UserAdmin):
                 "fields": (
                     "email",
                     "mobile",
+                    "profile_picture",
                     "address",
                     "password1",
                     "password2",

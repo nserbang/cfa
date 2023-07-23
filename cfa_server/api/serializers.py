@@ -86,10 +86,10 @@ class CaseSerializer(serializers.ModelSerializer):
     case_state = serializers.SerializerMethodField()
     # police_station = serializers.PrimaryKeyRelatedField(queryset=PoliceStation.objects.all())
     police_officer = PoliceOfficerSerializer(source="oid")
-    comment_count = serializers.SerializerMethodField()
+    comment_count = serializers.IntegerField()
     user_detail = cUserSerializer(source="user")
-    like_count = serializers.SerializerMethodField()
-    liked = serializers.SerializerMethodField()
+    like_count = serializers.IntegerField()
+    liked = serializers.BooleanField(required=False, default=False)
 
     class Meta:
         model = Case
@@ -116,20 +116,20 @@ class CaseSerializer(serializers.ModelSerializer):
     def get_case_state(self, case):
         return dict(Case.cState)[case.cstate]
 
-    def get_comment_count(self, case):
-        return case.comment_set.count()
+    # def get_comment_count(self, case):
+    #     return case.comment_set.count()
 
-    def get_like_count(self, case):
-        return case.likes.count()
-    
-    def get_liked(self, case):
+    # def get_like_count(self, case):
+    #     return case.likes.count()
 
-        user = self.context['request'].user
+    # def get_liked(self, case):
 
-        if user:
-        # Check if the user has liked the case
-            return case.likes.filter(user=user).exists()
-        return False
+    #     user = self.context['request'].user
+
+    #     if user.is_authenticated:
+    #     # Check if the user has liked the case
+    #         return case.likes.filter(user=user).exists()
+    #     return False
 
 
 class CaseSerializerCreate(serializers.ModelSerializer):

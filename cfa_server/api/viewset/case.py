@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db.models import OuterRef, Count, Exists
 from rest_framework import status
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -31,7 +32,19 @@ class CaseViewSet(UserMixin, ModelViewSet):
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
         my_case = self.request.query_params.get("my_case", None)
-        data = Case.objects.all()
+        data = (
+            Case.objects.all()
+            .annotate(
+                comment_count=Count("comment", distinct=True),
+                like_count=Count("likes", distinct=True),
+            )
+            .select_related("pid", "oid", "oid__user", "oid__pid")
+        )
+        if self.request.user.is_authenticated:
+            liked = Like.objects.filter(case_id=OuterRef("cid"), user=self.request.user)
+            data = data.annotate(
+                liked=Exists(liked),
+            )
         if search:
             data = data.filter(
                 Q(title__contains=search)
@@ -40,10 +53,8 @@ class CaseViewSet(UserMixin, ModelViewSet):
             )
         if my_case is not None and my_case.lower() == "true":
             request_user_id = self.request.user.id
-            data = data.filter(
-                Q(user=request_user_id)
-                | Q(oid__user=request_user_id)
-            )
+            data = data.filter(Q(user=request_user_id) | Q(oid__user=request_user_id))
+
         return data
 
 
@@ -56,6 +67,7 @@ class CaseHistoryViewSet(UserMixin, ReadOnlyModelViewSet):
         case_id = int(self.kwargs["case_id"])
         qs = CaseHistory.objects.filter(cid=case_id)
         return qs
+
 
 class MediaViewSet(ModelViewSet):
     serializer_class = MediaSerializer
@@ -100,7 +112,6 @@ class CaseCreateAPIView(APIView):
 
 
 class CommentCUDViewSet(ModelViewSet):
-
     serializer_class = CommentSerializer
     queryset = Comment.objects.all()
     permission_classes = (IsAuthenticated,)
@@ -116,32 +127,32 @@ class CommentCUDViewSet(ModelViewSet):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
+
 class LikeViewSet(ModelViewSet):
-    
     queryset = Like.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return LikeListSerializer
-        elif self.action == 'create':
+        elif self.action == "create":
             return LikeCreateDeleteSerializer
-        elif self.action == 'delete':
+        elif self.action == "delete":
             return LikeCreateDeleteSerializer
         return LikeListSerializer  # Use LikeListSerializer for other actions
 
     def get_queryset(self):
         # Fetch the case_id from the URL
-        case_id = self.kwargs['case_id']
+        case_id = self.kwargs["case_id"]
         # Filter the queryset to get likes for the specific case_id
         queryset = Like.objects.filter(case_id=case_id)
         return queryset
 
     def create(self, request, *args, **kwargs):
         # Fetch the case_id from the URL
-        case_id = self.kwargs.get('case_id')
+        case_id = self.kwargs.get("case_id")
         # Add the case_id to the request data
-        request.data['case'] = case_id
+        request.data["case"] = case_id
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -153,12 +164,17 @@ class LikeViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def delete(self, request, *args, **kwargs):
-        case_id = self.kwargs.get('case_id')
-        user_id = request.data.get('user')  # Assuming user_id is passed as 'user' in the request body
-        
+        case_id = self.kwargs.get("case_id")
+        user_id = request.data.get(
+            "user"
+        )  # Assuming user_id is passed as 'user' in the request body
+
         if not user_id:
-            return Response({"user": ["This field is required."]}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response(
+                {"user": ["This field is required."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         instance = get_object_or_404(Like, case_id=case_id, user_id=user_id)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -183,7 +183,7 @@ class HomePageView(View):
                 ),
             )
             .select_related("pid", "oid")
-            .prefetch_related("casehistory_set")
+            .prefetch_related("pid__oid")
         )
         case_type = self.get_case_type()
         print(case_type, "sdjflskdfjlksdfjslkdfjlksdfjkdlsfjksdlfjlks")

@@ -21,7 +21,7 @@
         <div class="d-flex flex-row justify-content-between">
             <a href="{% if user.is_authenticated %}{% url 'add_like' case.pk %}{% endif %}" class="btn btn-primary btn-sm {% if not user.is_authenticated or case.has_liked %}disabled{% endif %}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Like: {{ case.like_count }}</a>
 
-            <button data-bs-target="#comment-{{case.pk}}" data-bs-toggle="collapse" class="comment-{{ case.pk }} btn btn-primary btn-sm {% if not user.is_authenticated %}disabled{% endif %}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Comment: {{ case.comment_count }}</button>
+            <button onclick="showHideCommentAndHistory({{ case.pk }})" data-bs-target="#comment-{{case.pk}}"  class="comment-{{ case.pk }} btn btn-primary btn-sm {% if not user.is_authenticated %}disabled{% endif %}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Comment: {{ case.comment_count }}</button>
 
             {% if user.is_authenticated %}
                 {% if case.cstate == 'pending' and case.is_location_visible %}
@@ -45,9 +45,9 @@
                 </div>
             {% endif %}
 
-            <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" data-bs-target="#history-{{case.pk}}" data-bs-toggle="collapse" onclick="getCaseHistory(event, {{case.pk}})">Case history</a>
+            <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" data-bs-target="#history-{{case.pk}}" onclick="getCaseHistory(event, {{case.pk}})">Case history</a>
         </div>
-        <div id="comment-{{case.pk}}" class="collapse pt-2">
+        <div id="comment-{{case.pk}}" class="pt-2 d-none">
             <form action="{% if user.is_authenticated %}{% url 'add_comment' case.pk %}{% endif %}"  method="post">
                 {% csrf_token %}
                 <div class="mb-2">
@@ -58,10 +58,18 @@
                     <button type="submit" class="btn btn-primary btn-sm">Post</button>
                 </div>
             </form>
+            <div class="py-2">
+                <h4>Comments</h4>
+                {% for comment in case.comment_set.all %}
+                    <div class="shadow-sm p-2 rounded">
+                        {{ comment.content }} <span class"fst-italic" style="font-style: italic !important; font-size: .785rem">-by {{ comment.user.first_name }} at {{ comment.created }}</span>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
 
 
-        <div class="container" id="history-{{case.pk}}">
+        <div class="container d-none" id="history-{{case.pk}}">
 
         </div>
 

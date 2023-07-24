@@ -250,7 +250,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
-
+    profile_picture = serializers.SerializerMethodField()
     class Meta:
         model = cUser
         fields = [
@@ -273,6 +273,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         return super().update(instance, data)
 
+    def get_profile_picture(self, user):
+        request = self.context.get("request")
+        if user.profile_picture:
+            # Assuming MEDIA_URL is set in your Django settings
+            # Make sure to import settings at the beginning of the file: from django.conf import settings
+            return request.build_absolute_uri(user.profile_picture.url)
+        else:
+            return None
 
 class LoginSerializer(serializers.Serializer):
     mobile = serializers.CharField()

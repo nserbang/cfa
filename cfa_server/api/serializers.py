@@ -66,10 +66,6 @@ class PoliceOfficerSerializer(serializers.Serializer):
         return data
 
 
-class CaseHistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CaseHistory
-        fields = "__all__"
 
 
 class MediaSerializer(serializers.ModelSerializer):
@@ -77,6 +73,20 @@ class MediaSerializer(serializers.ModelSerializer):
         model = Media
         fields = "__all__"
 
+class CaseHistorySerializer(serializers.ModelSerializer):
+    user_details = cUserSerializer(source="user")
+    media_details = MediaSerializer(source="media")
+    class Meta:
+        model = CaseHistory
+        fields = [
+            "chid",
+            "cid",
+            "cstate",
+            "created",
+            "description",
+            "user_details",
+            "media_details"
+        ]
 
 class CaseSerializer(serializers.ModelSerializer):
     # history = CaseHistorySerializer(many=True)

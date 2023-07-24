@@ -39,7 +39,7 @@ def send_otp_verification_code(user, verification=True):
         "message": text,
         "senderId": "mnwalk",
         "routeId": 8,
-        "mobileNos": "9729013259",  # for now send to shantam's no. f'{user.mobile}',
+        "mobileNos": (user.mobile),  # for now send to shantam's no. f'{user.mobile}',
         "smsContentType": "english",
     }
 

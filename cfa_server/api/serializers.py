@@ -118,6 +118,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "comment_count",
             "like_count",
             "liked",
+            "distance",
         ]
 
     def get_case_type(self, case):

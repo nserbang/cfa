@@ -1,10 +1,11 @@
 from django.contrib.gis.db import models
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
 from django.db import transaction
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.geos import fromstr
 from api.utl import get_upload_path
 from .managers import CustomUserManager
-
 from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
 
@@ -145,12 +146,24 @@ class Case(models.Model):
     lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     long = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     geo_location = models.PointField(blank=True, null=True, srid=4326)
+    distance = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
     # Text description of the complaint
     description = models.TextField(null=True)
     # Follow me flag
     follow = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
+
+        # Update the geo_location field based on lat and long
+        self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
+
+
+        if self.pid:
+            # If the case is assigned to a police station, calculate and save the distance
+            police_station_location = Point(self.pid.long, self.pid.lat, srid=4326)
+            self.distance = self.geo_location.distance(police_station_location)
+
+
         if not self.pk:
             # If the instance is being created, record the creation in CaseHistory
             with transaction.atomic():
@@ -221,8 +234,6 @@ class Case(models.Model):
         except Exception as e:
             pass
 
-        # Update the geo_location field based on lat and long
-        self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
 
         return super().save(*args, **kwargs)
 

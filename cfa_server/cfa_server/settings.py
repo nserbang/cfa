@@ -47,14 +47,14 @@ INSTALLED_APPS = [
     "rest_framework",
     "api",
     "rest_framework.authtoken",
-    "drf_yasg",
+    "drf_spectacular",
     "django_filters",
     "debug_toolbar",
     "crispy_forms",
     "crispy_bootstrap5",
     "ckeditor",
     "ckeditor_uploader",
-    "fcm_django"
+    "fcm_django",
 ]
 
 MIDDLEWARE = [
@@ -108,6 +108,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # Password validation
@@ -251,22 +252,34 @@ MEDIA_ROOT = str(BASE_DIR / "media")
 
 MEDIA_URL = "/media/"
 FCM_DJANGO_SETTINGS = {
-     # an instance of firebase_admin.App to be used as default for all fcm-django requests
-     # default: None (the default Firebase app)
+    # an instance of firebase_admin.App to be used as default for all fcm-django requests
+    # default: None (the default Firebase app)
     "DEFAULT_FIREBASE_APP": None,
-     # default: _('FCM Django')
+    # default: _('FCM Django')
     "APP_VERBOSE_NAME": "CFA Firebase",
-     # true if you want to have only one active device per registered user at a time
-     # default: False
+    # true if you want to have only one active device per registered user at a time
+    # default: False
     "ONE_DEVICE_PER_USER": False,
-     # devices to which notifications cannot be sent,
-     # are deleted upon receiving error response from FCM
-     # default: False
+    # devices to which notifications cannot be sent,
+    # are deleted upon receiving error response from FCM
+    # default: False
     "DELETE_INACTIVE_DEVICES": True,
     # "FCM_SERVER_KEY": "AAAAUBWqdfo:APA91bEm3ib6_TlLIJ5YpAU6BjyQ7X9GoXeghkgqiBwNPPkr_FP9NjdhVk8EZqCUvgWUIf2vhk5eUnSkJELy7JtJfv1qOGM_UZtxu0FI3BkpUQMxdX-aO3xdvfTKteAkbAc2vXy1xCXu"
-
 }
 
 
-cred = credentials.Certificate('credentials.json')
+cred = credentials.Certificate("credentials.json")
 firebase_admin.initialize_app(cred)
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "CFA API",
+    "DESCRIPTION": "Documentation of API endpoints of CFA",
+    "VERSION": "1.0.0",
+    "SCHEMA_PATH_PREFIX": r"/api/v[0-9]",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
+    },
+    "SERVE_PERMISSIONS": [],
+}

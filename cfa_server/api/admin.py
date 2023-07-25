@@ -201,7 +201,7 @@ class CaseAdmin(admin.ModelAdmin):
         "cid",
         PoliceStation,
         "user",
-        officer_name,
+        # officer_name,
         "type",
         "title",
         "cstate",
@@ -218,7 +218,7 @@ admin.site.register(Case, CaseAdmin)
 
 
 class CaseHistoryAdmin(admin.ModelAdmin):
-    list_display = ["chid", "cid", "user", "cstate", "created", "description"]
+    list_display = ["id", "case", "user", "cstate", "created", "description"]
     list_editable = ["cstate"]
     search_fields = ["cid__icontains"]
 
@@ -227,8 +227,8 @@ admin.site.register(CaseHistory, CaseHistoryAdmin)
 
 
 class MediaAdmin(admin.ModelAdmin):
-    list_display = ["mid", "pid", "ptype", "mtype", "path", "description"]
-    search_fields = ["pid"]
+    list_display = ["mtype", "path", "description"]
+    search_fields = ["mtype"]
 
 
 admin.site.register(Media, MediaAdmin)

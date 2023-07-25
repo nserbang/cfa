@@ -66,27 +66,33 @@ class PoliceOfficerSerializer(serializers.Serializer):
         return data
 
 
-
-
 class MediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Media
-        fields = "__all__"
+        fields = [
+            "id",
+            "mtype",
+            "path",
+            "description",
+        ]
+
 
 class CaseHistorySerializer(serializers.ModelSerializer):
     user_details = cUserSerializer(source="user")
-    media_details = MediaSerializer(source="media")
+    medias = MediaSerializer(many=True)
+
     class Meta:
         model = CaseHistory
         fields = [
-            "chid",
-            "cid",
+            "id",
+            "case",
             "cstate",
             "created",
             "description",
             "user_details",
-            "media_details"
+            "medias",
         ]
+
 
 class CaseSerializer(serializers.ModelSerializer):
     # history = CaseHistorySerializer(many=True)
@@ -144,6 +150,10 @@ class CaseSerializer(serializers.ModelSerializer):
 
 
 class CaseSerializerCreate(serializers.ModelSerializer):
+    pid = serializers.PrimaryKeyRelatedField(
+        queryset=PoliceStation.objects.all(), required=False
+    )
+
     class Meta:
         model = Case
         fields = [
@@ -153,6 +163,8 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             "long",
             "description",
             "follow",
+            "pid",
+            "medias",
         ]
 
     def create(self, validated_data):
@@ -166,18 +178,46 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         )
         geo_location = fromstr(f"POINT({case.lat} {case.long})", srid=4326)
         user_distance = Distance("geo_location", geo_location)
-        police_station = (
-            PoliceStation.objects.annotate(radius=user_distance)
-            .order_by("radius")
-            .first()
-        )
+        if validated_data.get("pid"):
+            police_station = validated_data["pid"]
+        else:
+            police_station = (
+                PoliceStation.objects.annotate(radius=user_distance)
+                .order_by("radius")
+                .first()
+            )
         case.pid = police_station
         case.geo_location = geo_location
         officier = police_station.policeofficer_set.order_by("-rank").first()
         case.oid = officier
         case.user = request.user
         case.save()
+        if validated_data.get("medias"):
+            case.medias.add(*validated_data["medias"])
         return case
+
+
+class CaseUpdateSerializer(serializers.ModelSerializer):
+    description = serializers.CharField()
+
+    class Meta:
+        model = Case
+        fields = [
+            "cstate",
+            "description",
+            "medias",
+        ]
+
+    def update(self, instance, validated_data):
+        instance.cstate = validated_data["cstate"]
+        instance.save()
+        description = validated_data.pop("description")
+        medias = validated_data.pop("medias")
+        user = self.context["request"].user
+        instance.add_history_and_media(
+            description=description, user=user, medias=medias
+        )
+        return instance
 
 
 class LostVehicleSerializer(serializers.ModelSerializer):
@@ -252,6 +292,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
     profile_picture = serializers.SerializerMethodField()
+
     class Meta:
         model = cUser
         fields = [
@@ -282,6 +323,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(user.profile_picture.url)
         else:
             return None
+
 
 class LoginSerializer(serializers.Serializer):
     mobile = serializers.CharField()

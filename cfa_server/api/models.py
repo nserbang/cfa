@@ -135,7 +135,9 @@ class Case(models.Model):
     # Who has lodged complaint
     user = models.ForeignKey(cUser, on_delete=models.DO_NOTHING)
     # Police officer id
-    oid = models.ForeignKey(PoliceOfficer, on_delete=models.DO_NOTHING)
+    oid = models.ForeignKey(
+        PoliceOfficer, on_delete=models.DO_NOTHING, null=True, blank=True
+    )
     # complaint type
     type = models.CharField(max_length=10, choices=cType, default="drug")
     title = models.CharField(max_length=250, null=True)
@@ -146,84 +148,46 @@ class Case(models.Model):
     lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     long = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     geo_location = models.PointField(blank=True, null=True, srid=4326)
-    distance = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    distance = models.DecimalField(
+        max_digits=9, decimal_places=2, null=True, blank=True
+    )
     # Text description of the complaint
     description = models.TextField(null=True)
     # Follow me flag
     follow = models.BooleanField(default=False)
+    medias = models.ManyToManyField("Media", related_name="cases")
+
+    def add_history_and_media(self, description, medias, user):
+        history = CaseHistory.objects.create(
+            case=self, user=self.user, description=description, cstate=self.cstate
+        )
+        if medias:
+            history.medias.add(*medias)
 
     def save(self, *args, **kwargs):
-
-        # Update the geo_location field based on lat and long
-        self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
-
-
         if self.pid:
             # If the case is assigned to a police station, calculate and save the distance
-            police_station_location = Point(self.pid.long, self.pid.lat, srid=4326)
-            self.distance = self.geo_location.distance(police_station_location)
-
+            self.distance = self.geo_location.distance(self.pid.geo_location)
 
         if not self.pk:
             # If the instance is being created, record the creation in CaseHistory
             with transaction.atomic():
                 super().save(*args, **kwargs)
-                case_history = CaseHistory.objects.create(
-                    cid=self,
+                CaseHistory.objects.create(
+                    case=self,
                     user=self.user,
                     cstate=self.cstate,
                     description="Case created.",
                 )
-                case_history.save()
-        else:
-            original_case = Case.objects.get(pk=self.pk)
-
-            # Check for changes in cstate, pid, and oid
-            cstate_changed = self.cstate != original_case.cstate
-            pid_changed = self.pid_id != original_case.pid_id
-            oid_changed = self.oid_id != original_case.oid_id
-
-            with transaction.atomic():
-                super().save(*args, **kwargs)
-
-                # Create CaseHistory entry for each change
-                if cstate_changed:
-                    case_history = CaseHistory.objects.create(
-                        cid=self,
-                        user=self.user,
-                        cstate=self.cstate,
-                        description="Case state updated from {} to {}".format(
-                            original_case.cstate, self.cstate
-                        ),
-                    )
-                    case_history.save()
-
-                if pid_changed:
-                    case_history = CaseHistory.objects.create(
-                        cid=self,
-                        user=self.user,
-                        pid=self.pid,
-                        description="Police station updated.",
-                    )
-                    case_history.save()
-
-                if oid_changed:
-                    case_history = CaseHistory.objects.create(
-                        cid=self,
-                        user=self.user,
-                        oid=self.oid,
-                        description="Police officer updated.",
-                    )
-                    case_history.save()
 
         try:
             title = self.title
             body = {
-                'case_id':self.cid,
-                'description': self.description,
-                'type':self.type,
-                'state':self.cstate,
-                'created':str(self.created),
+                "case_id": self.cid,
+                "description": self.description,
+                "type": self.type,
+                "state": self.cstate,
+                "created": str(self.created),
             }
             message = Message(notification=Notification(title=title, body=str(body)))
 
@@ -234,14 +198,10 @@ class Case(models.Model):
         except Exception as e:
             pass
 
-
         return super().save(*args, **kwargs)
 
 
 class Media(models.Model):
-    mid = models.BigAutoField(primary_key=True)
-    # chid =  models.ForeignKey(CaseHistory,,db_column="case_history_chid",on_delete=models.CASCADE)
-    pid = models.BigIntegerField(default=0)
     Mtype = (  # what kind of media is this
         ("video", "Video"),
         ("photo", "Photo"),
@@ -250,47 +210,35 @@ class Media(models.Model):
     )
     # media type
     mtype = models.CharField(max_length=10, choices=Mtype, default="Photo")
-    Ptype = (  #
-        ("case", "Case"),
-        ("history", "History"),
-        ("comment", "Comment"),
-    )
-    ptype = models.CharField(max_length=10, choices=Ptype, default="case")
     # media path
     path = models.FileField(upload_to=get_upload_path)
     description = models.TextField(null=True)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)
 
-        # Create CaseHistory entry when a new media object is created
-        if not self.pk:
-            case_history = CaseHistory.objects.create(
-                cid=self.cid_history.cid,
-                user=self.cid_history.user,
-                cstate=self.cid_history.cstate,
-                description="Media uploaded.",
-                media_id=self,
-            )
-            case_history.save()
-
-
+    #     # Create CaseHistory entry when a new media object is created
+    #     if not self.pk:
+    #         case_history = CaseHistory.objects.create(
+    #             case=self.cid_history.case,
+    #             user=self.cid_history.user,
+    #             cstate=self.cid_history.cstate,
+    #             description="Media uploaded.",
+    #         )
+    #         case_history.save()
+    #         case_history.add(self)
 
 
 class CaseHistory(models.Model):
-    chid = models.BigAutoField(primary_key=True)
-    # which case history
-    cid = models.ForeignKey(Case, on_delete=models.DO_NOTHING)
+    case = models.ForeignKey(Case, on_delete=models.DO_NOTHING)
     # Who has entered this entry
     user = models.ForeignKey(cUser, on_delete=models.DO_NOTHING)
     # state of the case during this time
     cstate = models.CharField(max_length=15, choices=Case.cState)
-    # Date and time when complaint was reported
     created = models.DateTimeField(auto_now_add=True)
     # Description added
     description = models.TextField(null=True)
-
-    media = models.ForeignKey(Media, on_delete=models.SET_NULL, null=True)
+    medias = models.ManyToManyField(Media, related_name="case_histories")
 
 
 class LostVehicle(models.Model):
@@ -309,22 +257,6 @@ class Comment(models.Model):
     user = models.ForeignKey(cUser, on_delete=models.CASCADE)
     content = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
-
-
-""" cmtid, cid, content, user
-class CommentMedia(models.Model):
-    cmmid = models.BigAutoField(primary_key=True)
-    chid = models.ForeignKey(Comments,,db_column="comment_cmtid",on_delete=models.CASCADE)
-    mtype = (
-        ('video','Video'),
-        ('photo','Photo'),
-        ('audio','Audio'),
-        ('document','Document'),
-    )
-    # media type
-    type = models.CharField(max_length=10,choices=mtype,default="Photo")
-    # media path
-    path = models.CharField(max_length=50,null=True) """
 
 
 # Table for emergency helpline numbers with their name and gps location

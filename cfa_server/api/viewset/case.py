@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
+from rest_framework.generics import UpdateAPIView
 from rest_framework.response import Response
 from django.db.models import OuterRef, Count, Exists
 from rest_framework import status
@@ -20,6 +21,7 @@ from api.serializers import (
     LikeSerializer,
     LostVehicleSerializer,
     MediaSerializer,
+    CaseUpdateSerializer,
 )
 from api.mixins import UserMixin
 
@@ -32,6 +34,7 @@ class CaseViewSet(UserMixin, ModelViewSet):
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
         my_case = self.request.query_params.get("my_case", None)
+        a = self.request.query_params.get("q")
         data = (
             Case.objects.all()
             .annotate(
@@ -100,10 +103,31 @@ class CommentViewSet(ModelViewSet):
 
 class CaseCreateAPIView(APIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    serializer_class = CaseSerializerCreate
 
     def post(self, request, format=None):
         serializer = CaseSerializerCreate(
             data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+
+class CaseUpdaateAPIView(UpdateAPIView):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    serializer_class = CaseUpdateSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    queryset = Case.objects.all()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user__role="police")
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = CaseUpdateSerializer(
+            data=request.data, instance=instance, context={"request": request}
         )
         if serializer.is_valid():
             serializer.save()

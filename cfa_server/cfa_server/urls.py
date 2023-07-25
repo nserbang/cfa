@@ -55,6 +55,7 @@ from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
 from api.viewset.contact import ContactViewSet
 from api.viewset.banner import BannerViewSet
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 router = routers.DefaultRouter()
 router.register("district", DistrictViewSet, basename="district")
@@ -182,10 +183,21 @@ urlpatterns = [
         name="crime_list",
     ),
     path("logout/", logout_view, name="logout"),
-    path("api/cases/create/", CaseCreateAPIView.as_view(), name="case-create"),
+    path("api/v1/cases/create/", CaseCreateAPIView.as_view(), name="case_create"),
+    path("api/v1/cases/update/<pk>/", CaseUpdaateAPIView.as_view(), name="case_update"),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<str:case_type>/", HomePageView.as_view(), name="case"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Swagger
+urlpatterns += [
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+]
 
 
 if settings.DEBUG:

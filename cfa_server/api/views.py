@@ -186,7 +186,6 @@ class HomePageView(View):
             .prefetch_related("casehistory_set", "comment_set", "comment_set__user")
         )
         case_type = self.get_case_type()
-        print(case_type, "sdjflskdfjlksdfjslkdfjlksdfjkdlsfjksdlfjlks")
         if case_type:
             cases = cases.filter(type=case_type)
         elif not case_type and user.is_authenticated:
@@ -358,7 +357,7 @@ class ChangeCaseStateUpdateView(View):
 class GetCaseHistory(View):
     def get(self, request, *args, **kwargs):
         case_id = kwargs["case_id"]
-        case_histories = CaseHistory.objects.filter(cid=case_id).order_by("created")
+        case_histories = CaseHistory.objects.filter(case_id=case_id).order_by("created")
         from itertools import pairwise
 
         history_pairs = list(pairwise(case_histories))

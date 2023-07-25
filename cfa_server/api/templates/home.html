@@ -8,15 +8,15 @@
     </div>
     <div class="col-lg-9 col-md-9 col-sm-12">
         <div class="d-flex flex-row pb-2">
-            <div class="col-4">
+            <div class="col-sm-12 col-lg-4">
                 <h4 class="flex-fill">{{ header }}</h4>
             </div>
-            <div class="col-4">
+            <div class="col-sm-12 col-lg-4">
                 <form action="">
-                    <input class="form-control form-control-sm" id="search" placeholder="Search..." type="search" name="q" value="{{ request.GET.q }}">
+                    <input class="form-control form-control-sm" id="search" placeholder="Search..." type="search" name="q" value="{{ request.GET.get.q }}">
                 </form>
             </div>
-            <div class="col-4 d-flex flex-row-reverse">
+            <div class="col-sm-12 col-lg-4 d-flex flex-row-reverse">
                 {% if request.user.is_authenticated %}
                     <a href="{% url 'add_case' %}">Add Case</a>
                 {% endif %}

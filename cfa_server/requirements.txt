@@ -7,7 +7,7 @@ coreschema==0.0.4
 Django==4.2.3
 django-rest-swagger==2.2.0
 djangorestframework==3.14.0
-drf-yasg==1.21.6
+drf_spectacular==0.26.4
 geographiclib==2.0
 geopy==2.3.0
 idna==3.4

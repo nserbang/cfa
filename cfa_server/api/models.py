@@ -160,7 +160,7 @@ class Case(models.Model):
 
         if self.pid:
             # If the case is assigned to a police station, calculate and save the distance
-            police_station_location = Point(self.pid.long, self.pid.lat, srid=4326)
+            police_station_location = fromstr(f"POINT({self.pid.lat} {self.pid.long})", srid=4326)
             self.distance = self.geo_location.distance(police_station_location)
 
 

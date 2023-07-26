@@ -106,6 +106,7 @@ class CaseSerializer(serializers.ModelSerializer):
     user_detail = cUserSerializer(source="user")
     like_count = serializers.IntegerField()
     liked = serializers.BooleanField(required=False, default=False)
+    medias = MediaSerializer(many=True)
 
     class Meta:
         model = Case
@@ -125,6 +126,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "like_count",
             "liked",
             "distance",
+            "medias",
         ]
 
     def get_case_type(self, case):

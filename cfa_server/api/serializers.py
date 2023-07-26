@@ -1,9 +1,11 @@
+import magic
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import MethodNotAllowed
 from django.contrib.gis.geos import fromstr
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from .models import *
 from django.contrib.auth import authenticate
 from api.models import Case, PoliceStation, cUser
@@ -75,6 +77,13 @@ class MediaSerializer(serializers.ModelSerializer):
             "path",
             "description",
         ]
+
+    def validate_path(self, data):
+        mime_type = magic.from_buffer(data.read(1024), mime=True)
+        if mime_type not in settings.ALLOWED_FILE_TYPES:
+            raise serializers.ValidationError("Invalid file.")
+        data.seek(0)
+        return data
 
 
 class CaseHistorySerializer(serializers.ModelSerializer):

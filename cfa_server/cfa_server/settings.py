@@ -283,3 +283,16 @@ SPECTACULAR_SETTINGS = {
     },
     "SERVE_PERMISSIONS": [],
 }
+
+ALLOWED_VIDEO_TYPES = ["audio/mp4", "audio/mpeg"]
+ALLOWED_AUDIO_TYPES = ["video/mp3", "video/WebM", "audio/aac"]
+ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/heic"]
+ALLOWED_DOC_TYPES = [
+    "application/pdf",
+    "application/msword",  # doc
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # docx
+]
+
+ALLOWED_FILE_TYPES = (
+    ALLOWED_VIDEO_TYPES + ALLOWED_AUDIO_TYPES + ALLOWED_IMAGE_TYPES + ALLOWED_DOC_TYPES
+)

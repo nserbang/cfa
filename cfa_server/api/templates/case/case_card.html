@@ -37,9 +37,9 @@
                     <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=pending">Pending</a></li>
                     <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=accepted">Accepted</a></li>
-                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=assigned">Assigned</a></li>
+                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=assign">Assigned</a></li>
                     <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=transfer">Transfer</a></li>
-                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=resolve">Resolved</a></li>
+                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=resolved">Resolved</a></li>
                     <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=info">Info</a></li>
                     </ul>
                 </div>

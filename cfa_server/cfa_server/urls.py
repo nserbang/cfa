@@ -173,7 +173,7 @@ urlpatterns = [
         name="get_case_hsitory",
     ),
     path(
-        "change-status/<int:case_id>/",
+        "change-status/<pk>/",
         ChangeCaseStateUpdateView.as_view(),
         name="change_status",
     ),

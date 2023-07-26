@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.views import View
-from django.views.generic import CreateView, FormView, ListView
+from django.views.generic import CreateView, FormView, ListView, UpdateView
 
 from .user_forms import (
     UserRegistrationForm,
@@ -31,7 +31,7 @@ from api.view.police_views import *
 from api.view.case_view import *
 from api.view.cuser_views import *
 from api.forms.user import cUserCreationForm
-from api.forms.case import CaseForm
+from api.forms.case import CaseForm, CaseUpdaeForm
 
 case = {
     "number": 1,
@@ -343,15 +343,16 @@ class AddLikeView(LoginRequiredMixin, View):
         return redirect("/")
 
 
-class ChangeCaseStateUpdateView(View):
-    def get(self, request, *args, **kwargs):
-        case_id = kwargs["case_id"]
-        status = request.GET.get("status")
-        case = get_object_or_404(Case, pk=case_id)
-        case.cstate = status
-        case.save()
-        messages.success(request, f"Status changed sucesfully to {case.cstate}.")
-        return redirect("/")
+class ChangeCaseStateUpdateView(LoginRequiredMixin, UpdateView):
+    template_name = "case/case_update.html"
+    form_class = CaseUpdaeForm
+    queryset = Case.objects.all()
+    success_url = reverse_lazy("home")
+
+    def get_form_kwargs(self):
+        kw = super().get_form_kwargs()
+        kw["request"] = self.request
+        return kw
 
 
 class GetCaseHistory(View):

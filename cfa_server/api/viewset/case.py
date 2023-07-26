@@ -41,7 +41,8 @@ class CaseViewSet(UserMixin, ModelViewSet):
                 comment_count=Count("comment", distinct=True),
                 like_count=Count("likes", distinct=True),
             )
-            .select_related("pid", "oid", "oid__user", "oid__pid")
+            .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
+            .prefetch_related("medias")
         )
         if self.request.user.is_authenticated:
             liked = Like.objects.filter(case_id=OuterRef("cid"), user=self.request.user)

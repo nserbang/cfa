@@ -31,7 +31,7 @@ from api.view.police_views import *
 from api.view.case_view import *
 from api.view.cuser_views import *
 from api.forms.user import cUserCreationForm
-from api.forms.case import CaseForm, CaseUpdaeForm
+from api.forms.case import CaseForm, CaseUpdateForm
 
 case = {
     "number": 1,
@@ -345,7 +345,7 @@ class AddLikeView(LoginRequiredMixin, View):
 
 class ChangeCaseStateUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "case/case_update.html"
-    form_class = CaseUpdaeForm
+    form_class = CaseUpdateForm
     queryset = Case.objects.all()
     success_url = reverse_lazy("home")
 

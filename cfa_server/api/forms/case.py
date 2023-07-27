@@ -61,7 +61,7 @@ class MultipleFileField(forms.FileField):
         return result
 
 
-class CaseUpdaeForm(forms.ModelForm):
+class CaseUpdateForm(forms.ModelForm):
     files = MultipleFileField(required=False)
     description = forms.CharField(widget=forms.Textarea(), required=False)
 

@@ -33,3 +33,4 @@ pytesseract==0.3.10
 opencv-python==4.8.0.74
 django-ckeditor==6.6.1
 fcm-django==2.0.0
+python-magic==0.4.27

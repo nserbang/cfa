@@ -9,6 +9,8 @@ from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from api.models import Case, CaseHistory, LostVehicle, Comment, Media, Like
 from django.db.models import Q
+from api.viewset.permission import IsPoliceOfficer
+
 
 from api.serializers import (
     CaseSerializer,
@@ -134,6 +136,20 @@ class CaseUpdaateAPIView(UpdateAPIView):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+
+
+class CaseAcceptAPIView(UpdateAPIView):
+    queryset = Case.objects.all()
+    permission_classes = (IsPoliceOfficer,)
+
+    def put(self, request, *args, **kwargs):
+        import ipdb
+
+        ipdb.set_trace()
+        case = self.get_object()
+        case.oid = request.user.policeofficer_set.first()
+        case.save()
+        return Response({"message": "Succesfull"}, status=200)
 
 
 class CommentCUDViewSet(ModelViewSet):

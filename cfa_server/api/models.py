@@ -51,6 +51,14 @@ class cUser(AbstractUser):
 
     objects = CustomUserManager()
 
+    @property
+    def is_police(self):
+        return self.role == "police"
+
+    @property
+    def is_user(self):
+        return self.role == "user"
+
 
 # Holds list of police stations
 class PoliceStation(models.Model):

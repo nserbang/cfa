@@ -185,6 +185,7 @@ urlpatterns = [
     path("logout/", logout_view, name="logout"),
     path("api/v1/cases/create/", CaseCreateAPIView.as_view(), name="case_create"),
     path("api/v1/cases/update/<pk>/", CaseUpdaateAPIView.as_view(), name="case_update"),
+    path("api/v1/cases/accept/<pk>/", CaseAcceptAPIView.as_view(), name="case_accept"),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<str:case_type>/", HomePageView.as_view(), name="case"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -143,9 +143,6 @@ class CaseAcceptAPIView(UpdateAPIView):
     permission_classes = (IsPoliceOfficer,)
 
     def put(self, request, *args, **kwargs):
-        import ipdb
-
-        ipdb.set_trace()
         case = self.get_object()
         case.oid = request.user.policeofficer_set.first()
         case.save()

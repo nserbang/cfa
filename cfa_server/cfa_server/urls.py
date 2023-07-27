@@ -35,7 +35,6 @@ from api.viewset.lost_vehicle import CheckLostVehicle
 from api.viewset.victim import *
 from api.viewset.criminal import *
 from api.views import (
-    index,
     emergency,
     information,
     logout_view,
@@ -50,6 +49,8 @@ from api.views import (
     ChangeCaseStateUpdateView,
     GetCaseHistory,
     CrimeListView,
+    ForgotPasswordView,
+    ResetPasswordView,
 )
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
@@ -134,7 +135,6 @@ urlpatterns = [
         "api/v1/profile/update/", UserProfileUpdateView.as_view(), name="profile_update"
     ),
     path("api/v1/check-vehicle/", CheckLostVehicle.as_view(), name="check_vehicle"),
-    # path('', index, name='index'),
     path("", HomePageView.as_view(), name="home"),
     path("home/", HomePageView.as_view(), name="home"),
     path("emergency/", emergency, name="emergency"),
@@ -148,6 +148,16 @@ urlpatterns = [
         "accounts/signup/",
         UserRegistrationView.as_view(),
         name="signup",
+    ),
+    path(
+        "accounts/forgot-password/",
+        ForgotPasswordView.as_view(),
+        name="forgot_password_web",
+    ),
+    path(
+        "accounts/reset-password/",
+        ResetPasswordView.as_view(),
+        name="reset_password_web",
     ),
     path(
         "accounts/verify-mobile/",

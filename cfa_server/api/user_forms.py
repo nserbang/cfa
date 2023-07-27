@@ -69,3 +69,49 @@ class ResendMobileVerificationOtpForm(forms.Form):
         else:
             send_otp_verification_code(user)
         return None
+
+
+class ForgotPasswordForm(forms.Form):
+    mobile = forms.CharField(max_length=16)
+
+    def save(self, **kwargs):
+        mobile = self.cleaned_data["mobile"]
+        try:
+            user = cUser.objects.get(mobile=mobile)
+        except cUser.DoesNotExist:
+            pass
+        else:
+            send_otp_verification_code(user, verification=False)
+
+
+class ChangePasswordForm(forms.Form):
+    otp = forms.CharField(max_length=6)
+    password = forms.CharField(widget=forms.PasswordInput())
+    repeat_password = forms.CharField(widget=forms.PasswordInput())
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cd = super().clean()
+        password = cd["password"]
+        repeat_password = cd["repeat_password"]
+
+        if password != repeat_password:
+            raise forms.ValidationError("Passwords did not match.")
+        mobile = self.request.session.get("mobile")
+        try:
+            user = cUser.objects.get(mobile=mobile)
+        except cUser.DoesNotExist:
+            return forms.ValidationError("User does not exists.")
+        else:
+            if not validate_otp(user, self.cleaned_data["otp"]):
+                self.add_error("otp", "Otp expired or invalid.")
+            cd["user"] = user
+        return cd
+
+    def save(self, **kwargs):
+        user = self.cleaned_data["user"]
+        user.set_password(self.cleaned_data["password"])
+        user.save()

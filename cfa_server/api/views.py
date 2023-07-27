@@ -20,6 +20,8 @@ from .user_forms import (
     VerifyOtpFrom,
     UserRegistrationCompleteForm,
     ResendMobileVerificationOtpForm,
+    ForgotPasswordForm,
+    ChangePasswordForm,
 )
 from .otp import send_otp_verification_code
 
@@ -52,29 +54,6 @@ case2 = {
 }
 
 cases = [case, case2]
-
-
-def index(request):
-    limit = int(request.GET.get("limit", 10))
-    page = int(request.GET.get("page", 0))
-    cases = Case.objects.all()
-    items = []
-    for case in cases:
-        number_of_comments = case.comment_set.count()
-
-        case = {
-            "number": case.cid,
-            "type": dict(Case.cType)[case.type],
-            "status": dict(Case.cState)[case.cstate],
-            "likes": 10,
-            "comments": number_of_comments,
-            "reported_date": str(case.created),
-        }
-        items.append(case)
-
-    vars = {"items": items, "home": True, "user": request.user if request.user else {}}
-
-    return render(request, "index.html", vars)
 
 
 def information(request):
@@ -183,7 +162,9 @@ class HomePageView(View):
                 ),
             )
             .select_related("pid", "oid")
-            .prefetch_related("casehistory_set", "comment_set", "comment_set__user")
+            .prefetch_related(
+                "casehistory_set", "comment_set", "comment_set__user", "medias"
+            )
         )
         case_type = self.get_case_type()
         if case_type:
@@ -358,7 +339,11 @@ class ChangeCaseStateUpdateView(LoginRequiredMixin, UpdateView):
 class GetCaseHistory(View):
     def get(self, request, *args, **kwargs):
         case_id = kwargs["case_id"]
-        case_histories = CaseHistory.objects.filter(case_id=case_id).order_by("created")
+        case_histories = (
+            CaseHistory.objects.filter(case_id=case_id)
+            .prefetch_related("medias")
+            .order_by("created")
+        )
         from itertools import pairwise
 
         history_pairs = list(pairwise(case_histories))
@@ -408,3 +393,30 @@ class CrimeListView(ListView):
     def get_template_names(self):
         crime_type = self.get_crime_type() or "missing_children"
         return [f"case/{crime_type}.html"]
+
+
+class ForgotPasswordView(FormView):
+    form_class = ForgotPasswordForm
+    template_name = "users/forgot_password.html"
+    success_url = reverse_lazy("reset_password_web")
+
+    def form_valid(self, form):
+        form.save()
+        self.request.session["mobile"] = form.cleaned_data["mobile"]
+        return super().form_valid(form)
+
+
+class ResetPasswordView(FormView):
+    form_class = ChangePasswordForm
+    template_name = "users/reset_password.html"
+    success_url = reverse_lazy("login")
+
+    def form_valid(self, form):
+        form.save()
+        messages.info(self.request, "Password change successful.")
+        return super().form_valid(form)
+
+    def get_form_kwargs(self):
+        kw = super().get_form_kwargs()
+        kw["request"] = self.request
+        return kw

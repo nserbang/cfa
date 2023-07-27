@@ -32,7 +32,7 @@ def send_otp_verification_code(user, verification=True):
     if verification:
         text = f"{otp_code}. Use this code to verify your mobile."
     else:
-        text = f"{otp_code}. Use this code to reset your mobile."
+        text = f"{otp_code}. Use this code to reset your password."
     url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
     params = {
         "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",

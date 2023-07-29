@@ -304,11 +304,11 @@ class CaseAddView(LoginRequiredMixin, CreateView):
         return redirect(reverse("home"))
 
 
-class AddCommentView(View):
+class AddCommentView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        return redirect("/")
+
     def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            messages.warning(request, "Login to add comment.")
-            return redirect("/")
         data = request.POST
         case_id = kwargs["case_id"]
         comment = data["comment"]

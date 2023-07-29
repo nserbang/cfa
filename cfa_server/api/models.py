@@ -174,6 +174,8 @@ class Case(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pid:
+            if not self.geo_location:
+                self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
             # If the case is assigned to a police station, calculate and save the distance
             self.distance = self.geo_location.distance(self.pid.geo_location)
 

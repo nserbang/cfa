@@ -18,7 +18,7 @@
             {% for media in case.medias.all %}
                 <div class="col-auto">
                     {% if media.mtype == 'photo' %}
-                        <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
+                        <img class="rounded img-fluid image" src="{{ media.path.url }}" alt="" width="100">
                     {% elif media.mtype == 'video' %}
                         <video width="320" height="240" controls>
                             <source src="{{ media.path.url }}">
@@ -43,7 +43,7 @@
         <div class="d-flex flex-row justify-content-between">
             <a href="{% if user.is_authenticated %}{% url 'add_like' case.pk %}{% endif %}" class="btn btn-primary btn-sm {% if not user.is_authenticated or case.has_liked %}disabled{% endif %}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Like: {{ case.like_count }}</a>
 
-            <button onclick="showHideCommentAndHistory({{ case.pk }})" data-bs-target="#comment-{{case.pk}}"  class="comment-{{ case.pk }} btn btn-primary btn-sm {% if not user.is_authenticated %}disabled{% endif %}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Comment: {{ case.comment_count }}</button>
+            <button onclick="showHideCommentAndHistory({{ case.pk }})" data-bs-target="#comment-{{case.pk}}"  class="comment-{{ case.pk }} btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Comment: {{ case.comment_count }}</button>
 
             {% if user.is_authenticated %}
                 {% if case.cstate == 'pending' and case.is_location_visible %}
@@ -70,6 +70,7 @@
             <a href="" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" data-bs-target="#history-{{case.pk}}" onclick="getCaseHistory(event, {{case.pk}})">Case history</a>
         </div>
         <div id="comment-{{case.pk}}" class="pt-2 d-none">
+            {% if user.is_authenticated %}
             <form action="{% if user.is_authenticated %}{% url 'add_comment' case.pk %}{% endif %}"  method="post">
                 {% csrf_token %}
                 <div class="mb-2">
@@ -80,6 +81,7 @@
                     <button type="submit" class="btn btn-primary btn-sm">Post</button>
                 </div>
             </form>
+            {% endif %}
             <div class="py-2">
                 <h4>Comments</h4>
                 {% for comment in case.comment_set.all %}

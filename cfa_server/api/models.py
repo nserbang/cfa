@@ -163,7 +163,7 @@ class Case(models.Model):
     description = models.TextField(null=True)
     # Follow me flag
     follow = models.BooleanField(default=False)
-    medias = models.ManyToManyField("Media", related_name="cases")
+    medias = models.ManyToManyField("Media", related_name="cases", blank=True)
 
     def add_history_and_media(self, description, medias, user):
         history = CaseHistory.objects.create(

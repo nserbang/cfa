@@ -71,7 +71,7 @@ class CaseHistoryViewSet(UserMixin, ReadOnlyModelViewSet):
 
     def get_queryset(self):
         case_id = int(self.kwargs["case_id"])
-        qs = CaseHistory.objects.filter(cid=case_id)
+        qs = CaseHistory.objects.filter(case_id=case_id)
         return qs
 
 

@@ -11,18 +11,14 @@ class CaseForm(forms.ModelForm):
         model = Case
         fields = [
             "type",
-            "title",
-            "cstate",
             "lat",
             "long",
             "description",
-            "follow",
         ]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
-        self.fields["cstate"].label = "State"
         self.fields["lat"].widget = forms.widgets.HiddenInput()
         self.fields["long"].widget = forms.widgets.HiddenInput()
 

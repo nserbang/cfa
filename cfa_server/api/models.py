@@ -189,6 +189,7 @@ class Case(models.Model):
                     cstate=self.cstate,
                     description="Case created.",
                 )
+        super().save(*args, **kwargs)
 
         try:
             title = self.title
@@ -207,8 +208,7 @@ class Case(models.Model):
             devices.send_message(message)
         except Exception as e:
             pass
-
-        return super().save(*args, **kwargs)
+        return
 
 
 class Media(models.Model):

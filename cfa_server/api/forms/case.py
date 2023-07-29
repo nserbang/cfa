@@ -14,6 +14,7 @@ class CaseForm(forms.ModelForm):
             "lat",
             "long",
             "description",
+            "pid",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -21,16 +22,21 @@ class CaseForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["lat"].widget = forms.widgets.HiddenInput()
         self.fields["long"].widget = forms.widgets.HiddenInput()
+        self.fields["pid"].widget = forms.widgets.HiddenInput()
+        self.fields["pid"].required = False
 
     def save(self, commit=False):
         case = super().save(commit=False)
         geo_location = fromstr(f"POINT({case.lat} {case.long})", srid=4326)
-        user_distance = Distance("geo_location", geo_location)
-        police_station = (
-            PoliceStation.objects.annotate(radius=user_distance)
-            .order_by("radius")
-            .first()
-        )
+        if self.cleaned_data["pid"]:
+            police_station = self.cleaned_data["pid"]
+        else:
+            user_distance = Distance("geo_location", geo_location)
+            police_station = (
+                PoliceStation.objects.annotate(radius=user_distance)
+                .order_by("radius")
+                .first()
+            )
         case.pid = police_station
         case.geo_location = geo_location
         officier = police_station.policeofficer_set.order_by("-rank").first()

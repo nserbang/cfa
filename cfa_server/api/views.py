@@ -9,6 +9,8 @@ from django.shortcuts import render, reverse, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
+from django.contrib.gis.geos import fromstr
+from django.contrib.gis.db.models.functions import Distance
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -25,7 +27,16 @@ from .user_forms import (
 )
 from .otp import send_otp_verification_code
 
-from api.models import Case, cUser, Like, Comment, CaseHistory, Victim, Criminal
+from api.models import (
+    Case,
+    cUser,
+    Like,
+    Comment,
+    CaseHistory,
+    Victim,
+    Criminal,
+    PoliceStation,
+)
 
 # from rest_framework.request import Request
 from api.view.district_views import *
@@ -420,3 +431,17 @@ class ResetPasswordView(FormView):
         kw = super().get_form_kwargs()
         kw["request"] = self.request
         return kw
+
+
+class NearestPoliceStationsView(View):
+    def get(self, request, *args, **kwargs):
+        lat = request.GET.get("lat")
+        long = request.GET.get("long")
+        if lat and long:
+            location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
+            user_distance = Distance("geo_location", location)
+            qs = PoliceStation.objects.annotate(radius=user_distance).order_by("radius")
+        else:
+            qs = PoliceStation.objects.all()
+        qs = qs.values("pid", "did", "name", "address")
+        return JsonResponse(list(qs), safe=False)

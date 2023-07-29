@@ -51,6 +51,7 @@ from api.views import (
     CrimeListView,
     ForgotPasswordView,
     ResetPasswordView,
+    NearestPoliceStationsView,
 )
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
@@ -193,6 +194,11 @@ urlpatterns = [
         name="crime_list",
     ),
     path("logout/", logout_view, name="logout"),
+    path(
+        "nearest/police/stations/",
+        NearestPoliceStationsView.as_view(),
+        name="nearest_police_station",
+    ),
     path("api/v1/cases/create/", CaseCreateAPIView.as_view(), name="case_create"),
     path("api/v1/cases/update/<pk>/", CaseUpdaateAPIView.as_view(), name="case_update"),
     path("api/v1/cases/accept/<pk>/", CaseAcceptAPIView.as_view(), name="case_accept"),

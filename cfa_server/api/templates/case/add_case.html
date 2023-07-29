@@ -8,20 +8,77 @@
     <div class="col-3">
         {% include 'case/side_menu.html' %}
     </div>
-    <div class="col-9">
+    <div class="col-9 pb-2">
         <h4 class="flex-fill">Add A New Complaint</h4>
-        <form method="post">
+        <form method="post" id="main-form">
             {% csrf_token %}
             {{ form|crispy }}
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <div id="map"></div>
+            <button id="case-submit" type="submit" class="btn btn-primary">Submit</button>
         </form>
     </div>
 </div>
 
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h1 class="modal-title fs-5" id="confirmationModalLabel">Are you sure you want to submit?</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div id="yes-no">
+                <button id="yes-botton" class="btn btn-primary">Yes</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">No</button>
+            </div>
+            <div id="main-submit-show" class="d-none">
+                <div class="row pb-1">
+                    <div class="col-12 d-flex justify-content-center">
+                        <button id="nearest-station" type="button" class="btn btn-primary p1 m1 mb1">Submit to Nearest Police Station</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-center">
+                        <button id="selected-station" type="button" class="btn btn-primary">Submit to Selected Police Station</button>
+                    </div>
+                    <div id="choose-station" class="d-none">
+                        <div class="row pt-2">
+                            <div class="col-12 d-flex justify-content-center">
+                                <label for="police-station-select" class="form-label">Select Police Station: </label>
+                                <select class="form-contron" id="police-station-select" aria-label="Select Police Station">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 d-flex justify-content-center pt-2">
+                            <button id="finalSubmit" type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+        </div>
+        </div>
+    </div>
+</div>
+
+
 {% endblock content %}
 
 {% block javascript %}
+<!-- <script>
+    (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+      key: "AIzaSyBSYv9KmZBcE__amIvkzFdw0-bu4qYmHjo",
+      v: "weekly",
+      // Use the 'v' parameter to indicate the version to use (weekly, beta, alpha, etc.).
+      // Add other bootstrap parameters as needed, using camel case.
+    });
+</script> -->
+
 <script type="text/javascript">
+    latitude = ''
+    longitude = ''
+
     const successCallback = (position) => {
         console.log(position.coords);
         latitude = position.coords.latitude
@@ -37,6 +94,116 @@
     };
 
     navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+
+
+    // async function initMap() {
+    // // Request needed libraries.
+    //     const { Map, InfoWindow } = await google.maps.importLibrary("maps");
+    //     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+    //     const map = new Map(document.getElementById("map"), {
+    //         center: { lat: 37.39094933041195, lng: -122.02503913145092 },
+    //         zoom: 14,
+    //         mapId: "4504f8b37365c3d0",
+    //     });
+    //     const infoWindow = new InfoWindow();
+    //     const draggableMarker = new AdvancedMarkerElement({
+    //         map,
+    //         position: { lat: 37.39094933041195, lng: -122.02503913145092 },
+    //         gmpDraggable: true,
+    //         title: "This marker is draggable.",
+    //     });
+
+    //     draggableMarker.addListener("dragend", (event) => {
+    //         const position = draggableMarker.position;
+
+    //         infoWindow.close();
+    //         infoWindow.setContent(
+    //         `Pin dropped at: ${position.lat()}, ${position.lng()}`,
+    //         );
+    //         infoWindow.open(draggableMarker.map, draggableMarker);
+    //     });
+    // }
+    // initMap();
+
+    const submitButton = document.getElementById('case-submit');
+
+
+    submitButton.addEventListener('click', function (el){
+        el.preventDefault();
+        const myModal = new bootstrap.Modal('#confirmationModal', {
+            keyboard: false
+        })
+        myModal.show();
+    })
+
+    const yesButton = document.getElementById('yes-botton');
+    yesButton.addEventListener('click', function (el){
+        el.preventDefault();
+        const mainSubmitDiv = document.getElementById('main-submit-show');
+        const yesNoDiv = document.getElementById('yes-no');
+        // mainSubmitDiv.classList.add('d-flex')
+        mainSubmitDiv.classList.remove('d-none');
+        yesNoDiv.classList.add('d-none');
+    })
+
+    const submitToNearestStationButton = document.getElementById('nearest-station');
+    submitToNearestStationButton.addEventListener('click', function (el){
+        el.preventDefault();
+        const form = document.getElementById('main-form');
+        form.submit()
+    })
+
+    const submitToSelectedStationButton = document.getElementById('selected-station');
+    submitToSelectedStationButton.addEventListener('click', function (el){
+        el.preventDefault();
+        console.log("SJFLDJFLKDJF")
+        chooseStation = document.getElementById('choose-station');
+        chooseStation.classList.remove("d-none")
+        getPoliceStations(latitude, longitude)
+        // const form = document.getElementById('main-form');
+        // form.submit()
+    })
+
+    function getPoliceStations(lat, long) {
+        url = `/nearest/police/stations/?lat=${lat}&${long}`
+        fetch(url, {
+            method: 'GET',
+            headers: {
+            'Content-Type': 'application/json;charset=utf-8',
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data)
+            selectStation = document.getElementById('police-station-select')
+            if(data){
+                for(station of data) {
+                    const opt = document.createElement("option");
+                    opt.value = station.pid;
+                    opt.text = station.name;
+                    selectStation.add(opt, null)
+                }
+            }
+        })
+        .catch((error) => {
+            window.location.reload();
+        });
+    }
+
+    const finalSubmitButton = document.getElementById('finalSubmit');
+    finalSubmitButton.addEventListener('click', function (el){
+        el.preventDefault();
+        selectStation = document.getElementById('police-station-select')
+        policeStation = document.getElementById('id_pid')
+        policeStation.value = selectStation.value
+        const form = document.getElementById('main-form');
+        form.submit()
+    })
 
 </script>
 {% endblock javascript %}

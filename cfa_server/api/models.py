@@ -194,16 +194,16 @@ class Case(models.Model):
         try:
             title = self.title
             body = {
-                "case_id": self.cid,
+                "case_id": str(self.cid),
                 "description": self.description,
                 "type": self.type,
                 "state": self.cstate,
                 "created": str(self.created),
             }
-            message = Message(notification=Notification(title=title, body=str(body)))
+            message = Message(notification=Notification(title=title), data=body)
 
             devices = FCMDevice.objects.filter(
-                Q(user__id=self.cid) | Q(user__id=self.oid_id)
+                user_id__in=self.pid.policeofficer_set.values("user_id")
             )
             devices.send_message(message)
         except Exception as e:

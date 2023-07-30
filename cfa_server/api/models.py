@@ -190,7 +190,6 @@ class Case(models.Model):
                     description="Case created.",
                 )
         super().save(*args, **kwargs)
-
         try:
             title = self.title
             body = {
@@ -201,10 +200,12 @@ class Case(models.Model):
                 "created": str(self.created),
             }
             message = Message(notification=Notification(title=title), data=body)
-
-            devices = FCMDevice.objects.filter(
-                user_id__in=self.pid.policeofficer_set.values("user_id")
-            )
+            if self.oid_id:
+                devices = FCMDevice.objects.filter(user_id=self.oid.user_id)
+            else:
+                devices = FCMDevice.objects.filter(
+                    user_id__in=self.pid.policeofficer_set.values("user_id")
+                )
             devices.send_message(message)
         except Exception as e:
             pass

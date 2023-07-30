@@ -13,8 +13,11 @@
         <form method="post" id="main-form">
             {% csrf_token %}
             {{ form|crispy }}
-            <div id="map"></div>
-            <button id="case-submit" type="submit" class="btn btn-primary">Submit</button>
+            <div class="row">
+                <h5>Select a location:</h5>
+                <div class="col-12" id="map" style="height: 200px; width: 500px;"></div>
+            </div>
+            <button id="case-submit" type="submit" class="btn btn-primary py-1">Submit</button>
         </form>
     </div>
 </div>
@@ -66,21 +69,21 @@
 {% endblock content %}
 
 {% block javascript %}
-<!-- <script>
+
+<script>
     (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
-      key: "AIzaSyBSYv9KmZBcE__amIvkzFdw0-bu4qYmHjo",
+      key: "AIzaSyDM7gudJWf-zdilGmh_cmcI4otu_cJh8Aw",
       v: "weekly",
       // Use the 'v' parameter to indicate the version to use (weekly, beta, alpha, etc.).
       // Add other bootstrap parameters as needed, using camel case.
     });
-</script> -->
+</script>
 
 <script type="text/javascript">
-    latitude = ''
-    longitude = ''
+    latitude = 30.0681;
+    longitude = 79.0350;
 
     const successCallback = (position) => {
-        console.log(position.coords);
         latitude = position.coords.latitude
         longitude = position.coords.longitude
         lat = document.getElementById('id_lat')
@@ -95,39 +98,44 @@
 
     navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
 
+    let map;
+    async function initMap() {
+    // Request needed libraries.
+        const { Map, InfoWindow } = await google.maps.importLibrary("maps");
+        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+        map = new Map(document.getElementById("map"), {
+            center: { lat: latitude, lng: longitude },
+            zoom: 14,
+            mapId: "4504f8b37365c3d0",
+        });
+        const infoWindow = new InfoWindow();
+        const draggableMarker = new AdvancedMarkerElement({
+            map,
+            position: { lat: latitude, lng: longitude },
+            gmpDraggable: true,
+            title: "Drag this marker to select location.",
+        });
 
-    // async function initMap() {
-    // // Request needed libraries.
-    //     const { Map, InfoWindow } = await google.maps.importLibrary("maps");
-    //     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-    //     const map = new Map(document.getElementById("map"), {
-    //         center: { lat: 37.39094933041195, lng: -122.02503913145092 },
-    //         zoom: 14,
-    //         mapId: "4504f8b37365c3d0",
-    //     });
-    //     const infoWindow = new InfoWindow();
-    //     const draggableMarker = new AdvancedMarkerElement({
-    //         map,
-    //         position: { lat: 37.39094933041195, lng: -122.02503913145092 },
-    //         gmpDraggable: true,
-    //         title: "This marker is draggable.",
-    //     });
-
-    //     draggableMarker.addListener("dragend", (event) => {
-    //         const position = draggableMarker.position;
-
-    //         infoWindow.close();
-    //         infoWindow.setContent(
-    //         `Pin dropped at: ${position.lat()}, ${position.lng()}`,
-    //         );
-    //         infoWindow.open(draggableMarker.map, draggableMarker);
-    //     });
-    // }
-    // initMap();
+        draggableMarker.addListener("dragend", (event) => {
+            const position = draggableMarker.position;
+            console.log(position);
+            console.log(draggableMarker);
+            latitude = position.h.toFixed(4)
+            longitude = position.j.toFixed(4)
+            lat = document.getElementById('id_lat')
+            lat.value = latitude
+            long = document.getElementById('id_long')
+            long.value = longitude
+            infoWindow.close();
+            infoWindow.setContent(
+                `You selected: ${position.h}, ${position.j}`,
+            );
+            infoWindow.open(draggableMarker.map, draggableMarker);
+        });
+    }
+    initMap();
 
     const submitButton = document.getElementById('case-submit');
-
-
     submitButton.addEventListener('click', function (el){
         el.preventDefault();
         const myModal = new bootstrap.Modal('#confirmationModal', {

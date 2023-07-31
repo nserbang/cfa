@@ -14,8 +14,10 @@
             {% csrf_token %}
             {{ form|crispy }}
             <div class="row">
-                <h5>Select a location:</h5>
-                <div class="col-12" id="map" style="height: 200px; width: 500px;"></div>
+                <p>Select a location:</p>
+                <div class="col-12">
+                    <div id="map" style="height: 250px; width: vw;" class="rounded mb-3"></div>
+                </div>
             </div>
             <button id="case-submit" type="submit" class="btn btn-primary py-1">Submit</button>
         </form>
@@ -149,7 +151,6 @@
         el.preventDefault();
         const mainSubmitDiv = document.getElementById('main-submit-show');
         const yesNoDiv = document.getElementById('yes-no');
-        // mainSubmitDiv.classList.add('d-flex')
         mainSubmitDiv.classList.remove('d-none');
         yesNoDiv.classList.add('d-none');
     })
@@ -164,12 +165,9 @@
     const submitToSelectedStationButton = document.getElementById('selected-station');
     submitToSelectedStationButton.addEventListener('click', function (el){
         el.preventDefault();
-        console.log("SJFLDJFLKDJF")
         chooseStation = document.getElementById('choose-station');
         chooseStation.classList.remove("d-none")
         getPoliceStations(latitude, longitude)
-        // const form = document.getElementById('main-form');
-        // form.submit()
     })
 
     function getPoliceStations(lat, long) {

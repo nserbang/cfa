@@ -18,7 +18,9 @@
             {% for media in case.medias.all %}
                 <div class="col-auto">
                     {% if media.mtype == 'photo' %}
-                        <img class="rounded img-fluid image" src="{{ media.path.url }}" alt="" width="100">
+                        <a class="image" href="{{ media.path.url }}">
+                            <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
+                        </a>
                     {% elif media.mtype == 'video' %}
                         <video width="320" height="240" controls>
                             <source src="{{ media.path.url }}">

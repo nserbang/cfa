@@ -30,20 +30,3 @@
 </div>
 
 {% endblock content %}
-
-{% block css %}
-<link href="{% static 'css/venobox.min.css' %}" rel="stylesheet">
-{% endblock css %}
-
-{% block javascript %}
-<script type="text/javascript" src="{% static 'js/venobox.min.js' %}"></script>
-<script>
-    new VenoBox({
-        selector: '.image',
-        numeration: true,
-        infinigall: true,
-        share: true,
-        spinner: 'rotating-plane'
-    });
-</script>
-{% endblock javascript %}

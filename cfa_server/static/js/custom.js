@@ -48,6 +48,19 @@ function getCaseHistory(event, caseId) {
         },
     })
     .then(response => response.json())
-    .then(response => historyContainer.innerHTML = response['html'])
+    .then(response => {
+        historyContainer.innerHTML = response['html']
+    })
 }
 
+function openVenobox(e){
+    this.event.preventDefault();
+    vobx = new VenoBox({
+        selector: '.image',
+        numeration: true,
+        infinigall: true,
+        share: true,
+        spinner: 'rotating-plane'
+    });
+    vobx.open()
+}

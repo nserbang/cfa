@@ -50,7 +50,9 @@
                         {% for media in new.medias.all %}
                             <div class="col-auto">{{ media.mtype }}
                                 {% if media.mtype == 'photo' %}
-                                    <a class="image" href="{{ media.path.url }}"><img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100"></a>
+                                    <a class="image" onclick="openVenobox(this)" href="{{ media.path.url }}">
+                                        <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
+                                    </a>
                                 {% elif media.mtype == 'video' %}
                                     <video width="320" height="240" controls>
                                         <source src="{{ media.path.url }}">

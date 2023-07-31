@@ -191,15 +191,14 @@ class Case(models.Model):
                 )
         super().save(*args, **kwargs)
         try:
-            title = self.title
-            body = {
+            data = {
                 "case_id": str(self.cid),
                 "description": self.description,
                 "type": self.type,
                 "state": self.cstate,
                 "created": str(self.created),
             }
-            message = Message(notification=Notification(title=title), data=body)
+            message = Message(data=data)
             if self.oid_id:
                 devices = FCMDevice.objects.filter(user_id=self.oid.user_id)
             else:

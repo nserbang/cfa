@@ -1,4 +1,8 @@
 from django.shortcuts import get_object_or_404
+from django.db.models.functions import Coalesce
+from django.db.models import F
+from django.contrib.gis.geos import fromstr
+from django.contrib.gis.db.models.functions import Distance
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
 from rest_framework.generics import UpdateAPIView
@@ -36,7 +40,9 @@ class CaseViewSet(UserMixin, ModelViewSet):
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
         my_case = self.request.query_params.get("my_case", None)
-        a = self.request.query_params.get("q")
+        lat = self.request.query_params.get("lat")
+        long = self.request.query_params.get("long")
+
         data = (
             Case.objects.all()
             .annotate(
@@ -45,7 +51,13 @@ class CaseViewSet(UserMixin, ModelViewSet):
             )
             .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
             .prefetch_related("medias")
-        )
+        ).order_by("-created")
+        if lat and long:
+            geo_location = fromstr(f"POINT({lat} {long})", srid=4326)
+            user_distance = Distance("geo_location", geo_location)
+            data = data.annotate(radius=user_distance).order_by(
+                "radius", Coalesce("created", "updated").desc()
+            )
         if self.request.user.is_authenticated:
             liked = Like.objects.filter(case_id=OuterRef("cid"), user=self.request.user)
             data = data.annotate(

@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.utils import timezone
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.db import transaction
@@ -153,6 +154,7 @@ class Case(models.Model):
     cstate = models.CharField(max_length=15, choices=cState, default="pending")
     # Date and time when complaint was reported
     created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(blank=True, null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     long = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     geo_location = models.PointField(blank=True, null=True, srid=4326)
@@ -267,6 +269,12 @@ class Comment(models.Model):
     user = models.ForeignKey(cUser, on_delete=models.CASCADE)
     content = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
+
+    def save(self, **kwargs):
+        if hasattr(self, "cid"):
+            self.cid.updated = timezone.now()
+            self.cid.save()
+        return super().save(**kwargs)
 
 
 # Table for emergency helpline numbers with their name and gps location

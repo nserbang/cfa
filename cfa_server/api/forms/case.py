@@ -1,5 +1,6 @@
 import magic
 from django import forms
+from django.utils import timezone
 from django.contrib.gis.geos import fromstr
 from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance
@@ -107,6 +108,7 @@ class CaseUpdateForm(forms.ModelForm):
         medias = Media.objects.bulk_create(medias)
         case = self.instance
         case.cstate = self.cleaned_data["cstate"]
+        case.updated = timezone.now()
         case.save()
         description = self.cleaned_data["description"]
         case.add_history_and_media(

@@ -1,4 +1,5 @@
 import magic
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import MethodNotAllowed
@@ -123,6 +124,14 @@ class CaseSerializer(serializers.ModelSerializer):
     like_count = serializers.IntegerField()
     liked = serializers.BooleanField(required=False, default=False)
     medias = MediaSerializer(many=True)
+    distance = serializers.DecimalField(
+        source="radius.km",
+        required=False,
+        default=None,
+        max_digits=10,
+        decimal_places=2,
+        read_only=True,
+    )
 
     class Meta:
         model = Case
@@ -228,6 +237,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.cstate = validated_data["cstate"]
+        instance.updated = timezone.now()
         instance.save()
         description = validated_data.pop("description")
         medias = validated_data.pop("medias")

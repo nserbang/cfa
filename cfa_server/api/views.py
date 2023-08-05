@@ -46,26 +46,6 @@ from api.view.cuser_views import *
 from api.forms.user import cUserCreationForm
 from api.forms.case import CaseForm, CaseUpdateForm
 
-case = {
-    "number": 1,
-    "type": "Extortion",
-    "status": "Accepted",
-    "likes": 10,
-    "comments": 15,
-    "reported_date": "2022-10-15",
-}
-
-case2 = {
-    "number": 2,
-    "type": "Drug",
-    "status": "Ongoing",
-    "likes": 12,
-    "comments": 15,
-    "reported_date": "2022-10-15",
-}
-
-cases = [case, case2]
-
 
 def information(request):
     limit = int(request.GET.get("limit", 10))
@@ -258,7 +238,7 @@ class ResendMobileVerificationOtpView(FormView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class UserRegistrationCompleteView(View):
+class UserRegistrationCompleteView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         form = UserRegistrationCompleteForm
         return render(request, "api/signup_complete.html", {"form": form})
@@ -433,7 +413,7 @@ class ResetPasswordView(FormView):
         return kw
 
 
-class NearestPoliceStationsView(View):
+class NearestPoliceStationsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         lat = request.GET.get("lat")
         long = request.GET.get("long")

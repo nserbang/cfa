@@ -22,7 +22,14 @@ class DistrictSerializer(serializers.ModelSerializer):
 class cUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = cUser
-        fields = ["id", "email", "first_name", "last_name", "profile_picture"]
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "profile_picture",
+            "role",
+        ]
 
 
 class PoliceStationContactSerializer(serializers.ModelSerializer):

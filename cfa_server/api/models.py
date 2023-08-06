@@ -229,8 +229,6 @@ class Case(models.Model):
             devices = FCMDevice.objects.filter(user_id__in=user_ids)
             devices.send_message(message)
         except Exception as e:
-            print(e)
-            print("EXCEPTIONNNNNNNNN")
             pass
 
 

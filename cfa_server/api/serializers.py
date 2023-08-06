@@ -329,7 +329,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
-    profile_picture = serializers.SerializerMethodField()
+    # profile_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = cUser

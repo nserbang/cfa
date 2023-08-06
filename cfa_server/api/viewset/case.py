@@ -28,6 +28,7 @@ from api.serializers import (
     LostVehicleSerializer,
     MediaSerializer,
     CaseUpdateSerializer,
+    CaseUpdateByReporterSerializer,
 )
 from api.mixins import UserMixin
 
@@ -138,6 +139,24 @@ class CaseUpdaateAPIView(UpdateAPIView):
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = CaseUpdateSerializer(
+            data=request.data, instance=instance, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=200)
+        return Response(serializer.errors, status=400)
+
+
+class CaseUpdaateByReporterAPIView(UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CaseUpdateByReporterSerializer
+    queryset = Case.objects.all()
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.user != request.user:
+            return Response({"detail": "Permission Denied."}, status=403)
+        serializer = CaseUpdateByReporterSerializer(
             data=request.data, instance=instance, context={"request": request}
         )
         if serializer.is_valid():

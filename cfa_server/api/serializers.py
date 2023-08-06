@@ -258,6 +258,27 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
+class CaseUpdateByReporterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Case
+        fields = [
+            "description",
+            "medias",
+        ]
+
+    def update(self, instance, validated_data):
+        medias = validated_data.pop("medias", [])
+        user = self.context["request"].user
+        instance.updated = timezone.now()
+        instance.cstate = "pending"
+        instance.description = validated_data["description"]
+        instance.save()
+        instance.add_history_and_media(description="", user=user, medias=medias)
+        noti_title = f"Additional information provided for your case no.{instance.pk}"
+        instance.send_notitication(noti_title, [instance.oid.user_id])
+        return instance
+
+
 class LostVehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = LostVehicle

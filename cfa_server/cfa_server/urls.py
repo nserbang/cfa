@@ -201,6 +201,11 @@ urlpatterns = [
     ),
     path("api/v1/cases/create/", CaseCreateAPIView.as_view(), name="case_create"),
     path("api/v1/cases/update/<pk>/", CaseUpdaateAPIView.as_view(), name="case_update"),
+    path(
+        "api/v1/cases/update/reporter/<pk>/",
+        CaseUpdaateByReporterAPIView.as_view(),
+        name="case_update_by_reporter",
+    ),
     path("api/v1/cases/accept/<pk>/", CaseAcceptAPIView.as_view(), name="case_accept"),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<str:case_type>/", HomePageView.as_view(), name="case"),

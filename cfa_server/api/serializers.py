@@ -225,7 +225,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
 
 
 class CaseUpdateSerializer(serializers.ModelSerializer):
-    description = serializers.CharField()
+    description = serializers.CharField(required=False)
 
     class Meta:
         model = Case
@@ -236,15 +236,25 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
+        noti_title = {
+            "accepted": "Your case no.{} has been accepted.",
+            "rejected": "Your case no.{} has been rejected.",
+            "info": "More info required for your case no.{}.",
+        }
+        user = self.context["request"].user
         instance.cstate = validated_data["cstate"]
         instance.updated = timezone.now()
+        instance.oid = user.policeofficer_set.first()
         instance.save()
         description = validated_data.pop("description")
-        medias = validated_data.pop("medias")
-        user = self.context["request"].user
+        medias = validated_data.pop("medias", [])
         instance.add_history_and_media(
             description=description, user=user, medias=medias
         )
+        if instance.cstate in ["accepted", "rejected", "info"]:
+            noti_title = noti_title.get(instance.cstate).format(instance.pk)
+            print(noti_title)
+            instance.send_notitication(noti_title, [instance.user_id])
         return instance
 
 

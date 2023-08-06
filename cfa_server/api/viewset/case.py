@@ -131,13 +131,9 @@ class CaseCreateAPIView(APIView):
 
 
 class CaseUpdaateAPIView(UpdateAPIView):
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsPoliceOfficer,)
     serializer_class = CaseUpdateSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
     queryset = Case.objects.all()
-
-    def get_queryset(self):
-        return super().get_queryset().filter(user__role="police")
 
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -146,7 +142,7 @@ class CaseUpdaateAPIView(UpdateAPIView):
         )
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201)
+            return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
 
 

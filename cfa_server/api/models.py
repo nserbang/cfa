@@ -136,7 +136,11 @@ class Case(models.Model):
         ("assign", "Assign"),  # Assign case to some other officer
         ("transfer", "Transfer"),  # Complaint being transferred from one ps to another
         ("resolved", "Resolved"),  # Complaint has been resolved
-        ("info", "Info"),  # Police officer requires more information from complainant
+        ("info", "Info"),
+        (
+            "rejected",
+            "Rejected",
+        ),  # Police officer requires more information from complainant
     )
     cid = models.BigAutoField(primary_key=True)
     # Police station in which case is lodged
@@ -211,6 +215,23 @@ class Case(models.Model):
         except Exception as e:
             pass
         return
+
+    def send_notitication(self, title, user_ids: list):
+        try:
+            data = {
+                "case_id": str(self.cid),
+                "description": self.description,
+                "type": self.type,
+                "state": self.cstate,
+                "created": str(self.created),
+            }
+            message = Message(notification=Notification(title=title), data=data)
+            devices = FCMDevice.objects.filter(user_id__in=user_ids)
+            devices.send_message(message)
+        except Exception as e:
+            print(e)
+            print("EXCEPTIONNNNNNNNN")
+            pass
 
 
 class Media(models.Model):

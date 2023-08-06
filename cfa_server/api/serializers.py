@@ -239,7 +239,12 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data["cstate"] == "assign" and not data.get("oid"):
             raise serializers.ValidationError(
-                {"oid": "You need to provide oid to assign this case to new officer"}
+                {"oid": "You need to provide oid to assign this case to new officer."}
+            )
+
+        if data["cstate"] == "transfer" and not data.get("pid"):
+            raise serializers.ValidationError(
+                {"pid": "You need to provide pid to transfer this case."}
             )
         return data
 

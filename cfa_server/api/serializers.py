@@ -231,30 +231,55 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         model = Case
         fields = [
             "cstate",
+            "oid",
             "description",
             "medias",
         ]
+
+    def validate(self, data):
+        if data["cstate"] == "assign" and not data.get("oid"):
+            raise serializers.ValidationError(
+                {"oid": "You need to provide oid to assign this case to new officer"}
+            )
+        return data
 
     def update(self, instance, validated_data):
         noti_title = {
             "accepted": "Your case no.{} has been accepted.",
             "rejected": "Your case no.{} has been rejected.",
             "info": "More info required for your case no.{}.",
+            "inprogress": "Your case no.{} is in-progress",
+            "resolved": "Your case no.{} is resolved",
         }
         user = self.context["request"].user
-        instance.cstate = validated_data["cstate"]
+        cstate = validated_data["cstate"]
+        instance.cstate = cstate
         instance.updated = timezone.now()
         instance.oid = user.policeofficer_set.first()
-        instance.save()
         description = validated_data.pop("description")
         medias = validated_data.pop("medias", [])
-        instance.add_history_and_media(
-            description=description, user=user, medias=medias
-        )
-        if instance.cstate in ["accepted", "rejected", "info"]:
-            noti_title = noti_title.get(instance.cstate).format(instance.pk)
-            print(noti_title)
+
+        if cstate in ["accepted", "rejected", "info", "inprogress", "resolved"]:
+            instance.save()
+            noti_title = noti_title.get(cstate).format(instance.pk)
             instance.send_notitication(noti_title, [instance.user_id])
+
+        elif cstate == "assign":
+            instance.oid = validated_data["oid"]
+            instance.cstate = "pending"
+            instance.save()
+            noti_title = f"You have assigned a new case no.{instance.pk}"
+            instance.send_notitication(noti_title, [instance.oid.user_id])
+
+        elif cstate == "transfer":
+            instance.pid = validated_data["pid"]
+            instance.cstate = "pending"
+            instance.oid = None
+            instance.save()
+
+        instance.add_history_and_media(
+            description=description, user=user, medias=medias, cstate=cstate
+        )
         return instance
 
 
@@ -290,7 +315,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ["cmtid", "content", "cid", "user_detail", "created"]
+        fields = ["cmtid", "content", "cid", "user_detail", "created" "medias"]
 
 
 class EmergencySerializer(serializers.ModelSerializer):
@@ -537,7 +562,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ["cid", "user", "content"]
+        fields = ["cid", "user", "content", "medias"]
 
     def validate(self, attrs):
         return super().validate(attrs)
@@ -549,6 +574,8 @@ class CommentCreateSerializer(serializers.ModelSerializer):
             content=validated_data["content"],
         )
         comment.save()
+        if validated_data["medias"]:
+            comment.medias.add(validated_data["medias"])
         return comment
 
 

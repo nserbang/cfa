@@ -150,7 +150,7 @@ class CaseUpdaateAPIView(UpdateAPIView):
 class CaseUpdaateByReporterAPIView(UpdateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = CaseUpdateByReporterSerializer
-    queryset = Case.objects.all()
+    queryset = Case.objects.filter(cstate="info")
 
     def put(self, request, *args, **kwargs):
         instance = self.get_object()

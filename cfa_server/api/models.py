@@ -134,13 +134,11 @@ class Case(models.Model):
         ("pending", "Pending"),  # Complaint lodged for the first time
         ("accepted", "Accepted"),  # Formal case approved
         ("assign", "Assign"),  # Assign case to some other officer
+        ("inprogress", "Inprogress"),
         ("transfer", "Transfer"),  # Complaint being transferred from one ps to another
         ("resolved", "Resolved"),  # Complaint has been resolved
-        ("info", "Info"),
-        (
-            "rejected",
-            "Rejected",
-        ),  # Police officer requires more information from complainant
+        ("info", "Info"),  # Police officer requires more information from complainant
+        ("rejected", "Rejected"),
     )
     cid = models.BigAutoField(primary_key=True)
     # Police station in which case is lodged
@@ -171,9 +169,10 @@ class Case(models.Model):
     follow = models.BooleanField(default=False)
     medias = models.ManyToManyField("Media", related_name="cases", blank=True)
 
-    def add_history_and_media(self, description, medias, user):
+    def add_history_and_media(self, description, medias, user, cstate=None):
+        cstate = cstate or self.cstate
         history = CaseHistory.objects.create(
-            case=self, user=self.user, description=description, cstate=self.cstate
+            case=self, user=self.user, description=description, cstate=cstate
         )
         if medias:
             history.medias.add(*medias)
@@ -274,7 +273,7 @@ class CaseHistory(models.Model):
 
 class LostVehicle(models.Model):
     caseId = models.OneToOneField(Case, on_delete=models.DO_NOTHING)
-    regNumber = models.CharField(max_length=30)
+    regNumber = models.CharField(max_length=30, unique=True)
     chasisNumber = models.CharField(max_length=50, null=True, default="N/A")
     engineNumber = models.CharField(max_length=50, null=True, default="N/A")
     make = models.CharField(max_length=50, null=True, default="N/A")
@@ -288,6 +287,7 @@ class Comment(models.Model):
     user = models.ForeignKey(cUser, on_delete=models.CASCADE)
     content = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
+    medias = models.ManyToManyField(Media, related_name="comments")
 
     def save(self, **kwargs):
         if hasattr(self, "cid"):

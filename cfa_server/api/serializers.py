@@ -320,7 +320,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ["cmtid", "content", "cid", "user_detail", "created" "medias"]
+        fields = ["cmtid", "content", "cid", "user_detail", "created", "medias"]
 
 
 class EmergencySerializer(serializers.ModelSerializer):

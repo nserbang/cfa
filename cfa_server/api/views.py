@@ -1,18 +1,14 @@
-# from view_includes import *
-
 from django.urls import reverse_lazy
-from django.db.models import Count, Value, Case as MCase, When, Q, OuterRef, Exists
+from django.db.models.functions import Coalesce
+from django.db.models import Count, Case as MCase, When, Q, OuterRef, Exists
 from django.http import HttpResponseRedirect, JsonResponse
-from django.utils import timezone
-from datetime import datetime
 from django.shortcuts import render, reverse, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.contrib.gis.geos import fromstr
 from django.contrib.gis.db.models.functions import Distance
 
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.views import View
 from django.views.generic import CreateView, FormView, ListView, UpdateView
@@ -156,7 +152,16 @@ class HomePageView(View):
             .prefetch_related(
                 "casehistory_set", "comment_set", "comment_set__user", "medias"
             )
+            .order_by("-created")
         )
+        lat = self.request.GET.get("lat")
+        long = self.request.GET.get("long")
+        if lat and long:
+            geo_location = fromstr(f"POINT({lat} {long})", srid=4326)
+            user_distance = Distance("geo_location", geo_location)
+            cases = cases.annotate(radius=user_distance).order_by(
+                "radius", Coalesce("created", "updated").desc()
+            )
         case_type = self.get_case_type()
         if case_type:
             cases = cases.filter(type=case_type)

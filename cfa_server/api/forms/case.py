@@ -1,10 +1,24 @@
 import magic
+import requests
 from django import forms
 from django.utils import timezone
 from django.contrib.gis.geos import fromstr
 from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance
 from api.models import Case, PoliceStation, Media
+
+
+def send_sms(text, mobile):
+    url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
+    params = {
+        "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
+        "message": text,
+        "senderId": "mnwalk",
+        "routeId": 8,
+        "mobileNos": (mobile),
+        "smsContentType": "english",
+    }
+    requests.get(url, params=params)
 
 
 class CaseForm(forms.ModelForm):
@@ -43,7 +57,10 @@ class CaseForm(forms.ModelForm):
         officier = police_station.policeofficer_set.order_by("-rank").first()
         case.oid = officier
         case.user = self.user
-        return case.save()
+        case.save()
+        text = "A new case has been reported. Log in to accept."
+        send_sms(text, self.user.mobile)
+        return case
 
 
 class MultipleFileInput(forms.ClearableFileInput):

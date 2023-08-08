@@ -180,6 +180,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
     pid = serializers.PrimaryKeyRelatedField(
         queryset=PoliceStation.objects.all(), required=False
     )
+    distance = serializers.CharField(source="distance.km", read_only=True)
 
     class Meta:
         model = Case
@@ -191,6 +192,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             "description",
             "follow",
             "pid",
+            "distance",
             "medias",
         ]
 

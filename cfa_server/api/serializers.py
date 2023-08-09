@@ -263,7 +263,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         instance.cstate = cstate
         instance.updated = timezone.now()
         instance.oid = user.policeofficer_set.first()
-        description = validated_data.pop("description")
+        description = validated_data.pop("description", "")
         medias = validated_data.pop("medias", [])
 
         if cstate in ["accepted", "rejected", "info", "inprogress", "resolved"]:

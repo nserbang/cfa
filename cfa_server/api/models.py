@@ -1,7 +1,10 @@
 from django.contrib.gis.db import models
 from django.utils import timezone
 from django.contrib.gis.geos import Point
-from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.measure import Distance
+from geopy.distance import distance
+
+# from django.contrib.gis.db.models.functions import Distance
 from django.db import transaction
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.geos import fromstr
@@ -181,8 +184,10 @@ class Case(models.Model):
         if self.pid:
             if not self.geo_location:
                 self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
-            # If the case is assigned to a police station, calculate and save the distance
-            self.distance = self.geo_location.distance(self.pid.geo_location)
+            # If the case is assigned to a police station, calculate and save the
+
+            d = Distance(m=distance(self.geo_location, self.pid.geo_location).meters)
+            self.distance = d.km
 
         if not self.pk:
             # If the instance is being created, record the creation in CaseHistory
@@ -287,13 +292,13 @@ class Comment(models.Model):
     user = models.ForeignKey(cUser, on_delete=models.CASCADE)
     content = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
-    medias = models.ManyToManyField(Media, related_name="comments")
+    medias = models.ManyToManyField(Media, related_name="comments", blank=True)
 
-    def save(self, **kwargs):
-        if hasattr(self, "cid"):
-            self.cid.updated = timezone.now()
-            self.cid.save()
-        return super().save(**kwargs)
+    # def save(self, **kwargs):
+    #     if hasattr(self, "cid"):
+    #         self.cid.updated = timezone.now()
+    #         self.cid.save()
+    #     return super().save(**kwargs)
 
 
 # Table for emergency helpline numbers with their name and gps location

@@ -318,7 +318,7 @@ class LostVehicleSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    user_detail = cUserSerializer(source="user")
+    user_detail = cUserSerializer(source="user", read_only=True)
 
     class Meta:
         model = Comment

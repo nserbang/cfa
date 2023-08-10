@@ -205,6 +205,8 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             description=validated_data["description"],
             follow=validated_data["follow"],
         )
+        from django.contrib.gis.db.models.functions import Distance
+
         geo_location = fromstr(f"POINT({case.lat} {case.long})", srid=4326)
         user_distance = Distance("geo_location", geo_location)
         if validated_data.get("pid"):
@@ -234,6 +236,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         fields = [
             "cstate",
             "oid",
+            "pid",
             "description",
             "medias",
         ]

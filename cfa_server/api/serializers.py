@@ -324,6 +324,11 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ["cmtid", "content", "cid", "user_detail", "created", "medias"]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["medias"] = MediaSerializer(instance.medias.all(), many=True).data
+        return data
+
 
 class EmergencySerializer(serializers.ModelSerializer):
     district = DistrictSerializer(source="did")

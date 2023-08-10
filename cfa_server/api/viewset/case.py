@@ -111,6 +111,9 @@ class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
     def get_queryset(self):
         case_id = self.kwargs["case_id"]
         qs = Comment.objects.filter(cid=case_id)

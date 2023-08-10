@@ -230,6 +230,9 @@ class CaseSerializerCreate(serializers.ModelSerializer):
 
 class CaseUpdateSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
+    pid = serializers.PrimaryKeyRelatedField(
+        queryset=PoliceStation.objects.all(), required=False
+    )
 
     class Meta:
         model = Case

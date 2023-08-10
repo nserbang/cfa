@@ -326,7 +326,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["medias"] = MediaSerializer(instance.medias.all(), many=True).data
+        request = self.context["request"]
+        data["medias"] = MediaSerializer(
+            instance.medias.all(), context={"request": request}, many=True
+        ).data
         return data
 
 

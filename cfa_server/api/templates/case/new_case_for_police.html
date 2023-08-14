@@ -1,0 +1,24 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">New Complaints</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        {% for case in cases %}
+            <div>
+                Crime Type: {{ case.get_cstate_display }} <br>
+                Date And Time: {{ case.created }} <br>
+                Crime Description: {{ case.description }} <br>
+            </div>
+            <hr>
+            <div>
+                <a href="{% url 'change_status' case.pk %}" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Accept</a>
+                <a href="{% url 'change_status' case.pk %}" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Open</a>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+    </div>
+</div>

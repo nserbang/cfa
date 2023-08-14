@@ -1,7 +1,8 @@
 from django.contrib.gis.db import models
 from django.utils import timezone
 from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import Distance
+
+# from django.contrib.gis.measure import Distance
 from geopy.distance import distance
 
 # from django.contrib.gis.db.models.functions import Distance
@@ -185,6 +186,7 @@ class Case(models.Model):
             if not self.geo_location:
                 self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
             # If the case is assigned to a police station, calculate and save the
+            from django.contrib.gis.measure import Distance
 
             d = Distance(m=distance(self.geo_location, self.pid.geo_location).meters)
             self.distance = d.km

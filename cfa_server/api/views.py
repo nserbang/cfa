@@ -165,13 +165,15 @@ class HomePageView(View):
         case_type = self.get_case_type()
         if case_type:
             cases = cases.filter(type=case_type)
-        elif not case_type and user.is_authenticated:
-            cases = cases.filter(user=user)
+        # elif not case_type and user.is_authenticated:
+        #     cases = cases.filter(user=user)
         if user.is_authenticated:
             liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)
             cases = cases.annotate(
                 has_liked=Exists(liked),
             )  # .filter(user=user)
+            if self.kwargs.get("case_type") == "my-complaints":
+                cases = cases.filter(user=self.request.user)
         if q := self.request.GET.get("q"):
             search_filter = (
                 Q(lostvehicle__regNumber=q)

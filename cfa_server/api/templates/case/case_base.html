@@ -1,0 +1,37 @@
+{% extends '_base.html' %}
+
+{% block content %}
+
+{% endblock content %}
+
+{% block javascript %}
+    <script>
+        const successCallback = (position) => {
+            latitude = position.coords.latitude
+            longitude = position.coords.longitude
+            console.log(latitude, longitude)
+            lat = latitude.toFixed(4)
+            long = longitude.toFixed(4)
+            addGeoLoactionInURL(lat, long)
+        };
+
+        const errorCallback = (error) => {
+            console.log(error);
+        };
+
+        navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+
+        function addGeoLoactionInURL(lat, long) {
+            let url = new URL(window.location.href);
+            let lattitude = url.searchParams.get('lat')
+            let longitude = url.searchParams.get('long')
+            if (!lattitude && !longitude) {
+                url.searchParams.set('lat', lat)
+                url.searchParams.set('long', long)
+                location.assign(url)
+            }
+        }
+
+    </script>
+{% endblock javascript %}
+

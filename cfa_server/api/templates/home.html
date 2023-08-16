@@ -12,10 +12,16 @@
             <div class="col-sm-12 col-lg-4">
                 <h4 class="flex-fill">{{ header }}</h4>
             </div>
-            <div class="col-sm-12 col-lg-4">
-                <form action="">
+            <div class="col-sm-12 col-lg-4 d-flex flex-row">
+                <form action="" class="pr-2">
                     <input class="form-control form-control-sm" id="search" placeholder="Search..." type="search" name="q" value="{{ request.GET.get.q }}">
                 </form>
+                {% if request.user.is_authenticated %}
+                    <div class="d-none pl-2 ml-2" id="download-link">
+                        <a class="" href="{% url 'case_export' %}?type=pdf">PDF</a>
+                        <a class="" href="{% url 'case_export' %}?type=excel">Excel</a>
+                    </div>
+                {% endif %}
             </div>
             <div class="col-sm-12 col-lg-4 d-flex flex-row-reverse">
                 {% if request.user.is_authenticated %}
@@ -30,3 +36,17 @@
 </div>
 
 {% endblock content %}
+
+{% block javascript %}
+    <script>
+        console.log("event")
+        report = document.getElementById('report');
+        if (report) {
+            report.addEventListener("click", function(event) {
+                event.preventDefault();
+                link = document.getElementById('download-link');
+                link.classList.remove('d-none');
+            })
+        }
+    </script>
+{% endblock %}

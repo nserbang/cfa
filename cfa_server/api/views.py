@@ -1,7 +1,8 @@
+from openpyxl import Workbook
 from django.urls import reverse_lazy
 from django.db.models.functions import Coalesce
 from django.db.models import Count, Case as MCase, When, Q, OuterRef, Exists
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, reverse, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.loader import render_to_string
@@ -174,6 +175,16 @@ class HomePageView(View):
             )  # .filter(user=user)
             if self.kwargs.get("case_type") == "my-complaints":
                 cases = cases.filter(user=self.request.user)
+            if user.is_police:
+                officer = user.policeofficer_set.first()
+                rank = int(officer.rank)
+                if rank < 5:
+                    cases = cases.filter(oid=officer)
+                elif rank == 5:
+                    cases = cases.filter(pid=officer.pid)
+                elif rank == 9:
+                    cases = cases.filter(pid__did__did=officer.pid.did.did)
+
         if q := self.request.GET.get("q"):
             search_filter = (
                 Q(lostvehicle__regNumber=q)
@@ -432,3 +443,48 @@ class NearestPoliceStationsView(LoginRequiredMixin, View):
             qs = PoliceStation.objects.all()
         qs = qs.values("pid", "did", "name", "address")
         return JsonResponse(list(qs), safe=False)
+
+
+class ExportCrime(View):
+    def get(self, request, *args, **kwargs):
+        cases = Case.objects.select_related("pid")
+        report_type = request.GET.get("type")
+        if report_type == "excel":
+            return self.get_excel(cases)
+        return self.get_pdf(cases)
+
+    def get_pdf(self, cases):
+        pass
+
+    def get_excel(self, cases):
+        # from openpyxl.writer.excel import save_virtual_workbook
+        wb = Workbook()
+        ws = wb.create_sheet()
+        # ws = wb.active
+        ws.title = "Cases"
+        headers = [
+            "Case No.",
+            "Reported",
+            "Type",
+            "Status",
+            "Police Station",
+            "Description",
+        ]
+        ws.append(headers)
+        for case in cases:
+            row = [
+                case.cid,
+                str(case.created.date()),
+                case.type,
+                case.cstate,
+                f"{case.pid.name}-{case.pid.address}",
+                case.description,
+            ]
+            ws.append(row)
+            ws.append([case.description])
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = "attachment; filename=Cases.xlsx"
+        wb.save(response)
+        return response

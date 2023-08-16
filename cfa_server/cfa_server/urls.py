@@ -52,6 +52,7 @@ from api.views import (
     ForgotPasswordView,
     ResetPasswordView,
     NearestPoliceStationsView,
+    ExportCrime,
 )
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
@@ -176,6 +177,7 @@ urlpatterns = [
         name="complete_signup",
     ),
     path("case/add/", CaseAddView.as_view(), name="add_case"),
+    path("case/export/", ExportCrime.as_view(), name="case_export"),
     path("comment/add/<int:case_id>/", AddCommentView.as_view(), name="add_comment"),
     path("like/add/<int:case_id>/", AddLikeView.as_view(), name="add_like"),
     path(

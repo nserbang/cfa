@@ -1,17 +1,32 @@
 <div class="card mb-3 shadow">
     <div class="card-body">
+        <table class="table table-bordered table-sm">
+            <thead>
+              <tr>
+                <th scope="col">Case No.</th>
+                <th scope="col">Reported</th>
+                <th scope="col">Type</th>
+                <th scope="col">Status</th>
+                <th scope="col">Police Station</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">{{ case.cid }}</th>
+                <td>{{ case.created }}</td>
+                <td>{{case.get_type_display }}</td>
+                <td>{{ case.get_cstate_display }}</td>
+                <td><a class="btn btn-primary btn-xs text-xs"
+                    rel="noreferrer"
+                    href="https://www.google.com/maps/dir/?api=1&destination={{ case.pid.lat }},{{ case.pid.long }}"
+                    style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
+                >
+                    {{ case.pid.name }}
+                </a></td>
+              </tr>
+            </tbody>
+          </table>
       <ul class="list-unstyled">
-        <li class=""> <span class="fw-bold">Case No.</span> : {{ case.cid }}</li>
-        <li class=""><span class="fw-bold">Case Type</span> : {{ case.type }}</li>
-        <li class=""><span class="fw-bold">Case Status</span> : {{ case.cstate }}</li>
-        <li class=""><span class="fw-bold">Police Station</span> :
-            <a class="btn btn-primary btn-xs text-xs"
-                rel="noreferrer"
-                href="https://www.google.com/maps/dir/?api=1&destination={{ case.pid.lat }},{{ case.pid.long }}"
-                style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
-            >
-                {{ case.pid.name }}
-            </a>
         <li class=""><span class="fw-bold">Description</span> :</li>
         <div><p class="pt-0">{{ case.description }}</p></div>
         <div class="row">

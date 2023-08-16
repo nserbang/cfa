@@ -38,3 +38,11 @@
     Proclaimed Offenders
     </a>
 </div>
+
+{% if request.user.is_authenticated %}
+<div class="pt-4 list-group text-sm fs-6 side-menu">
+    <a id="report" href="" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+        Report
+        </a>
+</div>
+{% endif %}

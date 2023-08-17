@@ -13,7 +13,7 @@ def send_sms(text, mobile):
     params = {
         "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
         "message": text,
-        "senderId": "mnwalk",
+        "senderId": "tmvict",
         "routeId": 8,
         "mobileNos": (mobile),
         "smsContentType": "english",

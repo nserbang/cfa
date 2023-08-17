@@ -41,6 +41,8 @@ def send_otp_verification_code(user, verification=True):
         "routeId": 8,
         "mobileNos": (user.mobile),  # for now send to shantam's no. f'{user.mobile}',
         "smsContentType": "english",
+        "templateid":1707169220338609309,
+        "entityid":1701169193114468940,
     }
 
     requests.get(url, params=params)

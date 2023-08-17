@@ -17,6 +17,8 @@ def send_sms(text, mobile):
         "routeId": 8,
         "mobileNos": (mobile),
         "smsContentType": "english",
+        "templateid":1707169220338609309,
+        "entityid":1701169193114468940
     }
     requests.get(url, params=params)
 

@@ -31,9 +31,9 @@ def send_otp_verification_code(user, verification=True):
     print(otp_code, "OTPPPPPPPPPPPPPPPP")
 
     if verification:
-        text = f"Victory Trading Agency user registration authentication verification OTP is{otp_code}"
+        text = f"Victory Trading Agency user registration authentication verification OTP is {otp_code}"
     else:
-        text = f"Victory Trading Agency user registration authentication verification OTP is{otp_code}" 
+        text = f"Victory Trading Agency user registration authentication verification OTP is {otp_code}" 
     url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
     params = {
         "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",

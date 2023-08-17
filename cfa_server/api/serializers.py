@@ -152,6 +152,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "liked",
             "distance",
             "medias",
+            "lost_vehicle",
         ]
 
     def get_case_type(self, case):
@@ -159,6 +160,23 @@ class CaseSerializer(serializers.ModelSerializer):
 
     def get_case_state(self, case):
         return dict(Case.cState)[case.cstate]
+
+    def get_lost_vehicle(self, case):
+
+        lost_vehicle = LostVehicle.objects.filter(caseId__pk=2).first()
+
+        if lost_vehicle:
+            vehicle_data = {
+                'registration_number': lost_vehicle.regNumber if lost_vehicle.regNumber else '',
+                'chasis_number': lost_vehicle.chasisNumber if lost_vehicle.chasisNumber else '',
+                'engine_number': lost_vehicle.engineNumber if lost_vehicle.engineNumber else '',
+                'make': lost_vehicle.make if lost_vehicle.make else '',
+                'model': lost_vehicle.model if lost_vehicle.model else '',
+                'description': lost_vehicle.description if lost_vehicle.description else ''
+            }
+            return vehicle_data
+        else:
+            return None
 
     # def get_comment_count(self, case):
     #     return case.comment_set.count()

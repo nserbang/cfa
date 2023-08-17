@@ -33,7 +33,7 @@ def send_otp_verification_code(user, verification=True):
     if verification:
         text = f"Victory Trading Agency user registration authentication verification OTP is {otp_code}"
     else:
-        text = f"Victory Trading Agency user registration authentication verification OTP is {otp_code}" 
+        text = f"Victory Trading Agency user registration authentication verification OTP is {otp_code}"
     url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
     params = {
         "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
@@ -42,8 +42,8 @@ def send_otp_verification_code(user, verification=True):
         "routeId": 8,
         "mobileNos": (user.mobile),  # for now send to shantam's no. f'{user.mobile}',
         "smsContentType": "english",
-        "templateid":1707169220338609309,
-        "entityid":1701169193114468940,
+        "templateid": 1707169220338609309,
+        "entityid": 1701169193114468940,
     }
 
     requests.get(url, params=params)

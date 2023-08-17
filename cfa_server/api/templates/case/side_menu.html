@@ -49,7 +49,7 @@
             Admin
         </a>
     {% endif %}
-    {% if request.user.is_authenticated %}
+    {% if request.user.is_authenticated and request.user.is_admin %}
         <a id="report" href="{% url 'assign_designation_list' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
             Assign Designation
         </a>

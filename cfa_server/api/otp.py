@@ -37,7 +37,7 @@ def send_otp_verification_code(user, verification=True):
     url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
     params = {
         "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
-        "message": otp_code,
+        "message": text,
         "senderId": "tmvict",
         "routeId": 8,
         "mobileNos": (user.mobile),  # for now send to shantam's no. f'{user.mobile}',

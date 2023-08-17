@@ -13,10 +13,12 @@ def send_sms(text, mobile):
     params = {
         "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
         "message": text,
-        "senderId": "mnwalk",
+        "senderId": "tmvict",
         "routeId": 8,
         "mobileNos": (mobile),
         "smsContentType": "english",
+        "templateid":1707169220338609309,
+        "entityid":1701169193114468940
     }
     requests.get(url, params=params)
 

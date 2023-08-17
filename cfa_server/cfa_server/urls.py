@@ -53,6 +53,14 @@ from api.views import (
     ResetPasswordView,
     NearestPoliceStationsView,
     ExportCrime,
+    PoliceStationListView,
+    AssignDesignationListView,
+    ChoosePoliceOfficerView,
+    PoliceOfficerListView,
+    AddOfficerView,
+    RemovePoliceOfficerListView,
+    RemoveOfficerView,
+    ChangeDesignation,
 )
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
@@ -178,6 +186,48 @@ urlpatterns = [
     ),
     path("case/add/", CaseAddView.as_view(), name="add_case"),
     path("case/export/", ExportCrime.as_view(), name="case_export"),
+    path(
+        "police/stations/", PoliceStationListView.as_view(), name="police_station_list"
+    ),
+    path(
+        "assign/designation/list/",
+        AssignDesignationListView.as_view(),
+        name="assign_designation_list",
+    ),
+    path(
+        "change/designation/<int:user_id>/",
+        ChangeDesignation.as_view(),
+        name="change_designation",
+    ),
+    path(
+        "police/officer-add/<int:station_id>/",
+        AddOfficerView.as_view(),
+        name="add_officer",
+    ),
+    path(
+        "police/officer-remove/<int:station_id>/",
+        RemoveOfficerView.as_view(),
+        name="remove_officer",
+    ),
+    path(
+        "choose/officer/<int:station_id>/",
+        ChoosePoliceOfficerView.as_view(),
+        name="choose_police_officer",
+    ),
+    path(
+        "remove/officer/<int:station_id>/list/",
+        RemovePoliceOfficerListView.as_view(),
+        name="remove_police_officer_list",
+    ),
+    path(
+        "police/officer-list/<int:station_id>/",
+        PoliceOfficerListView.as_view(),
+        name="police_officer_list",
+    ),
+    path("police/officer-add/", AddOfficerView.as_view(), name="police_officer_list"),
+    path("police/officer-add/", AddOfficerView.as_view(), name="police_officer_list"),
+    path("police/officer-add/", AddOfficerView.as_view(), name="police_officer_list"),
+    path("police/officer-add/", AddOfficerView.as_view(), name="police_officer_list"),
     path("comment/add/<int:case_id>/", AddCommentView.as_view(), name="add_comment"),
     path("like/add/<int:case_id>/", AddLikeView.as_view(), name="add_like"),
     path(

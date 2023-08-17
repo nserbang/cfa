@@ -1,0 +1,40 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Officer List{% endblock title %}
+
+
+{% block content %}
+<div class='row pt-1'>
+    <div class="col-lg-3 col-md-3 col-sm-12">
+        {% include 'case/side_menu.html' %}
+    </div>
+    <div class="col-lg-9 col-md-9 col-sm-12">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="flex-fill">Choose police officer to change designation.</h4>
+            </div>
+            <div class="col-12">
+                <table class="table table-bordered small">
+                    <thead>
+                    <tr>
+                        <th scope="col">S.N.</th>
+                        <th scope="col">Mobile</th>
+                        <th scope="col">Change Designation</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in object_list %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ user.mobile }}</td>
+                            <td><a class="add" href="{% url 'change_designation' user.pk %}">Change Designation</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

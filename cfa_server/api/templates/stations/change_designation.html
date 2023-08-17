@@ -1,0 +1,21 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Change Designation{% endblock title %}
+
+
+{% block content %}
+<div class='row pt-1'>
+    <div class="col-lg-3 col-md-3 col-sm-12">
+        {% include 'case/side_menu.html' %}
+    </div>
+    <div class="col-lg-9 col-md-9 col-sm-12">
+        <h4 class="flex-fill">Choose Designation</h4>
+        <form method="post" id="main-form">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button id="case-submit" type="submit" class="btn btn-primary py-1">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}

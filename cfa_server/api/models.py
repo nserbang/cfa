@@ -64,6 +64,10 @@ class cUser(AbstractUser):
     def is_user(self):
         return self.role == "user"
 
+    @property
+    def is_admin(self):
+        return self.role == "admin"
+
 
 # Holds list of police stations
 class PoliceStation(models.Model):
@@ -151,7 +155,7 @@ class Case(models.Model):
     user = models.ForeignKey(cUser, on_delete=models.DO_NOTHING)
     # Police officer id
     oid = models.ForeignKey(
-        PoliceOfficer, on_delete=models.DO_NOTHING, null=True, blank=True
+        PoliceOfficer, on_delete=models.SET_NULL, null=True, blank=True
     )
     # complaint type
     type = models.CharField(max_length=10, choices=cType, default="drug")

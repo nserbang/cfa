@@ -1,0 +1,74 @@
+{% extends '_base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Police Officer List of {{ station.name }}{% endblock title %}
+
+
+{% block content %}
+<div class='row pt-1'>
+    <div class="col-lg-3 col-md-3 col-sm-12">
+        {% include 'case/side_menu.html' %}
+    </div>
+    <div class="col-lg-9 col-md-9 col-sm-12">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="flex-fill">List of Police Officers of {{ station.name }}</h4>
+            </div>
+            <div class="col-12">
+                <table class="table table-bordered small">
+                    <thead>
+                        <tr>
+                            <th scope="col">S.N.</th>
+                            <th scope="col">Mobile</th>
+                            <th scope="col">Add</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for officer in object_list %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ officer.user.mobile }}</td>
+                                <td><a class="remove" href="#" onclick="removeUser({{ officer.user.pk }})">Remove</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="removeOfficerModal" tabindex="-1" aria-labelledby="removeOfficerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h1 class="modal-title fs-5" id="removeOfficerModalLabel">Are you sure you want to remove police officer?</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+           <form action="{% url 'remove_officer' station.pk %}" method="post">
+                {% csrf_token %}
+                {{ remove_officer_form|crispy }}
+                <button type="submit" class="btn btn-primary">Remove Officer</button>
+           </form>
+        </div>
+        <div class="modal-footer">
+        </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+    <script>
+
+        function removeUser(userId) {
+            const user = document.getElementById('id_user')
+            user.value = userId
+            const myModal = new bootstrap.Modal('#removeOfficerModal', {
+                keyboard: false
+            })
+            myModal.show();
+        }
+    </script>
+{% endblock javascript %}

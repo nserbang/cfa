@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.db.models.functions import Coalesce
 from django.db.models import Count, Case as MCase, When, Q, OuterRef, Exists
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
-from django.shortcuts import render, reverse, redirect
+from django.shortcuts import render, reverse, redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.loader import render_to_string
 from django.contrib.gis.geos import fromstr
@@ -23,6 +23,7 @@ from .user_forms import (
     ChangePasswordForm,
 )
 from .otp import send_otp_verification_code
+from .mixins import AdminRequiredMixin
 
 from api.models import (
     Case,
@@ -33,6 +34,7 @@ from api.models import (
     Victim,
     Criminal,
     PoliceStation,
+    PoliceOfficer,
 )
 
 # from rest_framework.request import Request
@@ -40,7 +42,7 @@ from api.view.district_views import *
 from api.view.police_views import *
 from api.view.case_view import *
 from api.view.cuser_views import *
-from api.forms.user import cUserCreationForm
+from api.forms.user import AddOfficerForm, RemoveOfficerForm, ChangeDesignationForm
 from api.forms.case import CaseForm, CaseUpdateForm
 
 
@@ -177,13 +179,14 @@ class HomePageView(View):
                 cases = cases.filter(user=self.request.user)
             if user.is_police:
                 officer = user.policeofficer_set.first()
-                rank = int(officer.rank)
-                if rank < 5:
-                    cases = cases.filter(oid=officer)
-                elif rank == 5:
-                    cases = cases.filter(pid=officer.pid)
-                elif rank == 9:
-                    cases = cases.filter(pid__did__did=officer.pid.did.did)
+                if officer:
+                    rank = int(officer.rank)
+                    if rank < 5:
+                        cases = cases.filter(oid=officer)
+                    elif rank == 5:
+                        cases = cases.filter(pid=officer.pid)
+                    elif rank == 9:
+                        cases = cases.filter(pid__did__did=officer.pid.did.did)
 
         if q := self.request.GET.get("q"):
             search_filter = (
@@ -488,3 +491,110 @@ class ExportCrime(View):
         response["Content-Disposition"] = "attachment; filename=Cases.xlsx"
         wb.save(response)
         return response
+
+
+class PoliceStationListView(AdminRequiredMixin, ListView):
+    template_name = "stations/list.html"
+    model = PoliceStation
+    queryset = PoliceStation.objects.all()
+
+
+class ChoosePoliceOfficerView(AdminRequiredMixin, ListView):
+    template_name = "stations/choose_police_officers.html"
+    model = cUser
+    queryset = cUser.objects.filter(is_superuser=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["station"] = get_object_or_404(
+            PoliceStation, pk=self.kwargs["station_id"]
+        )
+        context["add_officer_form"] = AddOfficerForm
+        return context
+
+
+class PoliceOfficerListView(AdminRequiredMixin, ListView):
+    template_name = "stations/police_officers.html"
+    model = PoliceOfficer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.filter(pid_id=self.kwargs["station_id"])
+        return qs.select_related("user")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["station"] = get_object_or_404(
+            PoliceStation, pk=self.kwargs["station_id"]
+        )
+        context["remove_officer_form"] = RemoveOfficerForm
+        return context
+
+
+class AddOfficerView(View):
+    def post(self, request, *args, **kwargs):
+        user_id = int(request.POST.get("user"))
+        user = cUser.objects.get(pk=user_id)
+        user.role = "police"
+        user.save()
+        pid = get_object_or_404(PoliceStation, pk=kwargs["station_id"])
+        rank = request.POST.get("rank")
+        PoliceOfficer.objects.update_or_create(
+            user=user,
+            defaults={
+                "pid": pid,
+                "rank": rank,
+                "mobile": user.mobile,
+            },
+        )
+        messages.success(request, "Succesfully added user to police list.")
+        return redirect(reverse("police_officer_list", args=[pid.pk]))
+
+
+class RemoveOfficerView(View):
+    def post(self, request, *args, **kwargs):
+        user_id = int(request.POST.get("user"))
+        user = cUser.objects.get(pk=user_id)
+        user.role = "user"
+        user.save()
+        user.policeofficer_set.all().delete()
+        messages.success(request, "Succesfully removed user from officer list.")
+        return redirect(reverse("police_officer_list", args=[kwargs["station_id"]]))
+
+
+class RemovePoliceOfficerListView(AdminRequiredMixin, ListView):
+    template_name = "stations/choose_police_officers_to_remove.html"
+    model = PoliceOfficer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = qs.filter(pid_id=self.kwargs["station_id"])
+        return qs.select_related("user")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["station"] = get_object_or_404(
+            PoliceStation, pk=self.kwargs["station_id"]
+        )
+        context["remove_officer_form"] = RemoveOfficerForm
+        return context
+
+
+class AssignDesignationListView(AdminRequiredMixin, ListView):
+    template_name = "stations/police_designation_list.html"
+    model = cUser
+    queryset = cUser.objects.all()
+
+
+class ChangeDesignation(AdminRequiredMixin, FormView):
+    form_class = ChangeDesignationForm
+    template_name = "stations/change_designation.html"
+
+    def form_valid(self, form):
+        form.save()
+        return redirect(reverse("assign_designation_list"))
+
+    def get_form_kwargs(self):
+        kw = super().get_form_kwargs()
+        kw["user"] = get_object_or_404(cUser, pk=self.kwargs["user_id"])
+        return kw

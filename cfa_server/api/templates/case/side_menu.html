@@ -43,6 +43,16 @@
 <div class="pt-4 list-group text-sm fs-6 side-menu">
     <a id="report" href="" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
         Report
+    </a>
+    {% if request.user.is_authenticated and request.user.is_admin %}
+        <a id="report" href="{% url 'police_station_list' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+            Admin
         </a>
+    {% endif %}
+    {% if request.user.is_authenticated %}
+        <a id="report" href="{% url 'assign_designation_list' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+            Assign Designation
+        </a>
+    {% endif %}
 </div>
 {% endif %}

@@ -135,4 +135,8 @@ class CaseUpdateForm(forms.ModelForm):
         case.add_history_and_media(
             description=description, medias=medias, user=self.request.user
         )
+        text = "Your case case No. {} status changed to {} at Victory Trading Agency app".format(case.id, self.cleaned_data["cstate"])
+        template_id = 1707169227815701046
+        send_sms(text, self.user.mobile, template_id)
+
         return case

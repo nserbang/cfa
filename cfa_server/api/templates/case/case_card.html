@@ -1,15 +1,17 @@
 <div class="card mb-3 shadow">
     <div class="card-body">
         <table class="table table-bordered table-sm">
-            <thead>
-              <tr>
-                <th scope="col">Case No.</th>
-                <th scope="col">Reported</th>
-                <th scope="col">Type</th>
-                <th scope="col">Status</th>
-                <th scope="col">Police Station</th>
-              </tr>
-            </thead>
+            {% if forloop.first %}
+                <thead>
+                <tr>
+                    <th scope="col">Case No.</th>
+                    <th scope="col">Reported</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Police Station</th>
+                </tr>
+                </thead>
+            {% endif %}
             <tbody>
               <tr>
                 <th scope="row">{{ case.cid }}</th>

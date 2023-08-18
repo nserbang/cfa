@@ -498,6 +498,12 @@ class PoliceStationListView(AdminRequiredMixin, ListView):
     model = PoliceStation
     queryset = PoliceStation.objects.all()
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if q := self.request.GET.get("q"):
+            qs = qs.filter(Q(name__icontains=q) | Q(address__icontains=q))
+        return qs
+
 
 class ChoosePoliceOfficerView(AdminRequiredMixin, ListView):
     template_name = "stations/choose_police_officers.html"

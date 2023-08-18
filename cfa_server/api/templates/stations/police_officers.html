@@ -10,8 +10,11 @@
     </div>
     <div class="col-lg-9 col-md-9 col-sm-12">
         <div class="row">
-            <div class="col-12">
+            <div class="col-12 d-flex flex-row">
                 <h4 class="flex-fill">List of Police Officers of {{ station.name }}</h4>
+                <form action="" class="pr-2">
+                    <input class="form-control form-control-sm" name="q" value="{{ request.GET.q }}" id="search" placeholder="Search..." type="search" name="q" value="{{ request.GET.get.q }}">
+                </form>
             </div>
             <div class="col-12">
                 <table class="table table-bordered small">

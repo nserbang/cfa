@@ -2,7 +2,6 @@
 {% load crispy_forms_tags %}
 {% block title %}Officer List{% endblock title %}
 
-
 {% block content %}
 <div class='row pt-1'>
     <div class="col-lg-3 col-md-3 col-sm-12">
@@ -10,8 +9,11 @@
     </div>
     <div class="col-lg-9 col-md-9 col-sm-12">
         <div class="row">
-            <div class="col-12">
+            <div class="col-12 d-flex flex-row">
                 <h4 class="flex-fill">Add police officer to {{ station.name }}</h4>
+                <form action="" class="pr-2">
+                    <input class="form-control form-control-sm" name="q" value="{{ request.GET.q }}" id="search" placeholder="Search..." type="search" name="q" value="{{ request.GET.get.q }}">
+                </form>
             </div>
             <div class="col-12">
                 <table class="table table-bordered small">

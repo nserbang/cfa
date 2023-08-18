@@ -504,6 +504,12 @@ class ChoosePoliceOfficerView(AdminRequiredMixin, ListView):
     model = cUser
     queryset = cUser.objects.filter(is_superuser=False)
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if q := self.request.GET.get("q"):
+            qs = qs.filter(mobile__icontains=q)
+        return qs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["station"] = get_object_or_404(
@@ -520,6 +526,8 @@ class PoliceOfficerListView(AdminRequiredMixin, ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.filter(pid_id=self.kwargs["station_id"])
+        if q := self.request.GET.get("q"):
+            qs = qs.filter(user__mobile__icontains=q)
         return qs.select_related("user")
 
     def get_context_data(self, **kwargs):
@@ -569,6 +577,8 @@ class RemovePoliceOfficerListView(AdminRequiredMixin, ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.filter(pid_id=self.kwargs["station_id"])
+        if q := self.request.GET.get("q"):
+            qs = qs.filter(mobile__icontains=q)
         return qs.select_related("user")
 
     def get_context_data(self, **kwargs):

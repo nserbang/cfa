@@ -54,7 +54,7 @@ class CaseViewSet(UserMixin, ModelViewSet):
             .prefetch_related("medias")
         ).order_by("-created")
         if lat and long:
-            geo_location = fromstr(f"POINT({lat} {long})", srid=4326)
+            geo_location = fromstr(f"POINT({long} {lat})", srid=4326)
             user_distance = Distance("geo_location", geo_location)
             data = data.annotate(radius=user_distance).order_by(
                 "radius", Coalesce("created", "updated").desc()

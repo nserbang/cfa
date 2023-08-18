@@ -217,7 +217,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         )
         from django.contrib.gis.db.models.functions import Distance
 
-        geo_location = fromstr(f"POINT({case.lat} {case.long})", srid=4326)
+        geo_location = fromstr(f"POINT({case.long} {case.lat})", srid=4326)
         user_distance = Distance("geo_location", geo_location)
         if validated_data.get("pid"):
             police_station = validated_data["pid"]

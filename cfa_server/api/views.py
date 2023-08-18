@@ -160,7 +160,7 @@ class HomePageView(View):
         lat = self.request.GET.get("lat")
         long = self.request.GET.get("long")
         if lat and long:
-            geo_location = fromstr(f"POINT({lat} {long})", srid=4326)
+            geo_location = fromstr(f"POINT({long} {lat})", srid=4326)
             user_distance = Distance("geo_location", geo_location)
             cases = cases.annotate(radius=user_distance).order_by(
                 "radius", Coalesce("created", "updated").desc()
@@ -439,7 +439,7 @@ class NearestPoliceStationsView(LoginRequiredMixin, View):
         lat = request.GET.get("lat")
         long = request.GET.get("long")
         if lat and long:
-            location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
+            location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
             user_distance = Distance("geo_location", location)
             qs = PoliceStation.objects.annotate(radius=user_distance).order_by("radius")
         else:

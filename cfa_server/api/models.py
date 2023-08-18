@@ -88,7 +88,7 @@ class PoliceStation(models.Model):
         return self.name
 
     def save(self, **kwargs):
-        self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
+        self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
         super().save(**kwargs)
 
 
@@ -188,7 +188,7 @@ class Case(models.Model):
     def save(self, *args, **kwargs):
         if self.pid:
             if not self.geo_location:
-                self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
+                self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
             # If the case is assigned to a police station, calculate and save the
             from django.contrib.gis.measure import Distance
 
@@ -205,26 +205,26 @@ class Case(models.Model):
                     cstate=self.cstate,
                     description="Case created.",
                 )
+                try:
+                    data = {
+                        "case_id": str(self.cid),
+                        "description": self.description,
+                        "type": self.type,
+                        "state": self.cstate,
+                        "created": str(self.created),
+                    }
+                    message = Message(data=data)
+                    if self.oid_id:
+                        devices = FCMDevice.objects.filter(user_id=self.oid.user_id)
+                    else:
+                        devices = FCMDevice.objects.filter(
+                            user_id__in=self.pid.policeofficer_set.values("user_id")
+                        )
+                    devices.send_message(message)
+                except Exception as e:
+                    pass
+            return
         super().save(*args, **kwargs)
-        try:
-            data = {
-                "case_id": str(self.cid),
-                "description": self.description,
-                "type": self.type,
-                "state": self.cstate,
-                "created": str(self.created),
-            }
-            message = Message(data=data)
-            if self.oid_id:
-                devices = FCMDevice.objects.filter(user_id=self.oid.user_id)
-            else:
-                devices = FCMDevice.objects.filter(
-                    user_id__in=self.pid.policeofficer_set.values("user_id")
-                )
-            devices.send_message(message)
-        except Exception as e:
-            pass
-        return
 
     def send_notitication(self, title, user_ids: list):
         try:

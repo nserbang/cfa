@@ -8,7 +8,7 @@ from django.contrib.gis.db.models.functions import Distance
 from api.models import Case, PoliceStation, Media
 
 
-def send_sms(text, mobile):
+def send_sms(text, mobile, template_id):
     url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
     params = {
         "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
@@ -17,7 +17,7 @@ def send_sms(text, mobile):
         "routeId": 8,
         "mobileNos": (mobile),
         "smsContentType": "english",
-        "templateid":1707169220338609309,
+        "templateid":template_id,
         "entityid":1701169193114468940
     }
     requests.get(url, params=params)
@@ -60,8 +60,10 @@ class CaseForm(forms.ModelForm):
         case.oid = officier
         case.user = self.user
         case.save()
-        text = "A new case has been reported. Log in to accept."
-        send_sms(text, self.user.mobile)
+        # text = "A new case has been reported. Log in to accept."
+        text = "Victory Trading Agency app new case No: {} reported at Open app/website to see details".format(case.id)
+        template_id = 1707169225617804935
+        send_sms(text, self.user.mobile, template_id)
         return case
 
 
@@ -133,4 +135,10 @@ class CaseUpdateForm(forms.ModelForm):
         case.add_history_and_media(
             description=description, medias=medias, user=self.request.user
         )
+        try:
+            text = "Your case case No. {} status changed to {} at Victory Trading Agency app".format(case.id, self.cleaned_data["cstate"])
+            template_id = 1707169227815701046
+            send_sms(text, self.user.mobile, template_id)
+        except Exception as e:
+            pass
         return case

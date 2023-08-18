@@ -111,6 +111,12 @@ class CaseHistorySerializer(serializers.ModelSerializer):
         ]
 
 
+class LostVehicleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LostVehicle
+        fields = "__all__"
+
+
 class CaseSerializer(serializers.ModelSerializer):
     # history = CaseHistorySerializer(many=True)
     # media = MediaSerializer(many=True)
@@ -132,6 +138,9 @@ class CaseSerializer(serializers.ModelSerializer):
         decimal_places=2,
         read_only=True,
     )
+    vehicle_detail = LostVehicleSerializer(
+        source="lostvehicle", read_only=True, required=False
+    )
 
     class Meta:
         model = Case
@@ -152,6 +161,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "liked",
             "distance",
             "medias",
+            "vehicle_detail",
         ]
 
     def get_case_type(self, case):
@@ -315,12 +325,6 @@ class CaseUpdateByReporterSerializer(serializers.ModelSerializer):
         noti_title = f"Additional information provided for your case no.{instance.pk}"
         instance.send_notitication(noti_title, [instance.oid.user_id])
         return instance
-
-
-class LostVehicleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LostVehicle
-        fields = "__all__"
 
 
 class CommentSerializer(serializers.ModelSerializer):

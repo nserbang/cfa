@@ -188,7 +188,7 @@ class Case(models.Model):
     def save(self, *args, **kwargs):
         if self.pid:
             if not self.geo_location:
-                self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
+                self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
             # If the case is assigned to a police station, calculate and save the
             from django.contrib.gis.measure import Distance
 

@@ -1,4 +1,4 @@
-FROM python:3.11.3-slim-bullseye
+FROM python:3.8-slim-buster
 
 # ENV PYTHONPATH="$PYTHONPATH:/home/grepsr/$SERVICE_NAME/src"
 

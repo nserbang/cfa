@@ -22,6 +22,6 @@ ADD . /cfa_server
 
 WORKDIR /cfa_server/
 
-RUN python manage.py collectstatic --noinput
+# RUN python manage.py collectstatic --noinput
 
-CMD python /cfa_server/manage.py runserver 0.0.0.0:8001
+CMD gunicorn cfa_server.wsgi:application -c gunicorn_config.py

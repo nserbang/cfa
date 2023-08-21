@@ -4,11 +4,12 @@ FROM python:3.11.3-slim-bullseye
 ADD requirements.txt /tmp/requirements.txt
 # gis dependencies
 RUN apt-get update \
-    && apt-get install -y libspatialite-dev gdal-bin libgdal-dev proj-bin python3-gdal libsqlite3-mod-spatialite \
+    && apt-get install -y libspatialite-dev gdal-bin libgdal-dev proj-bin python3-gdal libsqlite3-mod-spatialite
 
-    && pip install --no-cache-dir -r /tmp/requirements.txt \
+RUN pip install --no-cache-dir -r /tmp/requirements.txt \
     && pip install psycopg2-binary \
-    && rm -rf /var/lib/apt/lists/*
+    
+RUN rm -rf /var/lib/apt/lists/*
 
     # && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
 

@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster
+FROM python:3.11-bullseye
 
 # ENV PYTHONPATH="$PYTHONPATH:/home/grepsr/$SERVICE_NAME/src"
 ADD requirements.txt requirements.txt

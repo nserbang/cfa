@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-0mfz%)780(7i=w)p8w^n$s7j#(u!bq$1zd(m!@19sa5$9wb^gw"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 TIME_ZONE = "Asia/Kolkata"
@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "ckeditor",
     "ckeditor_uploader",
     "fcm_django",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -65,6 +66,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "'corsheaders.middleware.CorsMiddleware'",
 ]
 
 if DEBUG:
@@ -296,3 +298,7 @@ ALLOWED_DOC_TYPES = [
 ALLOWED_FILE_TYPES = (
     ALLOWED_VIDEO_TYPES + ALLOWED_AUDIO_TYPES + ALLOWED_IMAGE_TYPES + ALLOWED_DOC_TYPES
 )
+
+CORS_ALLOWED_ORIGINS = [
+    "https://arpreport.merrygold.xyz",
+]

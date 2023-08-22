@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-0mfz%)780(7i=w)p8w^n$s7j#(u!bq$1zd(m!@19sa5$9wb^gw"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 TIME_ZONE = "Asia/Kolkata"
@@ -300,6 +300,11 @@ ALLOWED_FILE_TYPES = (
 )
 
 CORS_ALLOWED_ORIGINS = [
+    "https://arpreport.merrygold.xyz",
+    "http://193.168.195.153:9001",
+]
+
+CSRF_TRUSTED_ORIGINS = [
     "https://arpreport.merrygold.xyz",
     "http://193.168.195.153:9001",
 ]

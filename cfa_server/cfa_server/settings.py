@@ -301,5 +301,5 @@ ALLOWED_FILE_TYPES = (
 
 CORS_ALLOWED_ORIGINS = [
     "https://arpreport.merrygold.xyz",
-    "http://193.168.195.153:9001/",
+    "http://193.168.195.153:9001",
 ]

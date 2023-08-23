@@ -306,5 +306,6 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://arpreport.merrygold.xyz",
+    "https://testcrep.merrygold.xyz/",
     "http://193.168.195.153:9001",
 ]

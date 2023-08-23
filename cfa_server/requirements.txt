@@ -35,3 +35,5 @@ django-ckeditor==6.6.1
 fcm-django==2.0.0
 python-magic==0.4.27
 openpyxl==3.1.2
+gunicorn==21.2.0
+django-cors-headers==4.2.0

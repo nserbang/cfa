@@ -301,12 +301,12 @@ ALLOWED_FILE_TYPES = (
 
 CORS_ALLOWED_ORIGINS = [
     "https://arpreport.merrygold.xyz",
-    "https://testcrep.merrygold.xyz/",
+    "https://testcrep.merrygold.xyz",
     "http://193.168.195.153:9001",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://arpreport.merrygold.xyz",
-    "https://testcrep.merrygold.xyz/",
+    "https://testcrep.merrygold.xyz",
     "http://193.168.195.153:9001",
 ]

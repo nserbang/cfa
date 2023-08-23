@@ -345,6 +345,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class EmergencySerializer(serializers.ModelSerializer):
     district = DistrictSerializer(source="did")
+    distance = serializers.FloatField(
+        required=False, read_only=True, source="distance.km"
+    )
 
     class Meta:
         model = Emergency
@@ -355,6 +358,7 @@ class EmergencySerializer(serializers.ModelSerializer):
             "number",
             "lat",
             "long",
+            "distance",
         ]
 
 

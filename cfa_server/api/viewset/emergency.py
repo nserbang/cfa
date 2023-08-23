@@ -1,18 +1,27 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.contrib.gis.geos import fromstr
+from django.contrib.gis.db.models.functions import Distance
 
 from api.models import Emergency
 from api.serializers import EmergencySerializer
 from api.viewset.permission import IsReadOnly
 
+
 class EmergencyViewSet(ModelViewSet):
     serializer_class = EmergencySerializer
     queryset = Emergency.objects.all()
-    permission_classes = (IsReadOnly, )
+    permission_classes = (IsReadOnly,)
 
     def get_queryset(self):
-        district_id = self.kwargs['district_id']
+        district_id = self.kwargs["district_id"]
         queryset = Emergency.objects.filter(did=district_id)
+        lat = self.request.query_params.get("lat")
+        long = self.request.query_params.get("long")
+        if lat and long:
+            geo_location = fromstr(f"POINT({long} {lat})", srid=4326)
+            user_distance = Distance("geo_location", geo_location)
+            queryset = queryset.annotate(distance=user_distance)
         return queryset
 
 
@@ -20,3 +29,13 @@ class EmergencyViewListSet(ModelViewSet):
     serializer_class = EmergencySerializer
     queryset = Emergency.objects.all()
     permission_classes = (IsReadOnly,)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        lat = self.request.query_params.get("lat")
+        long = self.request.query_params.get("long")
+        if lat and long:
+            geo_location = fromstr(f"POINT({long} {lat})", srid=4326)
+            user_distance = Distance("geo_location", geo_location)
+            queryset = queryset.annotate(distance=user_distance)
+        return queryset

@@ -4,7 +4,7 @@ import pytesseract as pt
 from django.db.models import Q
 from api.models import LostVehicle
 from django.conf import settings
-
+from api.log import *
 
 # check or valid RC string
 def has_numbers_and_characters(s):
@@ -34,16 +34,20 @@ def detectVehicleNumber(img=None, numbers=None):
     # cv.imshow("Grayscale Image", img)
     # cv.waitKey(0)
     if numbers is not None:
+        log.debug(" Trying to detect vehicle number from passed value :",numbers)
         # TO DO: search num in lostVehicle. If found, return as it is
         # fetch numbers from the lostVehicle table and return it
         found = LostVehicle.objects.filter(
             Q(regNumber=numbers) | Q(chasisNumber=numbers) | Q(engineNumber=numbers)
         ).exists()
         if found:
+            log.debug(" Vehicle found ")
             ret_nums.append({numbers: True})
         else:
+            log.debug(" Vehicle not found ")
             ret_nums.append({numbers: False})
     if img is not None:
+        log.debug(" Trying to detect vehicle number from image ")
         image_data_bytes = img.read()
         image_array = np.frombuffer(image_data_bytes, dtype=np.uint8)
         img = cv.imdecode(image_array, cv.IMREAD_COLOR)
@@ -73,7 +77,7 @@ def detectVehicleNumber(img=None, numbers=None):
             height = int(n.shape[0] * 150 / 100)
             # print(" HELLO width :",width, "Height :",height, " Shape :",n.shape[0])
             dm = (width, height)
-            # print(" NNNN : ",n)
+            # print(" NNNN : ",n)            
             carTemp = cv.resize(
                 n, dm, interpolation=cv.INTER_AREA
             )  # resize image for OCR
@@ -92,7 +96,7 @@ def detectVehicleNumber(img=None, numbers=None):
                     ret_nums.append({rcn: False})
             # print (' NUMBER  in image : ',num)
             # nums.append(num) # get recognized numbers
-
+            log.debug(" Returning : ",ret_nums)
         return ret_nums
 
 

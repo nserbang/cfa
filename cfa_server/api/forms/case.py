@@ -62,7 +62,7 @@ class CaseForm(forms.ModelForm):
         case.save()
         # text = "A new case has been reported. Log in to accept."
         text = "Victory Trading Agency app new case No: {} reported at Open app/website to see details".format(
-            case.id
+            case.cid
         )
         template_id = 1707169225617804935
         send_sms(text, self.user.mobile, template_id)

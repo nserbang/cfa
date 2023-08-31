@@ -41,13 +41,13 @@ def detectVehicleNumber(img=None, numbers=None):
             Q(regNumber=numbers) | Q(chasisNumber=numbers) | Q(engineNumber=numbers)
         ).exists()
         if found:
-            log.debug(" Vehicle found ")
+            log.info(" Vehicle found ")
             ret_nums.append({numbers: True})
         else:
-            log.debug(" Vehicle not found ")
+            log.info(" Vehicle not found ")
             ret_nums.append({numbers: False})
     if img is not None:
-        log.debug(" Trying to detect vehicle number from image ")
+        log.info(" Trying to detect vehicle number from image ")
         image_data_bytes = img.read()
         image_array = np.frombuffer(image_data_bytes, dtype=np.uint8)
         img = cv.imdecode(image_array, cv.IMREAD_COLOR)
@@ -96,8 +96,8 @@ def detectVehicleNumber(img=None, numbers=None):
                     ret_nums.append({rcn: False})
             # print (' NUMBER  in image : ',num)
             # nums.append(num) # get recognized numbers
-            log.debug(" Returning : ",ret_nums)
-        return ret_nums
+    log.info(" Returning : ",ret_nums)
+    return ret_nums
 
 
 # cp = cv.VideoCapture(0)

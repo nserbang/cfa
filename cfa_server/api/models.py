@@ -190,9 +190,6 @@ class Case(models.Model):
             # If the case is assigned to a police station, calculate and save the
             point_one = (self.geo_location.y, self.geo_location.x)
             point_two = (self.pid.geo_location.y, self.pid.geo_location.x)
-            import ipdb
-
-            ipdb.set_trace()
 
             d = distance.great_circle(point_one, point_two).km
             self.distance = d

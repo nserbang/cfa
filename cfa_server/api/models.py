@@ -2,10 +2,8 @@ from django.contrib.gis.db import models
 from django.utils import timezone
 from django.contrib.gis.geos import Point
 
-# from django.contrib.gis.measure import Distance
-from geopy.distance import distance
+from geopy import distance
 
-# from django.contrib.gis.db.models.functions import Distance
 from django.db import transaction
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.geos import fromstr
@@ -188,12 +186,16 @@ class Case(models.Model):
     def save(self, *args, **kwargs):
         if self.pid:
             if not self.geo_location:
-                self.geo_location = fromstr(f"POINT({self.lat} {self.long})", srid=4326)
+                self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
             # If the case is assigned to a police station, calculate and save the
-            from django.contrib.gis.measure import Distance
+            point_one = (self.geo_location.y, self.geo_location.x)
+            point_two = (self.pid.geo_location.y, self.pid.geo_location.x)
+            import ipdb
 
-            d = Distance(m=distance(self.geo_location, self.pid.geo_location).meters)
-            self.distance = d.km
+            ipdb.set_trace()
+
+            d = distance.great_circle(point_one, point_two).km
+            self.distance = d
 
         if not self.pk:
             # If the instance is being created, record the creation in CaseHistory

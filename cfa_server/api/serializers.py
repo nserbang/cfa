@@ -4,7 +4,6 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import MethodNotAllowed
 from django.contrib.gis.geos import fromstr
-from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from .models import *
@@ -217,7 +216,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         )
         from django.contrib.gis.db.models.functions import Distance
 
-        geo_location = fromstr(f"POINT({case.lat} {case.long})", srid=4326)
+        geo_location = fromstr(f"POINT({case.long} {case.lat})", srid=4326)
         user_distance = Distance("geo_location", geo_location)
         if validated_data.get("pid"):
             police_station = validated_data["pid"]

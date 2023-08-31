@@ -289,6 +289,7 @@ class LostVehicle(models.Model):
     make = models.CharField(max_length=50, null=True, default="N/A")
     model = models.CharField(max_length=50, null=True, default="N/A")
     description = models.CharField(max_length=500, null=True, default="N/A")
+    color = models.CharField(max_length=56, blank=True, default="")
 
 
 class Comment(models.Model):

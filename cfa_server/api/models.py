@@ -128,6 +128,7 @@ class PoliceOfficer(models.Model):
     entryDate = models.DateField(auto_now=True)
     status = models.CharField(max_length=10, choices=oState, default="active")
     mobile = models.CharField(max_length=55, null=True)
+    report_on_this = models.BooleanField(default=False)
 
 
 class Case(models.Model):

@@ -43,6 +43,7 @@ class CaseViewSet(UserMixin, ModelViewSet):
         my_case = self.request.query_params.get("my_case", None)
         lat = self.request.query_params.get("lat")
         long = self.request.query_params.get("long")
+        user = self.request.user
 
         data = (
             Case.objects.all()
@@ -59,21 +60,34 @@ class CaseViewSet(UserMixin, ModelViewSet):
             data = data.annotate(radius=user_distance).order_by(
                 "radius", Coalesce("created", "updated").desc()
             )
-        if self.request.user.is_authenticated:
+        if user.is_authenticated:
+            print(user.role)
             liked = Like.objects.filter(case_id=OuterRef("cid"), user=self.request.user)
             data = data.annotate(
                 liked=Exists(liked),
             )
+            if user.is_police:
+                officer = user.policeofficer_set.first()
+                rank = int(officer.rank)
+                if rank >= 11:
+                    pass
+                elif rank == 5 and officer.report_on_this:
+                    data = data.filter(pid__policeofficer=officer)
+                elif rank == 9:
+                    data = data.filter(pid__did_id=officer.pid.did_id)
+                else:
+                    data = data.filter(Q(user=user) | Q(oid=officer))
+            elif user.is_user:
+                data = data.filter(Q(user=user) | Q(type="drug"))
         if search:
             data = data.filter(
                 Q(title__contains=search)
                 | Q(cid__contains=search)
                 | Q(description__contains=search)
             )
-        if my_case is not None and my_case.lower() == "true":
-            request_user_id = self.request.user.id
-            data = data.filter(Q(user=request_user_id) | Q(oid__user=request_user_id))
-
+        # if my_case is not None and my_case.lower() == "true":
+        #     request_user_id = self.request.user.id
+        #     data = data.filter(Q(user=request_user_id) | Q(oid__user=request_user_id))
         return data
 
 

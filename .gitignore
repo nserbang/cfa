@@ -13,3 +13,7 @@ cfa_server/db.sqlite3
 files/
 media/
 cfa_server/credentials.json
+cfa_server/uploads
+cfa_server/systemctl
+cfa_server/db_temp.sqlite3
+credentials.json

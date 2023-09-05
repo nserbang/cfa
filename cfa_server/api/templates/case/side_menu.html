@@ -13,7 +13,7 @@
     <a href="{% url 'case' 'extortion-case' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Extortion Case Reported
     </a>
-    <a href="{% url 'crime_list' 'missing-children' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    {% comment %} <a href="{% url 'crime_list' 'missing-children' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Missing Children
     </a>
     <a href="{% url 'crime_list' 'children-found' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
@@ -36,7 +36,7 @@
     </a>
     <a href="{% url 'crime_list' 'proclaimed' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Proclaimed Offenders
-    </a>
+    </a> {% endcomment %}
 </div>
 
 {% if request.user.is_authenticated %}

@@ -287,8 +287,8 @@ class Emergency(admin.ModelAdmin):
 # class Criminal(admin.ModelAdmin):
 #     pass
 
-admin.site.register(Victim)
-admin.site.register(Criminal)
+""" admin.site.register(Victim)
+admin.site.register(Criminal) """
 admin.site.register(Privacy)
 admin.site.register(TermsCondition)
 admin.site.register(Contact)

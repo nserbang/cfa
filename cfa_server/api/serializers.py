@@ -107,6 +107,8 @@ class CaseHistorySerializer(serializers.ModelSerializer):
             "description",
             "user_details",
             "medias",
+            "lat",
+            "long",
         ]
 
 
@@ -270,8 +272,9 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             "accepted": "Your case no.{} has been accepted.",
             "rejected": "Your case no.{} has been rejected.",
             "info": "More info required for your case no.{}.",
-            "inprogress": "Your case no.{} is in-progress",
-            "resolved": "Your case no.{} is resolved",
+            "inprogress": "Your case no.{} is in-progress.",
+            "resolved": "Your case no.{} is resolved.",
+            "visited": "Your case no.{} is visited.",
         }
         user = self.context["request"].user
         cstate = validated_data["cstate"]
@@ -281,7 +284,14 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         description = validated_data.pop("description", "")
         medias = validated_data.pop("medias", [])
 
-        if cstate in ["accepted", "rejected", "info", "inprogress", "resolved"]:
+        if cstate in [
+            "accepted",
+            "rejected",
+            "info",
+            "inprogress",
+            "resolved",
+            "visited",
+        ]:
             instance.save()
             noti_title = noti_title.get(cstate).format(instance.pk)
             instance.send_notitication(noti_title, [instance.user_id])

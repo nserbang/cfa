@@ -141,6 +141,7 @@ class Case(models.Model):
         ("pending", "Pending"),  # Complaint lodged for the first time
         ("accepted", "Accepted"),  # Formal case approved
         ("assign", "Assign"),  # Assign case to some other officer
+        ("visited", "Visited"),
         ("inprogress", "Inprogress"),
         ("transfer", "Transfer"),  # Complaint being transferred from one ps to another
         ("resolved", "Resolved"),  # Complaint has been resolved
@@ -179,7 +180,12 @@ class Case(models.Model):
     def add_history_and_media(self, description, medias, user, cstate=None):
         cstate = cstate or self.cstate
         history = CaseHistory.objects.create(
-            case=self, user=self.user, description=description, cstate=cstate
+            case=self,
+            user=self.user,
+            description=description,
+            cstate=cstate,
+            lat=self.lat if cstate == "visited" else None,
+            long=self.long if cstate == "visited" else None,
         )
         if medias:
             history.medias.add(*medias)
@@ -279,6 +285,8 @@ class CaseHistory(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     # Description added
     description = models.TextField(null=True)
+    lat = models.CharField(max_length=10, blank=True, null=True)
+    long = models.CharField(max_length=10, blank=True, null=True)
     medias = models.ManyToManyField(Media, related_name="case_histories")
 
 

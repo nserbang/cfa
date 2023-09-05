@@ -279,3 +279,6 @@ if settings.DEBUG:
     urlpatterns += [
         path("__debug__/", include("debug_toolbar.urls")),
     ]
+
+admin.site.site_header = 'Crime Reporting'
+admin.site.site_title = 'Crime Reporting'

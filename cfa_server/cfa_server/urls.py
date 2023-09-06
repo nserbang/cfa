@@ -282,3 +282,4 @@ if settings.DEBUG:
 
 admin.site.site_header = 'Crime Reporting'
 admin.site.site_title = 'Crime Reporting'
+admin.site.site_url = ''

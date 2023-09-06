@@ -224,7 +224,9 @@ class Case(models.Model):
                         devices = FCMDevice.objects.filter(user_id=self.oid.user_id)
                     else:
                         devices = FCMDevice.objects.filter(
-                            user_id__in=self.pid.policeofficer_set.values("user_id")
+                            user_id__in=self.pid.policeofficer_set.filter(
+                                report_on_this=True
+                            ).values("user_id")
                         )
                     devices.send_message(message)
                 except Exception as e:

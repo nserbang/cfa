@@ -177,15 +177,15 @@ class Case(models.Model):
     follow = models.BooleanField(default=False)
     medias = models.ManyToManyField("Media", related_name="cases", blank=True)
 
-    def add_history_and_media(self, description, medias, user, cstate=None):
+    def add_history_and_media(self, description, medias, user, cstate=None, **kwargs):
         cstate = cstate or self.cstate
         history = CaseHistory.objects.create(
             case=self,
             user=self.user,
             description=description,
             cstate=cstate,
-            lat=self.lat if cstate == "visited" else None,
-            long=self.long if cstate == "visited" else None,
+            lat=kwargs.get("lat") if cstate == "visited" else None,
+            long=kwargs.get("long") if cstate == "visited" else None,
         )
         if medias:
             history.medias.add(*medias)
@@ -289,7 +289,18 @@ class CaseHistory(models.Model):
     description = models.TextField(null=True)
     lat = models.CharField(max_length=10, blank=True, null=True)
     long = models.CharField(max_length=10, blank=True, null=True)
+    geo_location = models.PointField(blank=True, null=True, srid=4326)
     medias = models.ManyToManyField(Media, related_name="case_histories")
+
+    def distance(self):
+        if self.case.geo_location and self.geo_location:
+            return self.geo_location.distance(self.case.geo_location)
+        return None
+
+    def save(self, **kwargs):
+        if self.lat and self.long:
+            self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
+        super().save(**kwargs)
 
 
 class LostVehicle(models.Model):

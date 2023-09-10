@@ -96,6 +96,7 @@ class MediaSerializer(serializers.ModelSerializer):
 class CaseHistorySerializer(serializers.ModelSerializer):
     user_details = cUserSerializer(source="user")
     medias = MediaSerializer(many=True)
+    distance = serializers.CharField()
 
     class Meta:
         model = CaseHistory
@@ -109,6 +110,7 @@ class CaseHistorySerializer(serializers.ModelSerializer):
             "medias",
             "lat",
             "long",
+            "distance",
         ]
 
 
@@ -244,6 +246,8 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
     pid = serializers.PrimaryKeyRelatedField(
         queryset=PoliceStation.objects.all(), required=False
     )
+    lat = serializers.CharField(max_length=10, required=False)
+    long = serializers.CharField(max_length=10, required=False)
 
     class Meta:
         model = Case
@@ -253,17 +257,27 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             "pid",
             "description",
             "medias",
+            "lat",
+            "long",
         ]
 
     def validate(self, data):
-        if data["cstate"] == "assign" and not data.get("oid"):
+        state = data["cstate"]
+        if state == "assign" and not data.get("oid"):
             raise serializers.ValidationError(
                 {"oid": "You need to provide oid to assign this case to new officer."}
             )
 
-        if data["cstate"] == "transfer" and not data.get("pid"):
+        if state == "transfer" and not data.get("pid"):
             raise serializers.ValidationError(
                 {"pid": "You need to provide pid to transfer this case."}
+            )
+
+        lat = data.get("lat")
+        long = data.get("long")
+        if state == "visited" and not (lat or long):
+            raise serializers.ValidationError(
+                "lat and long is required for visited status."
             )
         return data
 
@@ -309,8 +323,15 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             instance.oid = None
             instance.save()
 
+        lat = validated_data.get("lat")
+        long = validated_data.get("long")
         instance.add_history_and_media(
-            description=description, user=user, medias=medias, cstate=cstate
+            description=description,
+            user=user,
+            medias=medias,
+            cstate=cstate,
+            lat=lat,
+            long=long,
         )
         return instance
 

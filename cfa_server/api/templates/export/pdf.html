@@ -1,0 +1,135 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap");
+            @page {
+              margin: 2cm;
+              size: 1660.45pt 990.7pt;
+            }
+            html body .sales_pdf .table .sales_report_info {
+              border: 1px solid #DDD;
+              padding: 20px;
+              font-size: 5px;
+            }
+            /* .border-black  {
+                border: 1px solid black;
+            } */
+
+            html {
+              /* background: rgb(244, 236, 246); */
+              /* fallback for old browsers */
+              height: -moz-available;
+              /* WebKit-based browsers will ignore this. */
+              height: -webkit-fill-available;
+              /* Mozilla-based browsers will ignore this. */
+              height: fill-available;
+            }
+
+            html body {
+              color: #000;
+              padding: 2rem;
+            }
+
+            .table, td, th {
+                padding: 10px;
+                border: 1px solid black;
+                border-collapse: collapse;
+                background-color: rgb(244, 236, 246);
+                font-size: 18px;
+            }
+
+            html body h2 {
+              display: inline-block;
+              vertical-align: middle;
+              font-size: 28px;
+              text-decoration: underline;
+            }
+
+            .sales_report_info{
+              background-color: rgb(200, 228, 219);
+            }
+
+            html body th{
+                text-decoration: underline;
+                text-transform: uppercase;
+            }
+
+            @media print {
+              html body .page-break {
+                display: block;
+                page-break-after: always;
+                margin-top: 3cm;
+              }
+            }
+            /*# sourceMappingURL=style.css.map */
+        </style>
+        <title>Sales Report</title>
+    </head>
+    <body>
+        <div class="border-black">
+            <h1><strong>{{ header }}, generated on {{ report_date }}</h1></strong>
+            {% for case in cases %}
+            <div class="table" style="margin-bottom: 5px;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Case No.</th>
+                            <th>Reported</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Police Station</th>
+                            <th>Officer Name/Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ case.cid }}</td>
+                            <td>{{ case.created }}</td>
+                            <td>{{ case.type }}</td>
+                            <td>{{ case.cstate }}</td>
+                            <td>{{ case.pid.name }}</td>
+                            <td>{{ case.oid.user.get_full_name }}/{{ case.oid.mobile }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div>
+                    <span><strong>Description: </strong></span> <br>
+                    {{ case.description }}
+                </div>
+                <div>
+                    {% for media in case.medias.all %}
+                        {% if media.type == 'picture' %}
+                            <img src="{{ media.url }}" alt="" width="200px">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div>
+                    <span><strong>Case History</strong></span>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Officer Name/Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for history in case.casehistory_set.all %}
+                            <tr>
+                                <td>{{ history.created }}</td>
+                                <td>{{ history.cstate }}</td>
+                                <td>{{ history.description }}</td>
+                                <td>{{ history.user.get_full_name }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </body>
+</html>

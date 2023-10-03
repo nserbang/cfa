@@ -1,4 +1,6 @@
 from openpyxl import Workbook
+from weasyprint import HTML
+from weasyprint.text.fonts import FontConfiguration
 from django.urls import reverse_lazy
 from django.db.models.functions import Coalesce
 from django.db.models import Count, Case as MCase, When, Q, OuterRef, Exists
@@ -13,7 +15,7 @@ from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.views import View
 from django.views.generic import CreateView, FormView, ListView, UpdateView
-
+from django.utils import timezone
 from .user_forms import (
     UserRegistrationForm,
     VerifyOtpFrom,
@@ -450,14 +452,46 @@ class NearestPoliceStationsView(LoginRequiredMixin, View):
 
 class ExportCrime(View):
     def get(self, request, *args, **kwargs):
-        cases = Case.objects.select_related("pid")
+        cases = Case.objects.select_related("pid", "oid", "oid__user").prefetch_related(
+            "medias", "casehistory_set"
+        )
         report_type = request.GET.get("type")
         if report_type == "excel":
             return self.get_excel(cases)
         return self.get_pdf(cases)
 
     def get_pdf(self, cases):
-        pass
+        font_config = FontConfiguration()
+        template_name = "export/pdf.html"
+        user = self.request.user
+        officer = user.policeofficer_set.first()
+        rank = int(officer.rank)
+        if user.is_superuser:
+            header = "Case Report for police stations in Arunachal Pradesh"
+        if rank < 5:
+            header = f"Case Report of {user.get_full_name()}"
+            cases = cases.filter(oid=officer)
+        elif rank == 5:
+            header = f"Case Report of {officer.pid.name}"
+            cases = cases.filter(pid=officer.pid)
+        elif rank == 9:
+            header = f"Case records with in {officer.pid.did.name}"
+            cases = cases.filter(pid__did__did=officer.pid.did.did)
+        elif rank > 9:
+            header = header
+        # else:
+        #     header = 'Case Reports'
+
+        context = {
+            "header": header,
+            "report_date": timezone.now().date(),
+            "cases": cases,
+        }
+        html_string = render_to_string(template_name, context=context)
+        pdf = HTML(string=html_string).write_pdf(font_config=font_config)
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response["Content-Disposition"] = "attachment; filename=report.pdf"
+        return response
 
     def get_excel(self, cases):
         # from openpyxl.writer.excel import save_virtual_workbook

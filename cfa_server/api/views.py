@@ -455,9 +455,6 @@ class ExportCrime(View):
         cases = Case.objects.select_related("pid", "oid", "oid__user").prefetch_related(
             "medias", "casehistory_set"
         )
-        report_type = request.GET.get("type")
-        if report_type == "excel":
-            return self.get_excel(cases)
         return self.get_pdf(cases)
 
     def get_pdf(self, cases):
@@ -465,22 +462,23 @@ class ExportCrime(View):
         template_name = "export/pdf.html"
         user = self.request.user
         officer = user.policeofficer_set.first()
-        rank = int(officer.rank)
         if user.is_superuser:
             header = "Case Report for police stations in Arunachal Pradesh"
-        if rank < 5:
-            header = f"Case Report of {user.get_full_name()}"
-            cases = cases.filter(oid=officer)
-        elif rank == 5:
-            header = f"Case Report of {officer.pid.name}"
-            cases = cases.filter(pid=officer.pid)
-        elif rank == 9:
-            header = f"Case records with in {officer.pid.did.name}"
-            cases = cases.filter(pid__did__did=officer.pid.did.did)
-        elif rank > 9:
-            header = header
-        # else:
-        #     header = 'Case Reports'
+        elif officer and officer.rank:
+            rank = int(officer.rank)
+            if rank < 5:
+                header = f"Case Report of {user.get_full_name()}"
+                cases = cases.filter(oid=officer)
+            elif rank == 5:
+                header = f"Case Report of {officer.pid.name}"
+                cases = cases.filter(pid=officer.pid)
+            elif rank == 9:
+                header = f"Case records with in {officer.pid.did.name}"
+                cases = cases.filter(pid__did__did=officer.pid.did.did)
+            elif rank > 9:
+                header = header
+        else:
+            header = "Case Reports"
 
         context = {
             "header": header,
@@ -491,39 +489,6 @@ class ExportCrime(View):
         pdf = HTML(string=html_string).write_pdf(font_config=font_config)
         response = HttpResponse(pdf, content_type="application/pdf")
         response["Content-Disposition"] = "attachment; filename=report.pdf"
-        return response
-
-    def get_excel(self, cases):
-        # from openpyxl.writer.excel import save_virtual_workbook
-        wb = Workbook()
-        ws = wb.create_sheet()
-        # ws = wb.active
-        ws.title = "Cases"
-        headers = [
-            "Case No.",
-            "Reported",
-            "Type",
-            "Status",
-            "Police Station",
-            "Description",
-        ]
-        ws.append(headers)
-        for case in cases:
-            row = [
-                case.cid,
-                str(case.created.date()),
-                case.type,
-                case.cstate,
-                f"{case.pid.name}-{case.pid.address}",
-                case.description,
-            ]
-            ws.append(row)
-            ws.append([case.description])
-        response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-        response["Content-Disposition"] = "attachment; filename=Cases.xlsx"
-        wb.save(response)
         return response
 
 

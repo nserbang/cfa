@@ -19,7 +19,6 @@
                 {% if request.user.is_authenticated %}
                     <div class="d-none pl-2 ml-2" id="download-link">
                         <a class="" href="{% url 'case_export' %}?type=pdf">PDF</a>
-                        <a class="" href="{% url 'case_export' %}?type=excel">Excel</a>
                     </div>
                 {% endif %}
             </div>

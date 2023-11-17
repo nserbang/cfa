@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.forms import ValidationError
 from django.utils import timezone
 from django.contrib.gis.geos import Point
 
@@ -8,6 +9,7 @@ from django.db import transaction
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.geos import fromstr
 from api.utl import get_upload_path
+from api.forms import detect_malicious_patterns_in_media
 from .managers import CustomUserManager
 from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
@@ -199,6 +201,9 @@ class Case(models.Model):
             long=kwargs.get("long") if cstate == "visited" else None,
         )
         if medias:
+            for media in medias:
+                if detect_malicious_patterns_in_media(media.path.path):
+                    raise ValidationError("Malicious media file detected.")
             history.medias.add(*medias)
 
     def save(self, *args, **kwargs):
@@ -443,3 +448,12 @@ class Banner(models.Model):
     # media path
     path = models.FileField(upload_to=get_upload_path, validators=[file_type_validator])
     description = models.TextField(null=True)
+
+
+class LoggedInUser(models.Model):
+    user = models.OneToOneField(cUser, related_name='logged_in_user', on_delete=models.CASCADE)
+    # Session keys are 32 characters long
+    session_key = models.CharField(max_length=32, null=True, blank=True)
+
+    def __str__(self):
+        return self.user.username

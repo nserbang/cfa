@@ -1,6 +1,9 @@
 from django.utils.html import format_html
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
+
+from api.forms.banner import BannerForm
+from api.forms.media import MediaForm
 from .models import *
 from api.forms.user import UserChangeForm, UserCreationForm
 
@@ -227,12 +230,11 @@ admin.site.register(CaseHistory, CaseHistoryAdmin)
 
 
 class MediaAdmin(admin.ModelAdmin):
+
+    form = MediaForm
+
     list_display = ["mtype", "path", "description"]
     search_fields = ["mtype"]
-
-
-admin.site.register(Media, MediaAdmin)
-
 
 class LostVehicleAdmin(admin.ModelAdmin):
     def Id(self):
@@ -287,10 +289,18 @@ class Emergency(admin.ModelAdmin):
 # class Criminal(admin.ModelAdmin):
 #     pass
 
+class BannerAdmin(admin.ModelAdmin):
+    form = BannerForm
+
+    list_display = ('bid','mtype', 'description',)
+    search_fields = ['bid','mtype', 'description',]
+
+
 """ admin.site.register(Victim)
 admin.site.register(Criminal) """
 admin.site.register(Privacy)
 admin.site.register(TermsCondition)
 admin.site.register(Contact)
 admin.site.register(Like)
-admin.site.register(Banner)
+admin.site.register(Banner, BannerAdmin)
+admin.site.register(Media, MediaAdmin)

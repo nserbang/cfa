@@ -35,6 +35,7 @@ from api.viewset.lost_vehicle import CheckLostVehicle
 from api.viewset.victim import *
 from api.viewset.criminal import *
 from api.views import (
+    CustomLoginView,
     emergency,
     information,
     logout_view,
@@ -67,6 +68,10 @@ from api.viewset.termscondition import TermsConditionViewSet
 from api.viewset.contact import ContactViewSet
 from api.viewset.banner import BannerViewSet
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+from api.views import CustomPasswordChangeView
+from api.views import custom_404_view, custom_400_view, custom_401_view, custom_403_view
+
 
 router = routers.DefaultRouter()
 router.register("district", DistrictViewSet, basename="district")
@@ -107,7 +112,9 @@ router.register("comment", CommentCUDViewSet, basename="comment")
 router.register("devices", FCMDeviceAuthorizedViewSet)
 router.register("banner", BannerViewSet, basename="banner")
 urlpatterns = [
+    path('admin/password_change/', CustomPasswordChangeView.as_view(), name='custom_admin_password_change'),
     path("admin/", admin.site.urls),
+    path('admin/login/', CustomLoginView.as_view(), name='custom_admin_login'),
     path("api/v1/", include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path(
@@ -283,3 +290,8 @@ if settings.DEBUG:
 admin.site.site_header = 'Crime Reporting'
 admin.site.site_title = 'Crime Reporting'
 admin.site.site_url = ''
+
+handler404 = custom_404_view
+handler400 = custom_400_view
+handler401 = custom_401_view
+handler403 = custom_403_view

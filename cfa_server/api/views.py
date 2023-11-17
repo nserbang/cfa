@@ -344,6 +344,13 @@ class ChangeCaseStateUpdateView(LoginRequiredMixin, UpdateView):
     queryset = Case.objects.all()
     success_url = reverse_lazy("home")
 
+    def get_queryset(self):
+        queryset = self.queryset.filter(
+            (Q(cstate="pending") & Q(pid__policeofficer__user=self.request.user))
+            | Q(oid__user=self.request.user)
+        ).distinct()
+        return queryset
+
     def get_form_kwargs(self):
         kw = super().get_form_kwargs()
         kw["request"] = self.request

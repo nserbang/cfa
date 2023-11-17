@@ -11,12 +11,23 @@ from api.utl import get_upload_path
 from .managers import CustomUserManager
 from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
+from django.core.exceptions import ValidationError
+from django.conf import settings
 
 from django.db.models import Q
 
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
+import magic
+
+
+def file_type_validator(f):
+    mime_type = magic.from_buffer(f.read(1024), mime=True)
+    if mime_type not in settings.ALLOWED_FILE_TYPES:
+        raise ValidationError(f"You can't upload this file: {f.name}.")
+    f.seek(0)
+    return
 
 
 # Holds list of districts
@@ -260,7 +271,7 @@ class Media(models.Model):
     # media type
     mtype = models.CharField(max_length=10, choices=Mtype, default="Photo")
     # media path
-    path = models.FileField(upload_to=get_upload_path)
+    path = models.FileField(upload_to=get_upload_path, validators=[file_type_validator])
     description = models.TextField(null=True)
 
     # def save(self, *args, **kwargs):
@@ -430,5 +441,5 @@ class Banner(models.Model):
     # media type
     mtype = models.CharField(max_length=10, choices=Mtype, default="Photo")
     # media path
-    path = models.FileField(upload_to=get_upload_path)
+    path = models.FileField(upload_to=get_upload_path, validators=[file_type_validator])
     description = models.TextField(null=True)

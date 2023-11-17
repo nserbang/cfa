@@ -3,6 +3,7 @@
 {% block title %}Complete Registration{% endblock title %}
 
 {% block content %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.0.0-rc.1/jsencrypt.min.js"></script>
 
 <div class="d-flex justify-content-center align-items-center align-middle">
 <div class="card">
@@ -16,5 +17,92 @@
     </div>
 </div>
 </div>
+<script>
+
+    function getCookie(cookieName) {
+        const name = cookieName + "=";
+        const decodedCookie = decodeURIComponent(document.cookie);
+        const cookieArray = decodedCookie.split(';');
+        for (let i = 0; i < cookieArray.length; i++) {
+            let cookie = cookieArray[i].trim();
+            if (cookie.indexOf(name) === 0) {
+                return cookie.substring(name.length, cookie.length).replace(/^"(.*)"$/, '$1');
+            }
+        }
+        return null;
+    }
+    function encryptDataWithRSA(data, publicKey, padding) {
+        var encrypt = new JSEncrypt();
+        encrypt.setPublicKey(publicKey);
+  
+        // You can specify padding here (e.g., JSEncrypt.RSA_PKCS1_PADDING or JSEncrypt.RSA_OAEP_PADDING)
+        encrypt.setPublicKey(publicKey, padding);
+        
+        var encryptedData = encrypt.encrypt(data);
+        
+        return encryptedData;
+    }
+  </script>
+<script>
+    // Wait for the DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      var loginForm = document.getElementById('custom-login-form');
+  
+      // Add a submit event listener to the form
+      loginForm.addEventListener('submit', function(event) {
+        // Prevent the default form submission
+        event.preventDefault();
+  
+        // Manually encrypt the form data here
+        var passwordField = document.getElementById('id_password');
+
+        var encrypt = new JSEncrypt();
+        // Replace this with your public key
+        var base64PublicKey = getCookie('rsa_public_key');
+        var publicKey = atob(base64PublicKey);
+  
+  
+        encrypt.setPublicKey(publicKey);
+  
+        var encryptedPassword = encrypt.encrypt(passwordField.value);
+        passwordField.value = encryptedPassword;
+  
+        loginForm.submit();
+      });
+    });
+  
+    
+  
+</script>
+  
+<script>
+    // Disable copy-paste and keyboard shortcuts
+    window.onload = function() {
+        var passwordField = document.getElementById("id_password");
+  
+        passwordField.addEventListener("copy", function(event) {
+            event.preventDefault();
+            return false;
+        });
+  
+        passwordField.addEventListener("paste", function(event) {
+            event.preventDefault();
+            return false;
+        });
+  
+        passwordField.addEventListener("cut", function(event) {
+            event.preventDefault();
+            return false;
+        });
+  
+        passwordField.addEventListener("keydown", function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                event.preventDefault();
+                return false;
+            }
+        });
+    };
+  </script>
 
 {% endblock content %}
+

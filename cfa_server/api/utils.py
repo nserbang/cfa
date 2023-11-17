@@ -24,7 +24,7 @@ class CustomBackend(ModelBackend):
         private_key_pem = base64.b64decode(private_key_pem_b64)
         private_key = serialization.load_pem_private_key(private_key_pem, password=None)
         encrypted_data_b64 = password
-        encrypted_data = base64.b64decode('encrypted_data_b64')
+        encrypted_data = base64.b64decode(encrypted_data_b64)
 
         # Decrypt the data
         decrypted_data = private_key.decrypt(

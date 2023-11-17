@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.db.models.functions import Coalesce
 from django.db.models import Count, Case as MCase, When, Q, OuterRef, Exists
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
-from django.shortcuts import render, reverse, redirect, get_object_or_404
+from django.shortcuts import render, reverse, redirect, get_object_or_404, Http404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.loader import render_to_string
 from django.contrib.gis.geos import fromstr
@@ -436,6 +436,7 @@ class ForgotPasswordView(FormView):
     def form_valid(self, form):
         form.save()
         self.request.session["mobile"] = form.cleaned_data["mobile"]
+        self.request.session["password_reset"] = True
         return super().form_valid(form)
 
 
@@ -443,6 +444,11 @@ class ResetPasswordView(FormView):
     form_class = ChangePasswordForm
     template_name = "users/reset_password.html"
     success_url = reverse_lazy("login")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.session.get("password_reset"):
+            raise Http404
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.save()

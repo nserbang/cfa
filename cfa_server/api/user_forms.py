@@ -10,6 +10,7 @@ from .otp import validate_otp, send_otp_verification_code
 
 from cryptography.hazmat.primitives import serialization
 
+
 class UserRegistrationForm(forms.ModelForm):
     class Meta:
         model = cUser
@@ -102,29 +103,32 @@ class ChangePasswordForm(forms.Form):
     def clean(self):
         cd = super().clean()
 
-        private_key_pem_b64 = self.request.session['private_key']
+        private_key_pem_b64 = self.request.session["private_key"]
         private_key_pem = base64.b64decode(private_key_pem_b64)
         private_key = serialization.load_pem_private_key(private_key_pem, password=None)
 
-
         new_password1_encrypted_data_b64 = cd["password"]
-        new_password1_encrypted_data = base64.b64decode(new_password1_encrypted_data_b64)
+        new_password1_encrypted_data = base64.b64decode(
+            new_password1_encrypted_data_b64
+        )
 
         new_password1_decrypted = private_key.decrypt(
             new_password1_encrypted_data,
             padding.PKCS1v15(),
         )
 
-        new_password1 = new_password1_decrypted.decode('utf-8')
+        new_password1 = new_password1_decrypted.decode("utf-8")
         new_password2_encrypted_data_b64 = cd["repeat_password"]
-        new_password2_encrypted_data = base64.b64decode(new_password2_encrypted_data_b64)
+        new_password2_encrypted_data = base64.b64decode(
+            new_password2_encrypted_data_b64
+        )
 
         new_password2_decrypted = private_key.decrypt(
             new_password2_encrypted_data,
             padding.PKCS1v15(),
         )
 
-        new_password2 = new_password2_decrypted.decode('utf-8')
+        new_password2 = new_password2_decrypted.decode("utf-8")
 
         password = new_password1
         repeat_password = new_password2
@@ -148,3 +152,5 @@ class ChangePasswordForm(forms.Form):
         user = self.cleaned_data["user"]
         user.set_password(self.cleaned_data["password"])
         user.save()
+        del self.request.session["mobile"]
+        del self.request.session["password_reset"]

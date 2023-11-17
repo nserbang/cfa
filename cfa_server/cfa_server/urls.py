@@ -112,9 +112,13 @@ router.register("comment", CommentCUDViewSet, basename="comment")
 router.register("devices", FCMDeviceAuthorizedViewSet)
 router.register("banner", BannerViewSet, basename="banner")
 urlpatterns = [
-    path('admin/password_change/', CustomPasswordChangeView.as_view(), name='custom_admin_password_change'),
+    path(
+        "admin/password_change/",
+        CustomPasswordChangeView.as_view(),
+        name="custom_admin_password_change",
+    ),
     path("admin/", admin.site.urls),
-    path('admin/login/', CustomLoginView.as_view(), name='custom_admin_login'),
+    path("admin/login/", CustomLoginView.as_view(), name="custom_admin_login"),
     path("api/v1/", include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path(
@@ -271,14 +275,15 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Swagger
-urlpatterns += [
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path(
-        "api/docs/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
-    ),
-]
+if settings.ENVIRONMENT != "PRODUCTION":
+    urlpatterns += [
+        path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+        path(
+            "api/docs/",
+            SpectacularSwaggerView.as_view(url_name="schema"),
+            name="swagger-ui",
+        ),
+    ]
 
 
 if settings.DEBUG:
@@ -287,9 +292,9 @@ if settings.DEBUG:
         path("__debug__/", include("debug_toolbar.urls")),
     ]
 
-admin.site.site_header = 'Crime Reporting'
-admin.site.site_title = 'Crime Reporting'
-admin.site.site_url = ''
+admin.site.site_header = "Crime Reporting"
+admin.site.site_title = "Crime Reporting"
+admin.site.site_url = ""
 
 handler404 = custom_404_view
 handler400 = custom_400_view

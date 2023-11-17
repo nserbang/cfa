@@ -1,3 +1,4 @@
+{% load email %}
 <div class="card mb-3 shadow">
     <div class="card-body">
         <table class="table table-bordered table-sm">
@@ -30,7 +31,7 @@
           </table>
       <ul class="list-unstyled">
         <li class=""><span class="fw-bold">Description</span> :</li>
-        <div><p class="pt-0">{{ case.description }}</p></div>
+        <div><p class="pt-0">{{ case.description|format_email }}</p></div>
         <div class="row">
             {% for media in case.medias.all %}
                 <div class="col-auto">

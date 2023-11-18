@@ -310,7 +310,7 @@ FCM_DJANGO_SETTINGS = {
 }
 
 
-cred = credentials.Certificate("credentials.json")
+cred = credentials.Certificate(str(BASE_DIR)+"/credentials.json")
 firebase_admin.initialize_app(cred)
 
 SPECTACULAR_SETTINGS = {

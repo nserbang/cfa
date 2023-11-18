@@ -1,3 +1,4 @@
+import re
 from django.contrib.gis.db import models
 from django.forms import ValidationError
 from django.utils import timezone
@@ -22,6 +23,28 @@ from django.db.models import Q
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
 import magic
+
+from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
+
+
+# MobileValidator = RegexValidator(
+#     regex='^[6-9]\d{9}$',
+#     message='Enter a valid mobile number.',
+#     code='invalid_mobile_no',
+# )
+
+
+def mobile_validator(value):
+    pattern = re.compile(r"^[6-9]\d{9}$")
+    message = ("Enter a valid mobile number.",)
+    if value == "9999999999":
+        raise ValidationError(message)
+    if not pattern.match(value):
+        raise ValidationError(message)
+
+
+MobileValidator = mobile_validator
 
 
 def file_type_validator(f):
@@ -52,7 +75,7 @@ class cUser(AbstractUser):
         ("police", "Police"),
         ("admin", "Admin"),
     )
-    mobile = models.CharField(max_length=26, unique=True)
+    mobile = models.CharField(max_length=26, unique=True, validators=[MobileValidator])
     is_verified = models.BooleanField(default=False)
 
     # Role of the user
@@ -451,7 +474,9 @@ class Banner(models.Model):
 
 
 class LoggedInUser(models.Model):
-    user = models.OneToOneField(cUser, related_name='logged_in_user', on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        cUser, related_name="logged_in_user", on_delete=models.CASCADE
+    )
     # Session keys are 32 characters long
     session_key = models.CharField(max_length=32, null=True, blank=True)
 

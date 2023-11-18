@@ -236,28 +236,32 @@ class UserRegistrationView(View):
             request.session["mobile"] = user.mobile
             return redirect(reverse("verify_mobile") + f"?mobile={user.mobile}")
         else:
+            # import ipdb; ipdb.set_trace()
             mobile = request.POST.get("mobile")
             try:
                 user = cUser.objects.get(mobile=mobile)
             except cUser.DoesNotExist:
                 pass
             else:
-                if user.is_verified:
-                    messages.info(
-                        request,
-                        "A user with this mobile is already registered. "
-                        "If this is your mobile please login.",
-                    )
-                else:
-                    request.session["mobile"] = user.mobile
-                    messages.info(
-                        request,
-                        "A user with this mobile is already registered. "
-                        "But the mobile is not verified yet. If this is"
-                        " your mobile please verify it. You can resend verification"
-                        " otp from <a href='/accounts/resend-verification-otp/'>"
-                        "here</a>.",
-                    )
+                return redirect(
+                    reverse("verify_mobile") + f"?mobile={request.POST['mobile']}"
+                )
+                # if user.is_verified:
+                #     messages.info(
+                #         request,
+                #         "A user with this mobile is already registered. "
+                #         "If this is your mobile please login.",
+                #     )
+                # else:
+                #     request.session["mobile"] = user.mobile
+                #     messages.info(
+                #         request,
+                #         "A user with this mobile is already registered. "
+                #         "But the mobile is not verified yet. If this is"
+                #         " your mobile please verify it. You can resend verification"
+                #         " otp from <a href='/accounts/resend-verification-otp/'>"
+                #         "here</a>.",
+                #     )
         return render(request, "api/signup.html", {"form": form})
 
 

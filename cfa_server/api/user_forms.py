@@ -1,14 +1,24 @@
 import base64
+import re
 
 from django import forms
 from django.forms import ValidationError
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
+from django.contrib.auth.password_validation import validate_password
 
-from .models import cUser
+from .models import cUser, MobileValidator
 from .otp import validate_otp, send_otp_verification_code
 
 from cryptography.hazmat.primitives import serialization
+
+# from django.core.validators import RegexValidator
+
+
+# # mobile_pattern = re.compile(r'^[6-9]\d{9}$')
+
+# class MobileValidator(RegexValidator):
+#     regex = r'^[6-9]\d{9}$'
 
 
 class UserRegistrationForm(forms.ModelForm):
@@ -20,7 +30,7 @@ class UserRegistrationForm(forms.ModelForm):
 class UserRegistrationCompleteForm(forms.ModelForm):
     password = forms.CharField(
         max_length=128,
-        widget=forms.TextInput(attrs={"type": "password"}),
+        widget=forms.PasswordInput(attrs={"type": "password"}),
     )
 
     class Meta:
@@ -66,7 +76,7 @@ class VerifyOtpFrom(forms.Form):
 
 
 class ResendMobileVerificationOtpForm(forms.Form):
-    mobile = forms.CharField(max_length=16)
+    mobile = forms.CharField(max_length=16, validators=[MobileValidator])
 
     def save(self, **kwargs):
         try:
@@ -79,7 +89,7 @@ class ResendMobileVerificationOtpForm(forms.Form):
 
 
 class ForgotPasswordForm(forms.Form):
-    mobile = forms.CharField(max_length=16)
+    mobile = forms.CharField(max_length=16, validators=[MobileValidator])
 
     def save(self, **kwargs):
         mobile = self.cleaned_data["mobile"]
@@ -135,6 +145,12 @@ class ChangePasswordForm(forms.Form):
 
         if password != repeat_password:
             raise forms.ValidationError("Passwords did not match.")
+
+        try:
+            validate_password(password=password)
+        except Exception as e:
+            self.add_error("password", e.messages)
+            return cd
         mobile = self.request.session.get("mobile")
         try:
             user = cUser.objects.get(mobile=mobile)

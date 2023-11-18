@@ -18,7 +18,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import initialize_app
 
-ENVIRONMENT = os.environ.get('mode', 'PRODUCTION')
+ENVIRONMENT = os.environ.get("mode", "PRODUCTION")
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -32,7 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-0mfz%)780(7i=w)p8w^n$s7j#(u!bq$1zd(m!@19sa5$9wb^gw"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = ENVIRONMENT == 'DEVELOPMENT'
+DEBUG = True  # ENVIRONMENT == 'DEVELOPMENT'
 
 ALLOWED_HOSTS = ["*"]
 TIME_ZONE = "Asia/Kolkata"
@@ -60,8 +60,8 @@ INSTALLED_APPS = [
     "fcm_django",
     "corsheaders",
     "axes",
-    'django_password_validators',
-    'django_password_validators.password_history',
+    "django_password_validators",
+    "django_password_validators.password_history",
 ]
 
 MIDDLEWARE = [
@@ -74,11 +74,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "axes.middleware.AxesMiddleware",
-    'api.middleware.OneSessionPerUserMiddleware', # One session 
-    'api.middleware.DisableOptionsMiddleware', # Disable options
-    'api.middleware.HSTSMiddleware',
-    'api.middleware.RSAMiddleware',
-    'csp.middleware.CSPMiddleware',
+    "api.middleware.OneSessionPerUserMiddleware",  # One session
+    "api.middleware.DisableOptionsMiddleware",  # Disable options
+    "api.middleware.HSTSMiddleware",
+    "api.middleware.RSAMiddleware",
+    "csp.middleware.CSPMiddleware",
 ]
 
 if DEBUG:
@@ -89,7 +89,12 @@ ROOT_URLCONF = "cfa_server.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'api/templates'),'api/templates','cfa_server/templates','templates'],
+        "DIRS": [
+            os.path.join(BASE_DIR, "api/templates"),
+            "api/templates",
+            "cfa_server/templates",
+            "templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -123,6 +128,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
 # Password validation
@@ -130,36 +136,36 @@ REST_FRAMEWORK = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
     {
-        'NAME': 'django_password_validators.password_history.password_validation.UniquePasswordsValidator',
-        'OPTIONS': {
-             # How many recently entered passwords matter.
-             # Passwords out of range are deleted.
-             # Default: 0 - All passwords entered by the user. All password hashes are stored.
-            'last_passwords': 5 # Only the last 5 passwords entered by the user
-        }
+        "NAME": "django_password_validators.password_history.password_validation.UniquePasswordsValidator",
+        "OPTIONS": {
+            # How many recently entered passwords matter.
+            # Passwords out of range are deleted.
+            # Default: 0 - All passwords entered by the user. All password hashes are stored.
+            "last_passwords": 5  # Only the last 5 passwords entered by the user
+        },
     },
     {
-        'NAME': 'django_password_validators.password_character_requirements.password_validation.PasswordCharacterValidator',
-        'OPTIONS': {
-             'min_length_digit': 1,
-             'min_length_alpha': 1,
-             'min_length_special': 1,
-             'min_length_lower': 1,
-             'min_length_upper': 1,
-             'special_characters': "~!@#$%^&*()_+{}\":;'[]"
-         }
+        "NAME": "django_password_validators.password_character_requirements.password_validation.PasswordCharacterValidator",
+        "OPTIONS": {
+            "min_length_digit": 1,
+            "min_length_alpha": 1,
+            "min_length_special": 1,
+            "min_length_lower": 1,
+            "min_length_upper": 1,
+            "special_characters": "~!@#$%^&*()_+{}\":;'[]",
+        },
     },
 ]
 
@@ -189,9 +195,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "api.cUser"
 
 AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesBackend', # Axes must be first
-    'api.utils.CustomBackend',
-#    'django.contrib.auth.backends.ModelBackend',
+    "axes.backends.AxesBackend",  # Axes must be first
+    "api.utils.CustomBackend",
+    #    'django.contrib.auth.backends.ModelBackend',
 ]
 
 
@@ -344,17 +350,17 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-CSRF_COOKIE_SECURE = ENVIRONMENT != 'DEVELOPMENT'
+CSRF_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
 
-SESSION_COOKIE_HTTPONLY = ENVIRONMENT != 'DEVELOPMENT'
-SESSION_COOKIE_SECURE = ENVIRONMENT != 'DEVELOPMENT'
-SESSION_COOKIE_SAMESITE = 'Strict'  # or 'Lax'
+SESSION_COOKIE_HTTPONLY = ENVIRONMENT != "DEVELOPMENT"
+SESSION_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
+SESSION_COOKIE_SAMESITE = "Strict"  # or 'Lax'
 # SESSION_COOKIE_DOMAIN="printing.merrygold.xyz"
 
 SESSION_COOKIE_AGE = 1800
-SESSION_EXPIRE_SECONDS = 600 # 10 mins
+SESSION_EXPIRE_SECONDS = 600  # 10 mins
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
-SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = 10 # 10 mins
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = 10  # 10 mins
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 AXES_FAILURE_LIMIT = 5
@@ -362,13 +368,31 @@ AXES_COOLOFF_TIME = 2
 AXES_RESET_ON_SUCCESS = True
 
 
-CSRF_COOKIE_SECURE = ENVIRONMENT != 'DEVELOPMENT'
+CSRF_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
 
-CSP_DEFAULT_SRC = ("'self'")
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "trusted-scripts.com", "cdn.jsdelivr.net","cdnjs.cloudflare.com")
-CSP_IMG_SRC = ("'self'","'unsafe-inline'",'trusted-images.com','w3.org','data:')
-CSP_SCRIPT_HASHES = ("'sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3'",)
-CSP_FONT_SRC = ("'self'","'unsafe-inline'",'cdnjs.cloudflare.com')
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'",'https://cdnjs.cloudflare.com','https://cdn.jsdelivr.net')
-CSP_OBJECT_SRC = ("'none'")
-CSP_STYLE_SRC_ELEM =  ("'self'", "'unsafe-inline'",'https://cdnjs.cloudflare.com','https://cdn.jsdelivr.net')
+CSP_DEFAULT_SRC = "'self'"
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    "trusted-scripts.com",
+    "cdn.jsdelivr.net",
+    "cdnjs.cloudflare.com",
+)
+CSP_IMG_SRC = ("'self'", "'unsafe-inline'", "trusted-images.com", "w3.org", "data:")
+CSP_SCRIPT_HASHES = (
+    "'sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3'",
+)
+CSP_FONT_SRC = ("'self'", "'unsafe-inline'", "cdnjs.cloudflare.com")
+CSP_STYLE_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    "https://cdnjs.cloudflare.com",
+    "https://cdn.jsdelivr.net",
+)
+CSP_OBJECT_SRC = "'none'"
+CSP_STYLE_SRC_ELEM = (
+    "'self'",
+    "'unsafe-inline'",
+    "https://cdnjs.cloudflare.com",
+    "https://cdn.jsdelivr.net",
+)

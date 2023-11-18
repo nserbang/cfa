@@ -32,7 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-0mfz%)780(7i=w)p8w^n$s7j#(u!bq$1zd(m!@19sa5$9wb^gw"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = ENVIRONMENT == "DEVELOPMENT"
+DEBUG = True  # ENVIRONMENT == "DEVELOPMENT"
 
 ALLOWED_HOSTS = ["*"]
 TIME_ZONE = "Asia/Kolkata"
@@ -115,8 +115,12 @@ WSGI_APPLICATION = "cfa_server.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.spatialite",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": os.environ.get("DB_NAME", "cfa"),
+        "USER": os.environ.get("DB_USER", "hello"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", 5432),
     }
 }
 # STATIC_ROOT = 'portal/static/'
@@ -310,7 +314,7 @@ FCM_DJANGO_SETTINGS = {
 }
 
 
-cred = credentials.Certificate(str(BASE_DIR)+"/credentials.json")
+cred = credentials.Certificate(str(BASE_DIR) + "/credentials.json")
 firebase_admin.initialize_app(cred)
 
 SPECTACULAR_SETTINGS = {

@@ -4,7 +4,7 @@ FROM python:3.11-bullseye
 ADD requirements.txt requirements.txt
 # gis dependencies
 RUN apt-get update && \
-    apt-get install -y libspatialite-dev gdal-bin libgdal-dev proj-bin python3-gdal libsqlite3-mod-spatialite
+    apt-get install -y libspatialite-dev gdal-bin libgdal-dev proj-bin python3-gdal libsqlite3-mod-spatialite python3-opencv
 
 RUN pip install --no-cache-dir -r requirements.txt 
 #     pip install psycopg2-binary && \

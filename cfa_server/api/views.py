@@ -292,7 +292,7 @@ class UserRegistrationCompleteView(LoginRequiredMixin, View):
             user = form.save()
             # send_otp_verification_code(user)
             # login(request, user)
-            return redirect("/")
+            return redirect(reverse("login"))
         return render(request, "api/signup_complete.html", {"form": form})
 
 

@@ -4,13 +4,13 @@ FROM python:3.11-bullseye
 ADD requirements.txt requirements.txt
 # gis dependencies
 RUN apt-get update && \
-    apt-get install -y libspatialite-dev gdal-bin libgdal-dev proj-bin python3-gdal libsqlite3-mod-spatialite python3-opencv
+    apt-get install -y gdal-bin libgdal-dev python3-gdal libproj-dev python3-opencv
 
-RUN pip install --no-cache-dir -r requirements.txt 
+RUN pip install --no-cache-dir -r requirements.txt
 #     pip install psycopg2-binary && \
 RUN mkdir -p /cfa_server
 
-    
+
 ADD . /cfa_server
 
 WORKDIR /cfa_server/

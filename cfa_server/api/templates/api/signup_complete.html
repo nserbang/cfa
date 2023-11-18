@@ -9,7 +9,7 @@
 <div class="card">
     <h5 class="card-header">Complete Registration</h5>
     <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="complete-signup-form">
             {% csrf_token %}
             {{ form|crispy }}
             <button type="submit" class="btn btn-primary">Crompete Registration</button>
@@ -34,67 +34,68 @@
     function encryptDataWithRSA(data, publicKey, padding) {
         var encrypt = new JSEncrypt();
         encrypt.setPublicKey(publicKey);
-  
+
         // You can specify padding here (e.g., JSEncrypt.RSA_PKCS1_PADDING or JSEncrypt.RSA_OAEP_PADDING)
         encrypt.setPublicKey(publicKey, padding);
-        
+
         var encryptedData = encrypt.encrypt(data);
-        
+
         return encryptedData;
     }
   </script>
 <script>
     // Wait for the DOM to be fully loaded
     document.addEventListener('DOMContentLoaded', function() {
-      var loginForm = document.getElementById('custom-login-form');
-  
+      var completeSignupForm = document.getElementById('complete-signup-form');
+
       // Add a submit event listener to the form
-      loginForm.addEventListener('submit', function(event) {
+      completeSignupForm.addEventListener('submit', function(event) {
         // Prevent the default form submission
         event.preventDefault();
-  
+
         // Manually encrypt the form data here
         var passwordField = document.getElementById('id_password');
+        var confimPasswordField = document.getElementById('id_confirm_password');
 
         var encrypt = new JSEncrypt();
         // Replace this with your public key
         var base64PublicKey = getCookie('rsa_public_key');
         var publicKey = atob(base64PublicKey);
-  
-  
+
+
         encrypt.setPublicKey(publicKey);
-  
+
         var encryptedPassword = encrypt.encrypt(passwordField.value);
         passwordField.value = encryptedPassword;
-  
-        loginForm.submit();
+        var encryptedPassword = encrypt.encrypt(confimPasswordField.value);
+        confimPasswordField.value = encryptedPassword;
+
+        completeSignupForm.submit();
       });
     });
-  
-    
-  
+
 </script>
-  
+
 <script>
     // Disable copy-paste and keyboard shortcuts
     window.onload = function() {
         var passwordField = document.getElementById("id_password");
-  
+
         passwordField.addEventListener("copy", function(event) {
             event.preventDefault();
             return false;
         });
-  
+
         passwordField.addEventListener("paste", function(event) {
             event.preventDefault();
             return false;
         });
-  
+
         passwordField.addEventListener("cut", function(event) {
             event.preventDefault();
             return false;
         });
-  
+
         passwordField.addEventListener("keydown", function(event) {
             if (event.ctrlKey || event.metaKey) {
                 event.preventDefault();

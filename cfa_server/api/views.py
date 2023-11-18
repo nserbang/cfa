@@ -284,12 +284,15 @@ class UserRegistrationCompleteView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         form = UserRegistrationCompleteForm(
-            data=request.POST, files=request.FILES, instance=request.user
+            data=request.POST,
+            files=request.FILES,
+            instance=request.user,
+            request=request,
         )
         if form.is_valid():
             user = form.save()
-            send_otp_verification_code(user)
-            login(request, user)
+            # send_otp_verification_code(user)
+            # login(request, user)
             return redirect("/")
         return render(request, "api/signup_complete.html", {"form": form})
 

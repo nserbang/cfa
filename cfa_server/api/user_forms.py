@@ -29,7 +29,10 @@ class UserRegistrationForm(forms.ModelForm):
 
 class UserRegistrationCompleteForm(forms.ModelForm):
     password = forms.CharField(
-        max_length=128,
+        widget=forms.PasswordInput(attrs={"type": "password"}),
+    )
+
+    confirm_password = forms.CharField(
         widget=forms.PasswordInput(attrs={"type": "password"}),
     )
 
@@ -39,15 +42,60 @@ class UserRegistrationCompleteForm(forms.ModelForm):
             "first_name",
             "last_name",
             "password",
+            "confirm_password",
             "email",
             "address",
             "profile_picture",
         ]
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].required = True
+
+    def clean(self):
+        cd = super().clean()
+        import ipdb
+
+        ipdb.set_trace()
+        private_key_pem_b64 = self.request.session["private_key"]
+        private_key_pem = base64.b64decode(private_key_pem_b64)
+        private_key = serialization.load_pem_private_key(private_key_pem, password=None)
+
+        new_password1_encrypted_data_b64 = cd["password"]
+        new_password1_encrypted_data = base64.b64decode(
+            new_password1_encrypted_data_b64
+        )
+
+        new_password1_decrypted = private_key.decrypt(
+            new_password1_encrypted_data,
+            padding.PKCS1v15(),
+        )
+
+        new_password1 = new_password1_decrypted.decode("utf-8")
+        new_password2_encrypted_data_b64 = cd["confirm_password"]
+        new_password2_encrypted_data = base64.b64decode(
+            new_password2_encrypted_data_b64
+        )
+
+        new_password2_decrypted = private_key.decrypt(
+            new_password2_encrypted_data,
+            padding.PKCS1v15(),
+        )
+
+        new_password2 = new_password2_decrypted.decode("utf-8")
+
+        password = new_password1
+        confirm_password = new_password2
+        import ipdb
+
+        ipdb.set_trace()
+        if password != confirm_password:
+            raise forms.ValidationError("Passwords did not match.")
+        cd["password"] = password
+        cd["repeat_password"] = confirm_password
+        return cd
 
     def save(self, commit=True):
         user = super().save(commit=False)

@@ -477,7 +477,9 @@ class LoginSerializer(serializers.Serializer):
         password = attrs.get("password")
 
         if mobile and password:
-            user = authenticate(username=mobile, password=password)
+            user = authenticate(
+                username=mobile, password=password, request=self.context["request"]
+            )
 
             if user:
                 if not user.is_active:

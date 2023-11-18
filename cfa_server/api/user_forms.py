@@ -56,9 +56,7 @@ class UserRegistrationCompleteForm(forms.ModelForm):
 
     def clean(self):
         cd = super().clean()
-        import ipdb
 
-        ipdb.set_trace()
         private_key_pem_b64 = self.request.session["private_key"]
         private_key_pem = base64.b64decode(private_key_pem_b64)
         private_key = serialization.load_pem_private_key(private_key_pem, password=None)
@@ -88,9 +86,7 @@ class UserRegistrationCompleteForm(forms.ModelForm):
 
         password = new_password1
         confirm_password = new_password2
-        import ipdb
 
-        ipdb.set_trace()
         if password != confirm_password:
             raise forms.ValidationError("Passwords did not match.")
         cd["password"] = password

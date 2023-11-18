@@ -236,7 +236,6 @@ class UserRegistrationView(View):
             request.session["mobile"] = user.mobile
             return redirect(reverse("verify_mobile") + f"?mobile={user.mobile}")
         else:
-            # import ipdb; ipdb.set_trace()
             mobile = request.POST.get("mobile")
             try:
                 user = cUser.objects.get(mobile=mobile)

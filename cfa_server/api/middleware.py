@@ -17,7 +17,9 @@ class OneSessionPerUserMiddleware:
     def __call__(self, request):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
-        if request.user.is_authenticated:
+        if request.path.startswith("/api/v1"):
+            pass
+        elif request.user.is_authenticated:
             if not hasattr(request.user, "logged_in_user"):
                 # If the user doesn't have a related logged_in_user instance, create one
                 logged_in_user = LoggedInUser.objects.create(

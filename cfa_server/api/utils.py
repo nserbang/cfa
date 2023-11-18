@@ -18,6 +18,9 @@ import logging
 
 class CustomBackend(ModelBackend):
     def authenticate(self, request, username, password, **kwargs):
+        if request.path.startswith("/api/v1"):
+            return super().authenticate(request, username, password, **kwargs)
+
         private_key_pem_b64 = request.session.get("private_key")
         if private_key_pem_b64:
             private_key_pem = base64.b64decode(private_key_pem_b64)

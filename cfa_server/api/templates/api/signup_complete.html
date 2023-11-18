@@ -102,6 +102,32 @@
                 return false;
             }
         });
+
+
+        var confirmPasswordField = document.getElementById("id_confirm_password");
+
+        confirmPasswordField.addEventListener("copy", function(event) {
+            event.preventDefault();
+            return false;
+        });
+
+        confirmPasswordField.addEventListener("paste", function(event) {
+            event.preventDefault();
+            return false;
+        });
+
+        confirmPasswordField.addEventListener("cut", function(event) {
+            event.preventDefault();
+            return false;
+        });
+
+        confirmPasswordField.addEventListener("keydown", function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                event.preventDefault();
+                return false;
+            }
+        });
+        
     };
   </script>
 

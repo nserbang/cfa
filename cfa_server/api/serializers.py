@@ -452,6 +452,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["role"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["mobile"].required = False
+
     def update(self, instance, data):
         password = data.pop("password", None)
         if password:

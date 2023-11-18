@@ -3,6 +3,7 @@ import base64
 from openpyxl import Workbook
 from weasyprint import HTML
 from weasyprint.text.fonts import FontConfiguration
+from csp.decorators import csp_exempt
 from django.urls import reverse_lazy
 from django.db.models.functions import Coalesce
 from django.db.models import Count, Case as MCase, When, Q, OuterRef, Exists
@@ -325,6 +326,10 @@ class CaseAddView(LoginRequiredMixin, CreateView):
     model = Case
     template_name = "case/add_case.html"
     success_url = "/"
+
+    @csp_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kw = super().get_form_kwargs()

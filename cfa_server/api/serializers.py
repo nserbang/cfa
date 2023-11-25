@@ -289,6 +289,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             "inprogress": "Your case no.{} is in-progress.",
             "resolved": "Your case no.{} is resolved.",
             "visited": "Your case no.{} is visited.",
+            "found": "Your case no.{} is found.",
         }
         user = self.context["request"].user
         cstate = validated_data["cstate"]
@@ -305,6 +306,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             "inprogress",
             "resolved",
             "visited",
+            "found",
         ]:
             instance.save()
             noti_title = noti_title.get(cstate).format(instance.pk)

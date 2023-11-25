@@ -176,6 +176,7 @@ class Case(models.Model):
     cState = (
         ("pending", "Pending"),  # Complaint lodged for the first time
         ("accepted", "Accepted"),  # Formal case approved
+        ("found", "Found"),
         ("assign", "Assign"),  # Assign case to some other officer
         ("visited", "Visited"),
         ("inprogress", "Inprogress"),

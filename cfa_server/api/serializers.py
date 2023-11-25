@@ -306,7 +306,6 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             "inprogress",
             "resolved",
             "visited",
-            "found",
         ]:
             instance.save()
             noti_title = noti_title.get(cstate).format(instance.pk)
@@ -318,6 +317,13 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             instance.save()
             noti_title = f"You have assigned a new case no.{instance.pk}"
             instance.send_notitication(noti_title, [instance.oid.user_id])
+
+        elif cstate == "found":
+            instance.save()
+            noti_title.get(cstate).format(instance.pk)
+            instance.send_notitication(
+                noti_title, [instance.oid.user_id, instance.user_id]
+            )
 
         elif cstate == "transfer":
             instance.pid = validated_data["pid"]

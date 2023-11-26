@@ -197,6 +197,13 @@ class Case(models.Model):
         ("info", "Info"),  # Police officer requires more information from complainant
         ("rejected", "Rejected"),
     )
+    DRUG_ISSUE_TYPE = (
+        ("drug_peddling", "Drug Peddling"),
+        ("drug_consumption", "Drug Consumption"),
+        ("drug_cultivation", "Drug Cultivation"),
+        ("needs_counselling", "Needs Counselling"),
+        ("needs_rehabilitation", "Needs Rehabilitation"),
+    )
     cid = models.BigAutoField(primary_key=True)
     # Police station in which case is lodged
     pid = models.ForeignKey(PoliceStation, on_delete=models.DO_NOTHING)
@@ -225,6 +232,9 @@ class Case(models.Model):
     # Follow me flag
     follow = models.BooleanField(default=False)
     medias = models.ManyToManyField("Media", related_name="cases", blank=True)
+    drug_issue_type = models.CharField(
+        max_length=20, choices=DRUG_ISSUE_TYPE, blank=True, default=""
+    )
 
     def add_history_and_media(self, description, medias, user, cstate=None, **kwargs):
         cstate = cstate or self.cstate

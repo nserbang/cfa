@@ -167,6 +167,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "medias",
             "vehicle_detail",
             "can_act",
+            "drug_issue_type",
         ]
 
     def get_case_type(self, case):
@@ -209,6 +210,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             "pid",
             "distance",
             "medias",
+            "drug_issue_type",
         ]
 
     def create(self, validated_data):

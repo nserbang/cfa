@@ -230,11 +230,11 @@ admin.site.register(CaseHistory, CaseHistoryAdmin)
 
 
 class MediaAdmin(admin.ModelAdmin):
-
     form = MediaForm
 
     list_display = ["mtype", "path", "description"]
     search_fields = ["mtype"]
+
 
 class LostVehicleAdmin(admin.ModelAdmin):
     def Id(self):
@@ -289,16 +289,26 @@ class Emergency(admin.ModelAdmin):
 # class Criminal(admin.ModelAdmin):
 #     pass
 
+
 class BannerAdmin(admin.ModelAdmin):
     form = BannerForm
 
-    list_display = ('bid','mtype', 'description',)
-    search_fields = ['bid','mtype', 'description',]
+    list_display = (
+        "bid",
+        "mtype",
+        "description",
+    )
+    search_fields = [
+        "bid",
+        "mtype",
+        "description",
+    ]
 
 
 """ admin.site.register(Victim)
 admin.site.register(Criminal) """
 admin.site.register(Privacy)
+admin.site.register(PoliceStationSupervisor)
 admin.site.register(TermsCondition)
 admin.site.register(Contact)
 admin.site.register(Like)

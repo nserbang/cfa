@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.db.models.functions import Coalesce
-from django.db.models import F
+from django.db.models import Case as MCase, When
 from django.contrib.gis.geos import fromstr
 from django.contrib.gis.db.models.functions import Distance
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -69,16 +69,33 @@ class CaseViewSet(UserMixin, ModelViewSet):
             if user.is_police:
                 officer = user.policeofficer_set.first()
                 rank = int(officer.rank)
-                if rank >= 11:
+                data = data.annotate(
+                    can_act=MCase(
+                        When(
+                            (Q(cstate="pending") & Q(oid__rank=5))
+                            | (~Q(cstate="pending") & Q(oid__rank=4) & Q(oid=officer)),
+                            then=True,
+                        ),
+                        default=False,
+                    )
+                )
+                if rank > 9:
                     pass
-                elif rank == 5 and officer.report_on_this:
-                    data = data.filter(pid__policeofficer=officer)
                 elif rank == 9:
-                    data = data.filter(pid__did_id=officer.pid.did_id)
+                    data.filter(pid__did_id=officer.pid.did_id)
+                elif rank == 6:
+                    # import ipdb; ipdb.set_trace()
+                    data = data.filter(
+                        pid_id__in=officer.policestation_supervisor.values("station")
+                    )
+                elif rank == 5:
+                    data = data.filter(pid_id=officer.pid_id)
+                elif rank == 4:
+                    data = data.filter(oid=officer).exclude(cstate="pending")
                 else:
-                    data = data.filter(Q(user=user) | Q(oid=officer))
+                    data = data.filter(Q(user=user) | Q(type="vehicle"))
             elif user.is_user:
-                data = data.filter(Q(user=user) | Q(type="drug"))
+                data = data.filter(Q(user=user) | Q(type="vehicle"))
         if search:
             data = data.filter(
                 Q(title__contains=search)

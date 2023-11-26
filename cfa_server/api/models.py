@@ -167,6 +167,18 @@ class PoliceOfficer(models.Model):
     report_on_this = models.BooleanField(default=False)
 
 
+class PoliceStationSupervisor(models.Model):
+    officer = models.ForeignKey(
+        PoliceOfficer, on_delete=models.CASCADE, related_name="policestation_supervisor"
+    )
+    station = models.ForeignKey(
+        PoliceStation, on_delete=models.CASCADE, related_name="policestation_supervisor"
+    )
+
+    class Meta:
+        unique_together = ["officer", "station"]
+
+
 class Case(models.Model):
     cType = (
         ("drug", "Drug"),  # complaint related to drugs

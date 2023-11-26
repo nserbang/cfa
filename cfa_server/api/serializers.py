@@ -144,6 +144,7 @@ class CaseSerializer(serializers.ModelSerializer):
     vehicle_detail = LostVehicleSerializer(
         source="lostvehicle", read_only=True, required=False
     )
+    can_act = serializers.BooleanField(default=False)
 
     class Meta:
         model = Case
@@ -165,6 +166,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "distance",
             "medias",
             "vehicle_detail",
+            "can_act",
         ]
 
     def get_case_type(self, case):

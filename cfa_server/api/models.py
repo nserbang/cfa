@@ -390,11 +390,16 @@ class Comment(models.Model):
     #         self.cid.save()
     #     return super().save(**kwargs)
 
+class EmergencyType(models.Model):
+
+    emtid = models.BigAutoField(primary_key=True)
+    service_type = models.CharField(max_length=30, blank=False)
+
 
 # Table for emergency helpline numbers with their name and gps location
 class Emergency(models.Model):
     emid = models.BigAutoField(primary_key=True)
-    did = models.ForeignKey(District, on_delete=models.CASCADE)
+    tid = models.ForeignKey(EmergencyType, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, null=True, default="N/A")
     number = models.CharField(max_length=100, null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
@@ -405,6 +410,11 @@ class Emergency(models.Model):
         if self.lat and self.long:
             self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
         super().save(**kwargs)
+
+    def tid_display(self):
+        return self.tid.service_type
+
+    tid_display.short_description = 'Emergency Type'
 
 
 class Information(models.Model):
@@ -505,3 +515,4 @@ class LoggedInUser(models.Model):
 
     def __str__(self):
         return self.user.username
+

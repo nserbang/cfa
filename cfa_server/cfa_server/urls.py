@@ -104,6 +104,9 @@ router.register(
     r"district/(?P<district_id>\d+)/emergency", EmergencyViewSet, basename="emergencies"
 )
 router.register(
+    r"emergency-type/(?P<emergency_type_id>\d+)/emergency", EmergencyViewSet, basename="emergencies"
+)
+router.register(
     r"district/(?P<district_id>\d+)/police-station",
     DistrictPoliceStationViewSet,
     basename="district-police-station",

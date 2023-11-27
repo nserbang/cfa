@@ -14,8 +14,8 @@ class EmergencyViewSet(ModelViewSet):
     permission_classes = (IsReadOnly,)
 
     def get_queryset(self):
-        district_id = self.kwargs["district_id"]
-        queryset = Emergency.objects.filter(did=district_id)
+        emergency_type_id = self.kwargs["emergency_type_id"]
+        queryset = Emergency.objects.filter(tid=emergency_type_id)
         lat = self.request.query_params.get("lat")
         long = self.request.query_params.get("long")
         if lat and long:

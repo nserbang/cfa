@@ -1,3 +1,4 @@
+from django import forms
 from django.utils.html import format_html
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
@@ -276,10 +277,6 @@ class InformationAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Emergency)
-class Emergency(admin.ModelAdmin):
-    pass
-
 
 # @admin.register(Victim)
 # class Victim(admin.ModelAdmin):
@@ -304,6 +301,27 @@ class BannerAdmin(admin.ModelAdmin):
         "description",
     ]
 
+class EmergencyAdminForm(forms.ModelForm):
+    class Meta:
+        model = Emergency
+        fields = '__all__'
+
+class EmergencyAdmin(admin.ModelAdmin):
+    form = EmergencyAdminForm
+    list_display = ('emid', 'tid_display', 'name', 'number', 'lat', 'long', 'geo_location')
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "tid":
+            kwargs["queryset"] = EmergencyType.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def tid_display(self, obj):
+        return obj.tid.service_type
+
+class EmergencyTypeAdmin(admin.ModelAdmin):
+
+    list_display = ("emtid","service_type")
+
 
 """ admin.site.register(Victim)
 admin.site.register(Criminal) """
@@ -314,3 +332,5 @@ admin.site.register(Contact)
 admin.site.register(Like)
 admin.site.register(Banner, BannerAdmin)
 admin.site.register(Media, MediaAdmin)
+admin.site.register(Emergency, EmergencyAdmin)
+admin.site.register(EmergencyType, EmergencyTypeAdmin)

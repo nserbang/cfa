@@ -93,6 +93,7 @@ router.register("privacy", PrivacyViewSet, basename="privacy")
 router.register("terms-condition", TermsConditionViewSet, basename="terms-condition")
 router.register("contact", ContactViewSet, basename="contact")
 router.register("criminal", CriminalViewSet, basename="criminal")
+router.register("emergency-type", EmergencyTypeViewSet, basename="emergency-types")
 router.register(
     r"case/(?P<case_id>\d+)/history", CaseHistoryViewSet, basename="case-history"
 )

@@ -3,8 +3,8 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.contrib.gis.geos import fromstr
 from django.contrib.gis.db.models.functions import Distance
 
-from api.models import Emergency
-from api.serializers import EmergencySerializer
+from api.models import Emergency, EmergencyType
+from api.serializers import EmergencySerializer, EmergencyTypeSerializer
 from api.viewset.permission import IsReadOnly
 
 
@@ -39,3 +39,10 @@ class EmergencyViewListSet(ModelViewSet):
             user_distance = Distance("geo_location", geo_location)
             queryset = queryset.annotate(distance=user_distance)
         return queryset
+
+
+class EmergencyTypeViewSet(ModelViewSet):
+    serializer_class = EmergencyTypeSerializer
+    queryset = EmergencyType.objects.all()
+    permission_classes = (IsReadOnly,)
+

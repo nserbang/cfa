@@ -739,3 +739,10 @@ class BannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Banner
         fields = "__all__"
+
+
+class EmergencyTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EmergencyType
+        fields = "__all__"

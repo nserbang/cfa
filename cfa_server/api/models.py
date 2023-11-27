@@ -366,6 +366,12 @@ class CaseHistory(models.Model):
 
 
 class LostVehicle(models.Model):
+
+    type = (  # Represent criminal type
+        ("stolen", "Stolen"),
+        ("Abandoned", "Abandoned"),
+    )
+
     caseId = models.OneToOneField(Case, on_delete=models.DO_NOTHING)
     regNumber = models.CharField(max_length=30, unique=True)
     chasisNumber = models.CharField(max_length=50, null=True, default="N/A")
@@ -374,6 +380,7 @@ class LostVehicle(models.Model):
     model = models.CharField(max_length=50, null=True, default="N/A")
     description = models.CharField(max_length=500, null=True, default="N/A")
     color = models.CharField(max_length=56, blank=True, default="")
+    type = models.CharField(max_length=10, choices=type, null=False, default="stolen")
 
 
 class Comment(models.Model):

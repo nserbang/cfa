@@ -243,7 +243,7 @@ class LostVehicleAdmin(admin.ModelAdmin):
 
     Id.short_description = "Case ID"
     # PoliceStation.short_description ="Police Station"
-    list_display = [Id, "regNumber", "chasisNumber", "engineNumber", "make", "model"]
+    list_display = [Id, "regNumber", "chasisNumber", "engineNumber", "make", "model", "type"]
 
 
 admin.site.register(LostVehicle, LostVehicleAdmin)

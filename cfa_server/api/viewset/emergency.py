@@ -1,6 +1,8 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.contrib.gis.geos import fromstr
+from rest_framework.pagination import PageNumberPagination
+
 from django.contrib.gis.db.models.functions import Distance
 
 from api.models import Emergency, EmergencyType
@@ -40,9 +42,12 @@ class EmergencyViewListSet(ModelViewSet):
             queryset = queryset.annotate(distance=user_distance)
         return queryset
 
+class NoPagination(PageNumberPagination):
+    page_size = None
 
 class EmergencyTypeViewSet(ModelViewSet):
     serializer_class = EmergencyTypeSerializer
     queryset = EmergencyType.objects.all()
     permission_classes = (IsReadOnly,)
+    pagination_class = NoPagination
 

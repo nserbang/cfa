@@ -362,7 +362,7 @@ class CaseHistory(models.Model):
 class LostVehicle(models.Model):
     type = (  # Represent criminal type
         ("stolen", "Stolen"),
-        ("Abandoned", "Abandoned"),
+        ("abandoned", "Abandoned"),
     )
 
     caseId = models.OneToOneField(Case, on_delete=models.DO_NOTHING)

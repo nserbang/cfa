@@ -11,6 +11,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.geos import fromstr
 from api.utl import get_upload_path
 from api.forms import detect_malicious_patterns_in_media
+from api.otp import send_sms
 from .managers import CustomUserManager
 from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
@@ -274,9 +275,10 @@ class Case(models.Model):
                     description="Case created.",
                 )
                 try:
+                    desc = f"New case no.{self.cid} of type {self.type} reported at {self.pid}."
                     data = {
                         "case_id": str(self.cid),
-                        "description": self.description,
+                        "description": desc,
                         "type": self.type,
                         "state": self.cstate,
                         "created": str(self.created),
@@ -284,12 +286,18 @@ class Case(models.Model):
                     message = Message(data=data)
                     if self.oid_id:
                         devices = FCMDevice.objects.filter(user_id=self.oid.user_id)
+                        print("sending sms")
+                        send_sms(self.oid.mobile, desc)
                     else:
+                        officers = self.pid.policeofficer_set.filter(
+                            Q(report_on_this=True) | Q(rank="5")
+                        ).values("user_id", "user__mobile")
                         devices = FCMDevice.objects.filter(
-                            user_id__in=self.pid.policeofficer_set.filter(
-                                report_on_this=True
-                            ).values("user_id")
+                            user_id__in=[o["user_id"] for o in officers]
                         )
+                        for officer in officers:
+                            send_sms(officer["user__mobile"], desc)
+                    print("sending notification")
                     devices.send_message(message)
                 except Exception as e:
                     pass
@@ -320,24 +328,10 @@ class Media(models.Model):
         ("document", "Document"),
     )
     # media type
-    mtype = models.CharField(max_length=10, choices=Mtype, default="Photo")
+    mtype = models.CharField(max_length=10, choices=Mtype, default="photo")
     # media path
     path = models.FileField(upload_to=get_upload_path, validators=[file_type_validator])
     description = models.TextField(null=True)
-
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)
-
-    #     # Create CaseHistory entry when a new media object is created
-    #     if not self.pk:
-    #         case_history = CaseHistory.objects.create(
-    #             case=self.cid_history.case,
-    #             user=self.cid_history.user,
-    #             cstate=self.cid_history.cstate,
-    #             description="Media uploaded.",
-    #         )
-    #         case_history.save()
-    #         case_history.add(self)
 
 
 class CaseHistory(models.Model):
@@ -366,7 +360,6 @@ class CaseHistory(models.Model):
 
 
 class LostVehicle(models.Model):
-
     type = (  # Represent criminal type
         ("stolen", "Stolen"),
         ("Abandoned", "Abandoned"),
@@ -397,8 +390,8 @@ class Comment(models.Model):
     #         self.cid.save()
     #     return super().save(**kwargs)
 
-class EmergencyType(models.Model):
 
+class EmergencyType(models.Model):
     emtid = models.BigAutoField(primary_key=True)
     service_type = models.CharField(max_length=30, blank=False)
 
@@ -421,7 +414,7 @@ class Emergency(models.Model):
     def tid_display(self):
         return self.tid.service_type
 
-    tid_display.short_description = 'Emergency Type'
+    tid_display.short_description = "Emergency Type"
 
 
 class Information(models.Model):
@@ -522,4 +515,3 @@ class LoggedInUser(models.Model):
 
     def __str__(self):
         return self.user.username
-

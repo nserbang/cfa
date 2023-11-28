@@ -3,12 +3,13 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import MethodNotAllowed
+from django.db.models import Q
 from django.contrib.gis.geos import fromstr
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from .models import *
 from django.contrib.auth import authenticate
-from api.models import Case, PoliceStation, cUser
+from api.models import Case, PoliceStation, cUser, PoliceOfficer
 from api.npr import detectVehicleNumber
 from api.otp import validate_otp, send_otp_verification_code
 
@@ -319,8 +320,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             instance.oid = validated_data["oid"]
             instance.cstate = "pending"
             instance.save()
-            noti_title = f"You have assigned a new case no.{instance.pk}"
-            instance.send_notitication(noti_title, [instance.oid.user_id])
+            noti_title = f"You are assigned a new case no.{instance.pk}"
 
         elif cstate == "found":
             instance.save()
@@ -334,6 +334,13 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             instance.cstate = "pending"
             instance.oid = None
             instance.save()
+
+        message = f"Case no. {instance.pk} status changed to {instance.cstate}"
+        supervisors = PoliceOfficer.objects.filter(
+            Q(pid__did=instance.oid.pid.did, rank=9)
+            | Q(oid__in=instance.oid.policestation_supervisor.values("officer_id"))
+        ).values_list("user_id", flat=True)
+        instance.send_notitication(message, list(supervisors))
 
         lat = validated_data.get("lat")
         long = validated_data.get("long")
@@ -742,7 +749,6 @@ class BannerSerializer(serializers.ModelSerializer):
 
 
 class EmergencyTypeSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = EmergencyType
         fields = "__all__"

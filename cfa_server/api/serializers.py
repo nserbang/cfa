@@ -391,9 +391,13 @@ class CommentSerializer(serializers.ModelSerializer):
         ).data
         return data
 
+class EmergencyTypeSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = EmergencyType
+        fields = "__all__"
 class EmergencySerializer(serializers.ModelSerializer):
-    district = DistrictSerializer(source="did")
+    emergeny_type = EmergencyTypeSerializer(source="tid")
     distance = serializers.FloatField(
         required=False, read_only=True, source="distance.km"
     )
@@ -402,7 +406,7 @@ class EmergencySerializer(serializers.ModelSerializer):
         model = Emergency
         fields = [
             "emid",
-            "district",
+            "emergeny_type",
             "name",
             "number",
             "lat",

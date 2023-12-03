@@ -1,38 +1,102 @@
 import magic
 import requests
 from django import forms
+from django.db.models import Q
 from django.utils import timezone
 from django.contrib.gis.geos import fromstr
 from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance
-from api.models import Case, PoliceStation, Media
+from api.models import (
+    Case,
+    PoliceStation,
+    Media,
+    LostVehicle,
+    CaseHistory,
+    PoliceOfficer,
+)
+from api.otp import send_sms
 
 
-def send_sms(text, mobile, template_id):
-    url = "http://msg.msgclub.net/rest/services/sendSMS/sendGroupSms"
-    params = {
-        "AUTH_KEY": "eb77c1ab059d9eab77f37e1e2b4b87",
-        "message": text,
-        "senderId": "tmvict",
-        "routeId": 8,
-        "mobileNos": (mobile),
-        "smsContentType": "english",
-        "templateid": template_id,
-        "entityid": 1701169193114468940,
-    }
-    requests.get(url, params=params)
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
 
 
 class CaseForm(forms.ModelForm):
+    VEHICLE_LOST_CHOICES = (  # Represent criminal type
+        ("stolen", "Stolen"),
+        ("abandoned", "Abandoned"),
+    )
+    vehicle_lost_type = forms.ChoiceField(choices=VEHICLE_LOST_CHOICES, required=False)
+    regNumber = forms.CharField(max_length=30, required=False)
+    chasisNumber = forms.CharField(max_length=50, required=False)
+    engineNumber = forms.CharField(max_length=50, required=False)
+    make = forms.CharField(max_length=50, required=False)
+    model = forms.CharField(max_length=50, required=False)
+    color = forms.CharField(max_length=56, required=False)
+    documents = MultipleFileField(required=False)
+
     class Meta:
         model = Case
         fields = [
             "type",
+            "drug_issue_type",
+            "vehicle_lost_type",
+            "regNumber",
+            "chasisNumber",
+            "engineNumber",
+            "make",
+            "model",
+            "color",
             "lat",
             "long",
             "description",
             "pid",
+            "documents",
         ]
+
+    vehicle_fields = [
+        "vehicle_lost_type",
+        "regNumber",
+        "chasisNumber",
+        "engineNumber",
+        "make",
+        "model",
+        "color",
+    ]
+
+    def clean(self):
+        cd = super().clean()
+        case_type = cd["type"]
+        if case_type == "drug" and not cd.get("drug_issue_type"):
+            self.add_error("drug_issue_type", "This field is required")
+
+        if case_type == "vehicle":
+            for field in self.vehicle_fields:
+                if not cd.get(field):
+                    self.add_error(field, "This field is required")
+
+        files = cd.get("documents")
+        for f in files:
+            mime_type = magic.from_buffer(f.read(1024), mime=True)
+            if mime_type not in settings.ALLOWED_DOC_TYPES:
+                self.add_error("documents", f"You can't upload this file: {f.name}.")
+                return
+            f.seek(0)
+        return cd
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
@@ -60,31 +124,42 @@ class CaseForm(forms.ModelForm):
         case.oid = officier
         case.user = self.user
         case.save()
-        # text = "A new case has been reported. Log in to accept."
-        text = "Victory Trading Agency app new case No: {} reported at Open app/website to see details".format(
-            case.cid
+        if case.type == "vehicle":
+            lost_vehicle_type = self.cleaned_data.pop("vehicle_lost_type", "")
+            LostVehicle.objects.create(
+                caseId=case,
+                type=lost_vehicle_type,
+                **{
+                    f: self.cleaned_data.get(f)
+                    for f in self.vehicle_fields
+                    if self.cleaned_data.get(f)
+                },
+            )
+        files = self.cleaned_data.get("documents")
+        medias = []
+        for f in files:
+            medias.append(Media(path=f, mtype="document"))
+        medias = Media.objects.bulk_create(medias)
+        case.medias.add(*medias)
+
+        CaseHistory.objects.create(
+            case=case,
+            user=case.user,
+            cstate=case.cstate,
+            description="Case created.",
         )
-        template_id = 1707169225617804935
-        send_sms(text, self.user.mobile, template_id)
-        return case
 
-
-class MultipleFileInput(forms.ClearableFileInput):
-    allow_multiple_selected = True
-
-
-class MultipleFileField(forms.FileField):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("widget", MultipleFileInput())
-        super().__init__(*args, **kwargs)
-
-    def clean(self, data, initial=None):
-        single_file_clean = super().clean
-        if isinstance(data, (list, tuple)):
-            result = [single_file_clean(d, initial) for d in data]
+        desc = f"New case no.{case.cid} of type {case.type} reported at {case.pid}."
+        if case.oid_id:
+            send_sms(case.oid.mobile, desc)
         else:
-            result = single_file_clean(data, initial)
-        return result
+            officers = self.pid.policeofficer_set.filter(
+                Q(report_on_this=True) | Q(rank="5")
+            ).values("user_id", "user__mobile")
+            for officer in officers:
+                send_sms(officer["user__mobile"], desc)
+
+        return case
 
 
 class CaseUpdateForm(forms.ModelForm):
@@ -93,7 +168,7 @@ class CaseUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Case
-        fields = ["cstate"]
+        fields = ["cstate", "oid"]
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
@@ -110,6 +185,12 @@ class CaseUpdateForm(forms.ModelForm):
                 self.add_error("files", f"You can't this file: {f.name}.")
                 return
             f.seek(0)
+
+        state = cd["cstate"]
+        if state == "assign" and not cd.get("oid"):
+            raise forms.ValidationError(
+                "You need to provide oid to assign this case to new officer."
+            )
         return cd
 
     def save(self, commit=True):
@@ -132,17 +213,35 @@ class CaseUpdateForm(forms.ModelForm):
         case = self.instance
         case.cstate = self.cleaned_data["cstate"]
         case.updated = timezone.now()
-        case.save()
+
+        noti_title = {
+            "accepted": "Your case no.{} has been accepted.",
+            "rejected": "Your case no.{} has been rejected.",
+            "info": "More info required for your case no.{}.",
+            "inprogress": "Your case no.{} is in-progress.",
+            "resolved": "Your case no.{} is resolved.",
+            "visited": "Your case no.{} is visited.",
+            "found": "Your case no.{} is found.",
+        }
+        if self.cleaned_data["cstate"] in {"assign", "transfer"}:
+            case.oid = self.cleaned_data["oid"]
+            case.cstate = "pending"
+            case.save()
+            noti_title = f"You are assigned a new case no.{case.pk}"
+            case.send_notitication(noti_title, [case.oid.user_id])
+            send_sms(noti_title, case.oid.user.mobile)
+        else:
+            case.save()
+            message = f"Case no. {case.pk} status changed to {case.cstate}"
+            supervisors = PoliceOfficer.objects.filter(
+                Q(pid__did=case.oid.pid.did, rank=9)
+                | Q(oid__in=case.oid.policestation_supervisor.values("officer_id"))
+            ).values("user_id", "user__mobile")
+            case.send_notitication(message, [o["user_id"] for o in supervisors])
+            for supervisor in supervisors:
+                send_sms(message, supervisor["user__mobile"])
         description = self.cleaned_data["description"]
         case.add_history_and_media(
             description=description, medias=medias, user=self.request.user
         )
-        try:
-            text = "Your case case No. {} status changed to {} at Victory Trading Agency app".format(
-                case.id, self.cleaned_data["cstate"]
-            )
-            template_id = 1707169227815701046
-            send_sms(text, self.user.mobile, template_id)
-        except Exception as e:
-            pass
         return case

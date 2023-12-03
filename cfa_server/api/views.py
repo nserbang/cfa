@@ -166,7 +166,7 @@ class HomePageView(View):
                     default=False,
                 ),
             )
-            .select_related("pid", "oid")
+            .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
             .prefetch_related(
                 "casehistory_set", "comment_set", "comment_set__user", "medias"
             )
@@ -196,12 +196,42 @@ class HomePageView(View):
                 officer = user.policeofficer_set.first()
                 if officer:
                     rank = int(officer.rank)
-                    if rank < 5:
-                        cases = cases.filter(oid=officer)
-                    elif rank == 5:
-                        cases = cases.filter(pid=officer.pid)
+                    cases = cases.annotate(
+                        can_act=MCase(
+                            When(
+                                (Q(cstate="pending") & Q(oid__rank=5))
+                                | (
+                                    ~Q(cstate="pending")
+                                    & Q(oid__rank=4)
+                                    & Q(oid=officer)
+                                ),
+                                then=True,
+                            ),
+                            default=False,
+                        )
+                    )
+                    rank = int(officer.rank)
+                    if rank > 9:
+                        pass
                     elif rank == 9:
-                        cases = cases.filter(pid__did__did=officer.pid.did.did)
+                        cases.filter(pid__did_id=officer.pid.did_id)
+                    elif rank == 6:
+                        # import ipdb; ipdb.set_trace()
+                        cases = cases.filter(
+                            pid_id__in=officer.policestation_supervisor.values(
+                                "station"
+                            )
+                        )
+                    elif rank == 5:
+                        cases = cases.filter(pid_id=officer.pid_id)
+                    elif rank == 4:
+                        cases = cases.filter(oid=officer).exclude(cstate="pending")
+                    else:
+                        cases = cases.filter(Q(user=user) | Q(type="vehicle"))
+            elif user.is_user:
+                cases = cases.filter(Q(user=user) | Q(type="vehicle"))
+        else:
+            cases = cases.filter(type="vehicle")
 
         if q := self.request.GET.get("q"):
             search_filter = (

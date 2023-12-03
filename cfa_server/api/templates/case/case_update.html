@@ -19,3 +19,26 @@
 </div>
 
 {% endblock content %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        let cstate = document.getElementById('id_cstate')
+        function showHideOfficeDropdown() {
+            let officerDiv = document.getElementById('div_id_oid')
+            console.log("KDSJLFKJDFKLJFKL")
+            console.log(cstate.value)
+            if (cstate.value === 'assign' || cstate.value === 'transfer') {
+                officerDiv.style.display = 'block'
+            } else {
+                officerDiv.style.display = 'none'
+            }
+        }
+        showHideOfficeDropdown()
+
+        cstate.addEventListener("change", function(event) {
+            showHideOfficeDropdown()
+        })
+    </script>
+{% endblock javascript %}
+
+

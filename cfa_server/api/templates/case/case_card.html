@@ -8,6 +8,9 @@
                     <th scope="col">Case No.</th>
                     <th scope="col">Reported</th>
                     <th scope="col">Type</th>
+                    {% if case.type == 'drug' %}
+                        <th scope="col">Request Type</th>
+                    {% endif %}
                     <th scope="col">Status</th>
                     <th scope="col">Police Station</th>
                 </tr>
@@ -17,7 +20,10 @@
               <tr>
                 <th scope="row">{{ case.cid }}</th>
                 <td>{{ case.created }}</td>
-                <td>{{case.get_type_display }}</td>
+                <td>{{ case.get_type_display }}</td>
+                {% if case.type == 'drug' %}
+                    <td>{{ case.get_drug_issue_type_display }}</td>
+                {% endif %}
                 <td>{{ case.get_cstate_display }}</td>
                 <td><a class="btn btn-primary btn-xs text-xs"
                     rel="noreferrer"
@@ -73,12 +79,13 @@
                 {% endif %}
             {% endif %}
 
-            {% if case.is_location_visible or case.oid.user_id == user.id %}
+            {% if case.can_act %}
                 <div class="dropdown">
                     <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Action</button>
                     <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=pending">Pending</a></li>
                     <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=accepted">Accepted</a></li>
+                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=found">Found</a></li>
                     <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=assign">Assigned</a></li>
                     <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=transfer">Transfer</a></li>
                     <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=resolved">Resolved</a></li>

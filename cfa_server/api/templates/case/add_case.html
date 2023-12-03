@@ -10,7 +10,7 @@
     </div>
     <div class="col-lg-9 col-md-9 col-sm-12 pb-2">
         <h4 class="flex-fill">Add A New Complaint</h4>
-        <form method="post" id="main-form">
+        <form method="post" id="main-form" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form|crispy }}
             <div class="row">
@@ -110,6 +110,7 @@
             zoom: 14,
             mapId: "4504f8b37365c3d0",
         });
+
         const infoWindow = new InfoWindow();
         const draggableMarker = new AdvancedMarkerElement({
             map,
@@ -117,20 +118,42 @@
             gmpDraggable: true,
             title: "Drag this marker to select location.",
         });
+        map.addListener('click', function(e) {
+            changeMarkerLocation(e.latLng, map);
+        });
 
-        draggableMarker.addListener("dragend", (event) => {
-            const position = draggableMarker.position;
+        function changeMarkerLocation(position, map) {
+            draggableMarker.position = position
+            draggableMarker.map = map
+            position = draggableMarker.position;
             console.log(position);
             console.log(draggableMarker);
             latitude = position.h.toFixed(4)
-            longitude = position.j.toFixed(4)
+            longitude = position.i.toFixed(4)
             lat = document.getElementById('id_lat')
             lat.value = latitude
             long = document.getElementById('id_long')
             long.value = longitude
             infoWindow.close();
             infoWindow.setContent(
-                `You selected: ${position.h}, ${position.j}`,
+                `You selected: ${position.h}, ${position.i}`,
+            );
+            infoWindow.open(draggableMarker.map, draggableMarker);
+        }
+
+        draggableMarker.addListener("dragend", (event) => {
+            const position = draggableMarker.position;
+            console.log(position);
+            console.log(draggableMarker);
+            latitude = position.h.toFixed(4)
+            longitude = position.i.toFixed(4)
+            lat = document.getElementById('id_lat')
+            lat.value = latitude
+            long = document.getElementById('id_long')
+            long.value = longitude
+            infoWindow.close();
+            infoWindow.setContent(
+                `You selected: ${position.h}, ${position.i}`,
             );
             infoWindow.open(draggableMarker.map, draggableMarker);
         });
@@ -209,6 +232,51 @@
         policeStation.value = selectStation.value
         const form = document.getElementById('main-form');
         form.submit()
+    })
+
+    let type = document.getElementById('id_type')
+    function showHideDrugIssutType() {
+        let drugIssueTypeDiv = document.getElementById('div_id_drug_issue_type')
+        console.log(type.value)
+        if (type.value === 'drug') {
+            drugIssueTypeDiv.style.display = 'block'
+        } else {
+            drugIssueTypeDiv.style.display = 'none'
+        }
+    }
+    showHideDrugIssutType()
+
+    function showHideVehicleFields() {
+        vehicleFields = [
+            "vehicle_lost_type",
+            "regNumber",
+            "chasisNumber",
+            "engineNumber",
+            "make",
+            "model",
+            "color",
+        ]
+
+        if (type.value === 'vehicle') {
+            for (field of vehicleFields) {
+                console.log('div_id_' + field)
+                var container = document.getElementById('div_id_' + field)
+                console.log(container)
+                container.style.display = 'block'
+            }
+        } else {
+            for (field of vehicleFields) {
+                var container = document.getElementById('div_id_' + field)
+                console.log(container)
+                container.style.display = 'none'
+            }
+        }
+    }
+    showHideVehicleFields()
+
+    type.addEventListener("change", function(event) {
+        showHideDrugIssutType()
+        showHideVehicleFields()
     })
 
 </script>

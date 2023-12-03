@@ -11,7 +11,7 @@ from .models import *
 from django.contrib.auth import authenticate
 from api.models import Case, PoliceStation, cUser, PoliceOfficer
 from api.npr import detectVehicleNumber
-from api.otp import validate_otp, send_otp_verification_code
+from api.otp import validate_otp, send_otp_verification_code, send_sms
 
 
 class DistrictSerializer(serializers.ModelSerializer):
@@ -259,7 +259,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         fields = [
             "cstate",
             "oid",
-            "pid",
+            # "pid",
             "description",
             "medias",
             "lat",
@@ -268,15 +268,15 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         state = data["cstate"]
-        if state == "assign" and not data.get("oid"):
+        if state in {"assign", "transfer"} and not data.get("oid"):
             raise serializers.ValidationError(
                 {"oid": "You need to provide oid to assign this case to new officer."}
             )
 
-        if state == "transfer" and not data.get("pid"):
-            raise serializers.ValidationError(
-                {"pid": "You need to provide pid to transfer this case."}
-            )
+        # if state == "transfer" and not data.get("pid"):
+        #     raise serializers.ValidationError(
+        #         {"pid": "You need to provide pid to transfer this case."}
+        #     )
 
         lat = data.get("lat")
         long = data.get("long")
@@ -304,43 +304,24 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         description = validated_data.pop("description", "")
         medias = validated_data.pop("medias", [])
 
-        if cstate in [
-            "accepted",
-            "rejected",
-            "info",
-            "inprogress",
-            "resolved",
-            "visited",
-        ]:
-            instance.save()
-            noti_title = noti_title.get(cstate).format(instance.pk)
-            instance.send_notitication(noti_title, [instance.user_id])
-
-        elif cstate == "assign":
+        if cstate in {"assign", "transfer"}:
             instance.oid = validated_data["oid"]
             instance.cstate = "pending"
             instance.save()
             noti_title = f"You are assigned a new case no.{instance.pk}"
+            instance.send_notitication(noti_title, [instance.oid.user_id])
+            send_sms(noti_title, instance.oid.user.mobile)
 
-        elif cstate == "found":
+        else:
             instance.save()
-            noti_title.get(cstate).format(instance.pk)
-            instance.send_notitication(
-                noti_title, [instance.oid.user_id, instance.user_id]
-            )
-
-        elif cstate == "transfer":
-            instance.pid = validated_data["pid"]
-            instance.cstate = "pending"
-            instance.oid = None
-            instance.save()
-
-        message = f"Case no. {instance.pk} status changed to {instance.cstate}"
-        supervisors = PoliceOfficer.objects.filter(
-            Q(pid__did=instance.oid.pid.did, rank=9)
-            | Q(oid__in=instance.oid.policestation_supervisor.values("officer_id"))
-        ).values_list("user_id", flat=True)
-        instance.send_notitication(message, list(supervisors))
+            message = f"Case no. {instance.pk} status changed to {instance.cstate}"
+            supervisors = PoliceOfficer.objects.filter(
+                Q(pid__did=instance.oid.pid.did, rank=9)
+                | Q(oid__in=instance.oid.policestation_supervisor.values("officer_id"))
+            ).values("user_id", "user__mobile")
+            instance.send_notitication(message, [o["user_id"] for o in supervisors])
+            for supervisor in supervisors:
+                send_sms(message, supervisor["user__mobile"])
 
         lat = validated_data.get("lat")
         long = validated_data.get("long")
@@ -391,11 +372,13 @@ class CommentSerializer(serializers.ModelSerializer):
         ).data
         return data
 
-class EmergencyTypeSerializer(serializers.ModelSerializer):
 
+class EmergencyTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmergencyType
         fields = "__all__"
+
+
 class EmergencySerializer(serializers.ModelSerializer):
     emergeny_type = EmergencyTypeSerializer(source="tid")
     distance = serializers.FloatField(

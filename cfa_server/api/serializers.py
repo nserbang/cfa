@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.contrib.gis.geos import fromstr
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.contrib.auth.password_validation import validate_password
 from .models import *
 from django.contrib.auth import authenticate
 from api.models import Case, PoliceStation, cUser, PoliceOfficer
@@ -615,6 +616,10 @@ class PasswordChangeSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"new_password2": "Password did not match."}
             )
+        try:
+            validate_password(password=data["new_password1"], user=user)
+        except Exception as e:
+            raise serializers.ValidationError({"password": e.messages})
         return data
 
     def save(self):
@@ -681,9 +686,13 @@ class PasswordResetSerializer(serializers.Serializer):
         except cUser.DoesNotExist:
             raise serializers.ValidationError({"mobile": "Mobile not registered."})
         else:
+            try:
+                validate_password(password=data["new_password1"], user=user)
+            except Exception as e:
+                raise serializers.ValidationError({"password": e.messages})
+
             if validate_otp(user=user, otp=data["otp"]):
                 data["user"] = user
-
             else:
                 raise serializers.ValidationError(
                     {"otp": "Otp is wrong or has expired."}

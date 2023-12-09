@@ -175,6 +175,9 @@ class CaseUpdateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if status := self.request.GET.get("status"):
             self.initial["cstate"] = status
+        self.fields["oid"].queryset = PoliceOfficer.objects.filter(
+            pid=self.request.user.policeofficer_set.first().pid, rank=4
+        ).exclude(user=self.request.user)
 
     def clean(self):
         cd = super().clean()

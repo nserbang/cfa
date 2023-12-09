@@ -3,8 +3,6 @@ import re
 
 from django import forms
 from django.forms import ValidationError
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.asymmetric import padding
 from django.contrib.auth.password_validation import validate_password
 
 from .models import cUser, MobileValidator
@@ -56,41 +54,12 @@ class UserRegistrationCompleteForm(forms.ModelForm):
 
     def clean(self):
         cd = super().clean()
-
-        private_key_pem_b64 = self.request.session["private_key"]
-        private_key_pem = base64.b64decode(private_key_pem_b64)
-        private_key = serialization.load_pem_private_key(private_key_pem, password=None)
-
-        new_password1_encrypted_data_b64 = cd["password"]
-        new_password1_encrypted_data = base64.b64decode(
-            new_password1_encrypted_data_b64
-        )
-
-        new_password1_decrypted = private_key.decrypt(
-            new_password1_encrypted_data,
-            padding.PKCS1v15(),
-        )
-
-        new_password1 = new_password1_decrypted.decode("utf-8")
-        new_password2_encrypted_data_b64 = cd["confirm_password"]
-        new_password2_encrypted_data = base64.b64decode(
-            new_password2_encrypted_data_b64
-        )
-
-        new_password2_decrypted = private_key.decrypt(
-            new_password2_encrypted_data,
-            padding.PKCS1v15(),
-        )
-
-        new_password2 = new_password2_decrypted.decode("utf-8")
-
-        password = new_password1
-        confirm_password = new_password2
-
+        password = cd["password"]
+        confirm_password = cd["confirm_password"]
         if password != confirm_password:
             raise forms.ValidationError("Passwords did not match.")
         cd["password"] = password
-        cd["repeat_password"] = confirm_password
+        cd["repeat_password"] = cd["confirm_password"]
         return cd
 
     def save(self, commit=True):
@@ -157,50 +126,22 @@ class ChangePasswordForm(forms.Form):
     def clean(self):
         cd = super().clean()
 
-        private_key_pem_b64 = self.request.session["private_key"]
-        private_key_pem = base64.b64decode(private_key_pem_b64)
-        private_key = serialization.load_pem_private_key(private_key_pem, password=None)
-
-        new_password1_encrypted_data_b64 = cd["password"]
-        new_password1_encrypted_data = base64.b64decode(
-            new_password1_encrypted_data_b64
-        )
-
-        new_password1_decrypted = private_key.decrypt(
-            new_password1_encrypted_data,
-            padding.PKCS1v15(),
-        )
-
-        new_password1 = new_password1_decrypted.decode("utf-8")
-        new_password2_encrypted_data_b64 = cd["repeat_password"]
-        new_password2_encrypted_data = base64.b64decode(
-            new_password2_encrypted_data_b64
-        )
-
-        new_password2_decrypted = private_key.decrypt(
-            new_password2_encrypted_data,
-            padding.PKCS1v15(),
-        )
-
-        new_password2 = new_password2_decrypted.decode("utf-8")
-
-        password = new_password1
-        repeat_password = new_password2
+        password = cd["password"]
+        repeat_password = cd["repeat_password"]
 
         if password != repeat_password:
             raise forms.ValidationError("Passwords did not match.")
-
-        try:
-            validate_password(password=password)
-        except Exception as e:
-            self.add_error("password", e.messages)
-            return cd
         mobile = self.request.session.get("mobile")
         try:
             user = cUser.objects.get(mobile=mobile)
         except cUser.DoesNotExist:
             return forms.ValidationError("User does not exists.")
         else:
+            try:
+                validate_password(password=password, user=user)
+            except Exception as e:
+                self.add_error("password", e.messages)
+
             if not validate_otp(user, self.cleaned_data["otp"]):
                 self.add_error("otp", "Otp expired or invalid.")
             cd["user"] = user

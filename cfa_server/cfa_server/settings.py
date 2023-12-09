@@ -133,6 +133,12 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "mobile_reset_password_otp": "5/hour",
+    },
 }
 
 # Password validation
@@ -203,8 +209,8 @@ AUTH_USER_MODEL = "api.cUser"
 
 AUTHENTICATION_BACKENDS = [
     "axes.backends.AxesBackend",  # Axes must be first
-    "api.utils.CustomBackend",
-    #    'django.contrib.auth.backends.ModelBackend',
+    # "api.utils.CustomBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 
@@ -403,3 +409,10 @@ CSP_STYLE_SRC_ELEM = (
     "https://cdnjs.cloudflare.com",
     "https://cdn.jsdelivr.net",
 )
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}

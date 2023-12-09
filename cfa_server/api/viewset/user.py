@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 
 from api.serializers import (
     UserSerializer,
@@ -87,6 +88,8 @@ class ChangePasswordAPIView(APIView):
 
 class PasswordResetOtpAPIView(APIView):
     permission_classes = ()
+    throttle_classes = (ScopedRateThrottle,)
+    throttle_scope = "mobile_reset_password_otp"
 
     def post(self, request, *args, **kwargs):
         serializer = PasswordResetOtpSerializer(data=request.data)

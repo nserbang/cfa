@@ -4,7 +4,7 @@ import requests
 from django.conf import settings
 from pyotp import TOTP
 
-OTP_VALIDITY_TIME: int = 60 * 15
+OTP_VALIDITY_TIME: int = 5 * 60
 
 
 def get_base32_key(user) -> str:

@@ -23,10 +23,6 @@ from django.utils import timezone
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.asymmetric import padding
-
 from .user_forms import (
     UserRegistrationForm,
     VerifyOtpFrom,
@@ -688,20 +684,6 @@ class CustomLoginView(LoginView):
 class CustomAdminPasswordChangeForm(PasswordChangeForm):
     template_name = "admin/custom_password_change.html"
 
-    def clean_old_password(self):
-        old_password = self.cleaned_data["old_password"]
-        self.cleaned_data["old_password"] = old_password
-        return super().clean_old_password()
-
-    def clean_new_password2(self):
-        new_password1 = self.cleaned_data["new_password1"]
-        new_password2 = self.cleaned_data["new_password2"]
-
-        self.cleaned_data["new_password1"] = new_password1
-        self.cleaned_data["new_password2"] = new_password2
-
-        return super().clean_new_password2()
-
 
 class CustomPasswordChangeView(PasswordChangeView):
     # Customize the view as needed
@@ -713,60 +695,6 @@ class CustomPasswordChangeView(PasswordChangeView):
     success_url = reverse_lazy(
         "admin:index"
     )  # Redirect to the admin index page after password change
-
-    def post(self, request, *args, **kwargs):
-        private_key_pem_b64 = request.session["private_key"]
-        private_key_pem = base64.b64decode(private_key_pem_b64)
-        private_key = serialization.load_pem_private_key(private_key_pem, password=None)
-
-        form = self.get_form()
-        data = form.data.copy()
-
-        old_password_encrypted_data_b64 = form["old_password"].data
-        old_password_encrypted_data = base64.b64decode(old_password_encrypted_data_b64)
-
-        old_password_decrypted = private_key.decrypt(
-            old_password_encrypted_data,
-            padding.PKCS1v15(),
-        )
-        old_password = old_password_decrypted.decode("utf-8")
-        data["old_password"] = old_password
-
-        new_password1_encrypted_data_b64 = form["new_password1"].data
-        new_password1_encrypted_data = base64.b64decode(
-            new_password1_encrypted_data_b64
-        )
-
-        new_password1_decrypted = private_key.decrypt(
-            new_password1_encrypted_data,
-            padding.PKCS1v15(),
-        )
-
-        new_password1 = new_password1_decrypted.decode("utf-8")
-        data["new_password1"] = new_password1
-
-        new_password2_encrypted_data_b64 = form["new_password2"].data
-        new_password2_encrypted_data = base64.b64decode(
-            new_password2_encrypted_data_b64
-        )
-
-        new_password2_decrypted = private_key.decrypt(
-            new_password2_encrypted_data,
-            padding.PKCS1v15(),
-        )
-
-        new_password2 = new_password2_decrypted.decode("utf-8")
-        data["new_password2"] = new_password2
-
-        user = request.user
-        modified_form = self.form_class(user, data=data)
-        if modified_form.is_valid():
-            return self.form_valid(modified_form)
-        else:
-            return self.form_invalid(modified_form)
-
-    def form_valid(self, form):
-        return super().form_valid(form)  # Proceed with the password
 
 
 def custom_404_view(request, exception):

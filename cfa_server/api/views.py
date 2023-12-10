@@ -212,7 +212,6 @@ class HomePageView(View):
                     elif rank == 9:
                         cases.filter(pid__did_id=officer.pid.did_id)
                     elif rank == 6:
-                        # import ipdb; ipdb.set_trace()
                         cases = cases.filter(
                             pid_id__in=officer.policestation_supervisor.values(
                                 "station"

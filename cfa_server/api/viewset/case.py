@@ -84,7 +84,6 @@ class CaseViewSet(UserMixin, ModelViewSet):
                 elif rank == 9:
                     data.filter(pid__did_id=officer.pid.did_id)
                 elif rank == 6:
-                    # import ipdb; ipdb.set_trace()
                     data = data.filter(
                         pid_id__in=officer.policestation_supervisor.values("station")
                     )

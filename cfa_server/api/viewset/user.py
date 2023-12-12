@@ -18,7 +18,7 @@ from api.serializers import (
     PasswordResetOtpSerializer,
     PasswordResetSerializer,
 )
-from api.mixins import PasswordDecriptionMixin
+
 from api.models import cUser
 from api.otp import send_otp_verification_code
 
@@ -53,7 +53,7 @@ class ResendOtpAPIView(APIView):
         )
 
 
-class UserLoginView(PasswordDecriptionMixin, ObtainAuthToken):
+class UserLoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
@@ -65,7 +65,7 @@ class UserLoginView(PasswordDecriptionMixin, ObtainAuthToken):
         return Response(data=data)
 
 
-class UserProfileUpdateView(PasswordDecriptionMixin, UpdateAPIView):
+class UserProfileUpdateView(UpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = (IsAuthenticated,)
     queryset = cUser.objects.all()
@@ -75,7 +75,7 @@ class UserProfileUpdateView(PasswordDecriptionMixin, UpdateAPIView):
         return self.request.user
 
 
-class ChangePasswordAPIView(PasswordDecriptionMixin, APIView):
+class ChangePasswordAPIView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
@@ -99,7 +99,7 @@ class PasswordResetOtpAPIView(APIView):
         return Response({"message": "Otp for password reset sent."})
 
 
-class PasswordResetAPIView(PasswordDecriptionMixin, APIView):
+class PasswordResetAPIView(APIView):
     permission_classes = ()
 
     def post(self, request, *args, **kwargs):

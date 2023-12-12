@@ -87,30 +87,23 @@ def decrypt_password(request):
             "new_password1",
             "new_password2",
         ]
-        if isinstance(request, RestRequest):
-            post_data = request.data
-        else:
-            post_data = request.POST
-        post_data._mutable = True
-        private_key_pem_b64 = request.session.get("private_key")
-        if private_key_pem_b64:
-            private_key_pem = base64.b64decode(private_key_pem_b64)
-            private_key = serialization.load_pem_private_key(
-                private_key_pem, password=None
-            )
-            request.POST._mutable = True
-            for key in password_fields:
-                if key in post_data.keys():
-                    b64_encrypted_value = post_data[key]
+        post_data = request.POST
+        private_key_pem_b64 = request.session["private_key"]
+        private_key_pem = base64.b64decode(private_key_pem_b64)
+        private_key = serialization.load_pem_private_key(private_key_pem, password=None)
+        request.POST._mutable = True
+        for key in password_fields:
+            if key in post_data.keys():
+                b64_encrypted_value = post_data[key]
 
-                    encrypted_value = base64.b64decode(b64_encrypted_value)
-                    decrypted_value = private_key.decrypt(
-                        encrypted_value,
-                        padding.PKCS1v15(),
-                    )
-                    decrypted_value = decrypted_value.decode("utf-8")
-                    post_data[key] = decrypted_value
-            post_data._mutable = False
+                encrypted_value = base64.b64decode(b64_encrypted_value)
+                decrypted_value = private_key.decrypt(
+                    encrypted_value,
+                    padding.PKCS1v15(),
+                )
+                decrypted_value = decrypted_value.decode("utf-8")
+                request.POST[key] = decrypted_value
+        request.POST._mutable = False
 
 
 class RSAMiddleware:
@@ -118,7 +111,7 @@ class RSAMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if "private_key" in request.session:
+        if "private_key" in request.session and not request.path.startswith("/api/"):
             decrypt_password(request)
         response = self.get_response(request)
         if "private_key" not in request.session:

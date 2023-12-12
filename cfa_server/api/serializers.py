@@ -13,6 +13,7 @@ from django.contrib.auth import authenticate
 from api.models import Case, PoliceStation, cUser, PoliceOfficer
 from api.npr import detectVehicleNumber
 from api.otp import validate_otp, send_otp_verification_code, send_sms
+from api.mixins import PasswordDecriptionMixin
 
 
 class DistrictSerializer(serializers.ModelSerializer):
@@ -439,7 +440,7 @@ class UserSerializer(serializers.ModelSerializer):
         return data
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(PasswordDecriptionMixin, serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
     # profile_picture = serializers.SerializerMethodField()
 
@@ -479,11 +480,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return None
 
 
-class LoginSerializer(serializers.Serializer):
+class LoginSerializer(PasswordDecriptionMixin, serializers.Serializer):
     mobile = serializers.CharField()
     password = serializers.CharField()
 
     def validate(self, attrs):
+        super().validate(attrs)
         mobile = attrs.get("mobile")
         password = attrs.get("password")
 
@@ -601,12 +603,13 @@ class CriminalSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PasswordChangeSerializer(serializers.Serializer):
+class PasswordChangeSerializer(PasswordDecriptionMixin, serializers.Serializer):
     old_password = serializers.CharField(max_length=128)
     new_password1 = serializers.CharField(max_length=128)
     new_password2 = serializers.CharField(max_length=128)
 
     def validate(self, data):
+        super().validate(data)
         user = self.context["request"].user
         if not user.check_password(data.get("old_password")):
             raise serializers.ValidationError(
@@ -668,13 +671,14 @@ class PasswordResetOtpSerializer(serializers.Serializer):
             send_otp_verification_code(user, verification=False)
 
 
-class PasswordResetSerializer(serializers.Serializer):
+class PasswordResetSerializer(PasswordDecriptionMixin, serializers.Serializer):
     otp = serializers.CharField(max_length=6)
     mobile = serializers.CharField(max_length=16)
     new_password1 = serializers.CharField(max_length=128)
     new_password2 = serializers.CharField(max_length=128)
 
     def validate(self, data):
+        super().validate(data)
         mobile = data["mobile"]
         if data["new_password1"] != data["new_password2"]:
             raise serializers.ValidationError(

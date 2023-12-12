@@ -1,5 +1,11 @@
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+import base64
+
 from django.contrib.auth.mixins import AccessMixin
 from django.core.exceptions import PermissionDenied
+from rest_framework import serializers
 
 from api.middleware import decrypt_password
 
@@ -21,35 +27,32 @@ class UserMixin:
         return qs
 
 
-class PasswordDecriptionMixin:
-    def dispatch(self, request, *args, **kwargs):
-        """
-        `.dispatch()` is pretty much the same as Django's regular dispatch,
-        but with extra hooks for startup, finalize, and exception handling.
-        """
-        self.args = args
-        self.kwargs = kwargs
-        request = self.initialize_request(request, *args, **kwargs)
-        self.request = request
-        self.headers = self.default_response_headers  # deprecate?
+class PasswordDecriptionMixin(serializers.Serializer):
+    def validate(self, data):
+        password_fields = [
+            "password",
+            "password1",
+            "password2",
+            "confirm_password",
+            "repeat_password",
+            "old_password",
+            "new_password",
+            "new_password1",
+            "new_password2",
+        ]
+        request = self.context["request"]
+        private_key_pem_b64 = request.session["private_key"]
+        private_key_pem = base64.b64decode(private_key_pem_b64)
+        private_key = serialization.load_pem_private_key(private_key_pem, password=None)
+        for key in password_fields:
+            if key in data.keys():
+                b64_encrypted_value = data[key]
 
-        decrypt_password(self.request)
-
-        try:
-            self.initial(request, *args, **kwargs)
-
-            # Get the appropriate handler method
-            if request.method.lower() in self.http_method_names:
-                handler = getattr(
-                    self, request.method.lower(), self.http_method_not_allowed
+                encrypted_value = base64.b64decode(b64_encrypted_value)
+                decrypted_value = private_key.decrypt(
+                    encrypted_value,
+                    padding.PKCS1v15(),
                 )
-            else:
-                handler = self.http_method_not_allowed
-
-            response = handler(request, *args, **kwargs)
-
-        except Exception as exc:
-            response = self.handle_exception(exc)
-
-        self.response = self.finalize_response(request, response, *args, **kwargs)
-        return self.response
+                decrypted_value = decrypted_value.decode("utf-8")
+                data[key] = decrypted_value
+        return super().validate(data)

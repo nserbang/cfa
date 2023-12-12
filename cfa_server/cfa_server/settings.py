@@ -392,7 +392,7 @@ CSP_IMG_SRC = ("'self'",)
 CSP_SCRIPT_HASHES = (
     "'sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3'",
 )
-CSP_FONT_SRC = ("'self'", "'unsafe-inline'", "cdnjs.cloudflare.com")
+CSP_FONT_SRC = ("'self'",)
 CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = "'none'"
 CSP_STYLE_SRC_ELEM = ("'self'",)

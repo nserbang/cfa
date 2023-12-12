@@ -1,4 +1,6 @@
 import requests
+from django.contrib.auth import logout
+from django.db.models import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import UpdateAPIView
@@ -107,3 +109,13 @@ class PasswordResetAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "Password reset successful."})
+
+
+class LogoutAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            request.user.auth_token.delete()
+        except (AttributeError, ObjectDoesNotExist):
+            pass
+        logout(request)
+        return Response(status=status.HTTP_200_OK)

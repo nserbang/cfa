@@ -12,8 +12,8 @@
             </div>
             <hr>
             <div>
-                <a href="{% url 'change_status' case.pk %}" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Accept</a>
-                <a href="{% url 'change_status' case.pk %}" class="btn btn-primary btn-sm" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Open</a>
+                <a href="{% url 'change_status' case.pk %}" class="btn btn-primary btn-sm" nonce="{{request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" nonce="{{ request.csp_nonce }}">Accept</a>
+                <a href="{% url 'change_status' case.pk %}" class="btn btn-primary btn-sm" nonce="{{request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" nonce="{{ request.csp_nonce }}">Open</a>
             </div>
         {% endfor %}
     </div>

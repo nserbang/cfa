@@ -114,7 +114,7 @@
                 <h4>Comments</h4>
                 {% for comment in case.comment_set.all %}
                     <div class="shadow-sm p-2 rounded">
-                        {{ comment.content }} <span class"fst-italic" nonce="{{ request.csp_nonce}}" style="font-style: italic !important; font-size: .785rem">-by {{ comment.user.first_name }} at {{ comment.created }}</span>
+                        {{ comment.content }} <span class="fst-italic" nonce="{{ request.csp_nonce}}" style="font-style: italic !important; font-size: .785rem">-by {{ comment.user.first_name }} at {{ comment.created }}</span>
                     </div>
                 {% endfor %}
             </div>

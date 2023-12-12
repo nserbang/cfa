@@ -393,9 +393,9 @@ CSP_SCRIPT_HASHES = (
     "'sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3'",
 )
 CSP_FONT_SRC = ("'self'",)
-CSP_STYLE_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "www.google.com")
 CSP_OBJECT_SRC = "'none'"
-CSP_STYLE_SRC_ELEM = ("'self'",)
+CSP_STYLE_SRC_ELEM = ("'self'", "www.google.com")
 CSP_INCLUDE_NONCE_IN = ('script-src', 'style-src-elem', 'img-src data')
 
 CACHES = {

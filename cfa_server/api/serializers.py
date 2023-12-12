@@ -441,7 +441,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(PasswordDecriptionMixin, serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=False)
+    password = serializers.CharField(write_only=True, required=False, max_length=1000)
     # profile_picture = serializers.SerializerMethodField()
 
     class Meta:
@@ -604,9 +604,9 @@ class CriminalSerializer(serializers.ModelSerializer):
 
 
 class PasswordChangeSerializer(PasswordDecriptionMixin, serializers.Serializer):
-    old_password = serializers.CharField(max_length=128)
-    new_password1 = serializers.CharField(max_length=128)
-    new_password2 = serializers.CharField(max_length=128)
+    old_password = serializers.CharField()
+    new_password1 = serializers.CharField()
+    new_password2 = serializers.CharField()
 
     def validate(self, data):
         super().validate(data)
@@ -674,8 +674,8 @@ class PasswordResetOtpSerializer(serializers.Serializer):
 class PasswordResetSerializer(PasswordDecriptionMixin, serializers.Serializer):
     otp = serializers.CharField(max_length=6)
     mobile = serializers.CharField(max_length=16)
-    new_password1 = serializers.CharField(max_length=128)
-    new_password2 = serializers.CharField(max_length=128)
+    new_password1 = serializers.CharField()
+    new_password2 = serializers.CharField()
 
     def validate(self, data):
         super().validate(data)

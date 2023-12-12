@@ -139,6 +139,10 @@ class RSAMiddleware:
             request.session["public_key"] = base64.b64encode(public_key_pem).decode(
                 "utf-8"
             )
-            response.set_cookie("rsa_public_key", request.session["public_key"])
+            response.set_cookie(
+                "rsa_public_key",
+                request.session["public_key"],
+                httponly=True,
+            )
 
         return response

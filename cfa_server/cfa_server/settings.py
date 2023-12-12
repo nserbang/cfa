@@ -102,6 +102,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "csp.context_processors.nonce"
             ],
         },
     },
@@ -386,29 +387,16 @@ CSRF_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
 CSP_DEFAULT_SRC = "'self'"
 CSP_SCRIPT_SRC = (
     "'self'",
-    "'unsafe-inline'",
-    "trusted-scripts.com",
-    "cdn.jsdelivr.net",
-    "cdnjs.cloudflare.com",
 )
-CSP_IMG_SRC = ("'self'", "'unsafe-inline'", "trusted-images.com", "w3.org", "data:")
+CSP_IMG_SRC = ("'self'",)
 CSP_SCRIPT_HASHES = (
     "'sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3'",
 )
 CSP_FONT_SRC = ("'self'", "'unsafe-inline'", "cdnjs.cloudflare.com")
-CSP_STYLE_SRC = (
-    "'self'",
-    "'unsafe-inline'",
-    "https://cdnjs.cloudflare.com",
-    "https://cdn.jsdelivr.net",
-)
+CSP_STYLE_SRC = ("'self'",)
 CSP_OBJECT_SRC = "'none'"
-CSP_STYLE_SRC_ELEM = (
-    "'self'",
-    "'unsafe-inline'",
-    "https://cdnjs.cloudflare.com",
-    "https://cdn.jsdelivr.net",
-)
+CSP_STYLE_SRC_ELEM = ("'self'",)
+CSP_INCLUDE_NONCE_IN = ('script-src', 'style-src-elem', 'img-src data')
 
 CACHES = {
     "default": {

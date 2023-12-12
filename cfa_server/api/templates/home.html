@@ -37,8 +37,7 @@
 {% endblock content %}
 
 {% block javascript %}
-    <script>
-        console.log("event")
+    <script nonce="{{ request.csp_nonce }}">
         report = document.getElementById('report');
         if (report) {
             report.addEventListener("click", function(event) {

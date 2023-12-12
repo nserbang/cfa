@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.0.0-rc.1/jsencrypt.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.0.0-rc.1/jsencrypt.min.js" nonce="{{ request.csp_nonce }}"></script>
 
 <form id="custom-login-form" method="post" action="{% url 'custom_admin_login' %}">
   
@@ -28,7 +28,7 @@
     <input type="submit" value="{% translate 'Log in' %}">
   </div>
 </form>
-<script>
+<script nonce="{{CSP_NONCE}}">
 
   function getCookie(cookieName) {
       const name = cookieName + "=";
@@ -53,8 +53,6 @@
       
       return encryptedData;
   }
-</script>
-<script>
   // Wait for the DOM to be fully loaded
   document.addEventListener('DOMContentLoaded', function() {
     var loginForm = document.getElementById('custom-login-form');
@@ -85,11 +83,6 @@
     });
   });
 
-  
-
-</script>
-
-<script>
   // Disable copy-paste and keyboard shortcuts
   window.onload = function() {
       var passwordField = document.getElementById("id_password");

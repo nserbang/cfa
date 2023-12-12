@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.0.0-rc.1/jsencrypt.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.0.0-rc.1/jsencrypt.min.js" nonce="{{ request.csp_nonce }}"></script>
 
 <div class="d-flex justify-content-center align-items-center align-middle">
 <div class="card">
@@ -19,7 +19,7 @@
     </div>
 </div>
 </div>
-<script>
+<script nonce="{{CSP_NONCE}}">
 
     function getCookie(cookieName) {
         const name = cookieName + "=";
@@ -45,7 +45,7 @@
         return encryptedData;
     }
   </script>
-<script>
+<script nonce="{{CSP_NONCE}}">
     // Wait for the DOM to be fully loaded
     document.addEventListener('DOMContentLoaded', function() {
       var loginForm = document.getElementById('custom-login-form');
@@ -80,7 +80,7 @@
   
 </script>
   
-<script>
+<script nonce="{{CSP_NONCE}}">
     // Disable copy-paste and keyboard shortcuts
     window.onload = function() {
         var passwordField = document.getElementById("id_password");

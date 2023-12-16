@@ -2,6 +2,7 @@ from datetime import timezone
 from django.contrib.sessions.models import Session
 from django.http import HttpResponseNotAllowed
 from rest_framework.request import Request as RestRequest
+from django.conf import settings
 
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -142,7 +143,7 @@ class RSAMiddleware:
             response.set_cookie(
                 "rsa_public_key",
                 request.session["public_key"],
-                httponly=True,
+                # httponly=not settings.DEBUG,
             )
 
         return response

@@ -1,15 +1,13 @@
+import requests
 from django.shortcuts import get_object_or_404
-from django.db.models.functions import Coalesce
+from django.conf import settings
 from django.db.models import Case as MCase, When
-from django.contrib.gis.geos import fromstr
-from django.contrib.gis.db.models.functions import Distance
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.views import APIView
 from rest_framework.generics import UpdateAPIView
 from rest_framework.response import Response
 from django.db.models import OuterRef, Count, Exists
 from rest_framework import status
-from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from api.models import Case, CaseHistory, LostVehicle, Comment, Media, Like
 from django.db.models import Q
@@ -54,14 +52,13 @@ class CaseViewSet(UserMixin, ModelViewSet):
             .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
             .prefetch_related("medias")
         ).order_by("-created")
-        if lat and long:
-            geo_location = fromstr(f"POINT({long} {lat})", srid=4326)
-            user_distance = Distance("geo_location", geo_location)
-            data = data.annotate(radius=user_distance).order_by(
-                "radius", Coalesce("created", "updated").desc()
-            )
+        # if lat and long:
+        #     geo_location = fromstr(f"POINT({long} {lat})", srid=4326)
+        #     user_distance = Distance("geo_location", geo_location)
+        #     data = data.annotate(radius=user_distance).order_by(
+        #         "radius", Coalesce("created", "updated").desc()
+        #     )
         if user.is_authenticated:
-            print(user.role)
             liked = Like.objects.filter(case_id=OuterRef("cid"), user=self.request.user)
             data = data.annotate(
                 liked=Exists(liked),
@@ -105,6 +102,47 @@ class CaseViewSet(UserMixin, ModelViewSet):
         #     request_user_id = self.request.user.id
         #     data = data.filter(Q(user=request_user_id) | Q(oid__user=request_user_id))
         return data
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            self.add_distances(page)
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        self.add_distances(queryset)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def add_distances(self, data):
+        lat = self.request.query_params.get("lat")
+        lng = self.request.query_params.get("long")
+        if lat and lng:
+            origin_str = f"{lat},{lng}"
+            destinations = []
+            for item in data:
+                if loc := item.geo_location:
+                    destinations.append(f"{loc.coords[1]},{loc.coords[0]}")
+            destinations_str = "|".join(destinations)
+            url = "https://maps.googleapis.com/maps/api/distancematrix/json?"
+
+            params = {
+                "origins": origin_str,
+                "destinations": destinations_str,
+                "key": settings.GOOGLE_MAP_API_KEY,
+            }
+            response = requests.get(url, params=params)
+            if response.ok:
+                distances = response.json()
+                for i, item in enumerate(data):
+                    try:
+                        item.distance = distances["rows"][0]["elements"][i]["distance"][
+                            "text"
+                        ]
+                    except (KeyError, ValueError):
+                        item.distance = "Not available"
 
 
 class CaseHistoryViewSet(UserMixin, ReadOnlyModelViewSet):

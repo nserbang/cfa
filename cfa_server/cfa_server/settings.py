@@ -102,7 +102,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "csp.context_processors.nonce"
+                "csp.context_processors.nonce",
             ],
         },
     },
@@ -385,9 +385,7 @@ AXES_RESET_ON_SUCCESS = True
 CSRF_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
 
 CSP_DEFAULT_SRC = "'self'"
-CSP_SCRIPT_SRC = (
-    "'self'",
-)
+CSP_SCRIPT_SRC = ("'self'",)
 CSP_IMG_SRC = ("'self'",)
 CSP_SCRIPT_HASHES = (
     "'sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3'",
@@ -396,7 +394,7 @@ CSP_FONT_SRC = ("'self'",)
 CSP_STYLE_SRC = ("'self'", "'nonce'", "www.google.com")
 CSP_OBJECT_SRC = "'none'"
 CSP_STYLE_SRC_ELEM = ("'self'", "www.google.com")
-CSP_INCLUDE_NONCE_IN = ('script-src', 'style-src-elem', 'img-src data', 'style-src')
+CSP_INCLUDE_NONCE_IN = ("script-src", "style-src-elem", "img-src data", "style-src")
 
 CACHES = {
     "default": {
@@ -404,3 +402,5 @@ CACHES = {
         "LOCATION": "unique-snowflake",
     }
 }
+
+GOOGLE_MAP_API_KEY = "AIzaSyDM7gudJWf-zdilGmh_cmcI4otu_cJh8Aw"

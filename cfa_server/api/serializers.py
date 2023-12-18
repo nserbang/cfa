@@ -136,12 +136,9 @@ class CaseSerializer(serializers.ModelSerializer):
     like_count = serializers.IntegerField()
     liked = serializers.BooleanField(required=False, default=False)
     medias = MediaSerializer(many=True)
-    distance = serializers.DecimalField(
-        source="radius.km",
+    distance = serializers.CharField(
         required=False,
         default=None,
-        max_digits=10,
-        decimal_places=2,
         read_only=True,
     )
     vehicle_detail = LostVehicleSerializer(

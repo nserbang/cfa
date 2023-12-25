@@ -112,6 +112,8 @@ class PasswordResetAPIView(APIView):
 
 
 class LogoutAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def post(self, request, *args, **kwargs):
         try:
             request.user.auth_token.delete()

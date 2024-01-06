@@ -105,7 +105,7 @@ class PasswordResetAPIView(APIView):
     permission_classes = ()
 
     def post(self, request, *args, **kwargs):
-        serializer = PasswordResetSerializer(data=request.data)
+        serializer = PasswordResetSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "Password reset successful."})

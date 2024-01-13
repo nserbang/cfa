@@ -526,12 +526,13 @@ class UserOTPBaseKey(models.Model):
         unique=True
     )
     base_32_secret_key = models.CharField(max_length=16, null=True, blank=True)
-
-    def generate_otp(self, user, digits=6) -> int:
+    
+    @classmethod
+    def generate_otp(cls, user, digits=6) -> int:
         base_32_secret_key = random_base32()
 
 
-        user_otp_key, created = self.objects.update_or_create(
+        user_otp_key, created = cls.objects.update_or_create(
             user=user,
             defaults={'secret_key': base_32_secret_key}
         )

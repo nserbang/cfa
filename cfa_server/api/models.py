@@ -529,15 +529,15 @@ class UserOTPBaseKey(models.Model):
     
     @classmethod
     def generate_otp(cls, user, digits=6) -> int:
-        base_32_secret_key = random_base32()
+        secret_key = random_base32()
 
 
         user_otp_key, created = cls.objects.update_or_create(
             user=user,
-            defaults={'secret_key': base_32_secret_key}
+            defaults={'base_32_secret_key': secret_key}
         )
 
-        otp = TOTP(base_32_secret_key, interval=settings.OTP_VALIDITY_TIME, digits=digits).now()
+        otp = TOTP(secret_key, interval=settings.OTP_VALIDITY_TIME, digits=digits).now()
 
         return otp
 
@@ -546,8 +546,8 @@ class UserOTPBaseKey(models.Model):
         user_otp_key, created = cls.objects.get_or_create(user=user)
 
         if user_otp_key.base_32_secret_key is None:
-            base_32_secret_key = random_base32()
-            user_otp_key.base_32_secret_key = base_32_secret_key
+            secret_key = random_base32()
+            user_otp_key.base_32_secret_key = secret_key
             user_otp_key.save()
 
         return TOTP(user_otp_key.base_32_secret_key, interval=settings.OTP_VALIDITY_TIME, digits=digits).verify(otp)

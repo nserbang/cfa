@@ -28,6 +28,7 @@ import magic
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 
+from pyotp import TOTP, random_base32
 
 # MobileValidator = RegexValidator(
 #     regex='^[6-9]\d{9}$',
@@ -515,3 +516,48 @@ class LoggedInUser(models.Model):
 
     def __str__(self):
         return self.user.username
+
+class UserOTPBaseKey(models.Model):
+
+    user = models.OneToOneField(
+        cUser,
+        related_name="user_otp",
+        on_delete=models.CASCADE,
+        unique=True
+    )
+    base_32_secret_key = models.CharField(max_length=16, null=True, blank=True)
+
+    def generate_otp(self, user, digits=6) -> int:
+        base_32_secret_key = random_base32()
+
+
+        user_otp_key, created = self.objects.update_or_create(
+            user=user,
+            defaults={'secret_key': base_32_secret_key}
+        )
+
+        otp = TOTP(base_32_secret_key, interval=settings.OTP_VALIDITY_TIME, digits=digits).now()
+
+        return otp
+
+    @classmethod
+    def validate_otp(cls, user, otp: int, digits=6) -> bool:
+        user_otp_key, created = cls.objects.get_or_create(user=user)
+
+        if user_otp_key.base_32_secret_key is None:
+            base_32_secret_key = random_base32()
+            user_otp_key.base_32_secret_key = base_32_secret_key
+            user_otp_key.save()
+
+        return TOTP(user_otp_key.base_32_secret_key, interval=settings.OTP_VALIDITY_TIME, digits=digits).verify(otp)
+
+    @classmethod
+    def send_otp_verification_code(cls, user, verification=True):
+        otp_code = cls.generate_otp(user)
+
+        if verification:
+            text = f"Victory Trading Agency user registration authentication verification OTP is {otp_code}"
+        else:
+            text = f"Victory Trading Agency user registration authentication verification OTP is {otp_code}"
+
+        send_sms(user.mobile, text)

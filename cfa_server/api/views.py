@@ -32,8 +32,6 @@ from .user_forms import (
     ChangePasswordForm,
 )
 
-
-from .otp import send_otp_verification_code
 from .mixins import AdminRequiredMixin
 
 from api.models import (
@@ -46,6 +44,7 @@ from api.models import (
     Criminal,
     PoliceStation,
     PoliceOfficer,
+    UserOTPBaseKey,
 )
 
 # from rest_framework.request import Request
@@ -258,7 +257,7 @@ class UserRegistrationView(View):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            send_otp_verification_code(user)
+            UserOTPBaseKey.send_otp_verification_code(user)
             request.session["mobile"] = user.mobile
             return redirect(reverse("verify_mobile") + f"?mobile={user.mobile}")
         else:
@@ -316,7 +315,7 @@ class UserRegistrationCompleteView(LoginRequiredMixin, View):
         )
         if form.is_valid():
             user = form.save()
-            # send_otp_verification_code(user)
+            # UserOTPBaseKey.send_otp_verification_code(user)
             # login(request, user)
             return redirect(reverse("login"))
         return render(request, "api/signup_complete.html", {"form": form})

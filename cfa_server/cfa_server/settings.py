@@ -404,3 +404,5 @@ CACHES = {
 }
 
 GOOGLE_MAP_API_KEY = "AIzaSyDM7gudJWf-zdilGmh_cmcI4otu_cJh8Aw"
+
+OTP_VALIDITY_TIME: int = 5 * 60

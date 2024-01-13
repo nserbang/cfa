@@ -5,8 +5,7 @@ from django import forms
 from django.forms import ValidationError
 from django.contrib.auth.password_validation import validate_password
 
-from .models import cUser, MobileValidator
-from .otp import validate_otp, send_otp_verification_code
+from .models import cUser, MobileValidator, UserOTPBaseKey
 
 from cryptography.hazmat.primitives import serialization
 
@@ -78,7 +77,7 @@ class VerifyOtpFrom(forms.Form):
     def clean(self):
         cd = super().clean()
         self.user = cUser.objects.filter(mobile=self.mobile.strip()).first()
-        if not validate_otp(self.user, cd["otp"]):
+        if not UserOTPBaseKey.validate_otp(self.user, cd["otp"]):
             raise ValidationError("Otp is Invalid or expired.")
         return cd
 
@@ -97,7 +96,7 @@ class ResendMobileVerificationOtpForm(forms.Form):
         except cUser.DoesNotExist:
             user = None
         else:
-            send_otp_verification_code(user)
+            UserOTPBaseKey.send_otp_verification_code(user)
         return None
 
 
@@ -111,7 +110,7 @@ class ForgotPasswordForm(forms.Form):
         except cUser.DoesNotExist:
             pass
         else:
-            send_otp_verification_code(user, verification=False)
+            UserOTPBaseKey.send_otp_verification_code(user, verification=False)
 
 
 class ChangePasswordForm(forms.Form):
@@ -142,7 +141,7 @@ class ChangePasswordForm(forms.Form):
             except Exception as e:
                 self.add_error("password", e.messages)
 
-            if not validate_otp(user, self.cleaned_data["otp"]):
+            if not UserOTPBaseKey.validate_otp(user, self.cleaned_data["otp"]):
                 self.add_error("otp", "Otp expired or invalid.")
             cd["user"] = user
             cd["password"] = password

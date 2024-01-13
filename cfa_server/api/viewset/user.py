@@ -21,8 +21,7 @@ from api.serializers import (
     PasswordResetSerializer,
 )
 
-from api.models import cUser
-from api.otp import send_otp_verification_code
+from api.models import cUser, UserOTPBaseKey
 
 
 class UserRegistrationViewApiView(APIView):
@@ -30,7 +29,7 @@ class UserRegistrationViewApiView(APIView):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        send_otp_verification_code(user)
+        UserOTPBaseKey.send_otp_verification_code(user)
         return Response(serializer.data)
 
 

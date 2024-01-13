@@ -4,15 +4,14 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import MethodNotAllowed
 from django.db.models import Q
-from django.contrib.gis.geos import fromstr
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
-from .models import *
+from api.models import *
 from django.contrib.auth import authenticate
-from api.models import Case, PoliceStation, cUser, PoliceOfficer
+from api.models import Case, PoliceStation, cUser, PoliceOfficer, UserOTPBaseKey, District, PoliceStationContact, Media, Comment, LostVehicle, CaseHistory
 from api.npr import detectVehicleNumber
-from api.otp import validate_otp, send_otp_verification_code, send_sms
+from api.otp import send_sms
 from api.mixins import PasswordDecriptionMixin
 
 
@@ -515,7 +514,7 @@ class OTPVerificationSerializer(serializers.Serializer):
 
         user = cUser.objects.filter(mobile=mobile).first()
         if user:
-            if not validate_otp(user, otp_code):
+            if not UserOTPBaseKey.validate_otp(user, otp_code):
                 raise serializers.ValidationError(
                     {"otp_code": "Invalid or expired otp code."}
                 )
@@ -545,7 +544,7 @@ class ResendOTPSerializer(serializers.Serializer):
         user, _ = cUser.objects.get_or_create(mobile=mobile)
         if user.is_verified:
             raise serializers.ValidationError({"mobile": "Mobile already verified"})
-        send_otp_verification_code(user)
+        UserOTPBaseKey.send_otp_verification_code(user)
         return data
 
 
@@ -665,7 +664,7 @@ class PasswordResetOtpSerializer(serializers.Serializer):
         except cUser.DoesNotExist:
             pass
         else:
-            send_otp_verification_code(user, verification=False)
+            UserOTPBaseKey.send_otp_verification_code(user, verification=False)
 
 
 class PasswordResetSerializer(PasswordDecriptionMixin, serializers.Serializer):
@@ -692,7 +691,7 @@ class PasswordResetSerializer(PasswordDecriptionMixin, serializers.Serializer):
             except Exception as e:
                 raise serializers.ValidationError({"password": e.messages})
 
-            if validate_otp(user=user, otp=data["otp"]):
+            if UserOTPBaseKey.validate_otp(user=user, otp=data["otp"]):
                 data["user"] = user
             else:
                 raise serializers.ValidationError(

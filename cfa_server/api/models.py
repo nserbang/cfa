@@ -525,7 +525,7 @@ class UserOTPBaseKey(models.Model):
         on_delete=models.CASCADE,
         unique=True
     )
-    base_32_secret_key = models.CharField(max_length=25, null=True, blank=True)
+    base_32_secret_key = models.CharField(max_length=32, null=True, blank=True)
     
     @classmethod
     def generate_otp(cls, user, digits=6) -> int:

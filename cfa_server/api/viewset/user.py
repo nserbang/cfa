@@ -45,6 +45,8 @@ class VerifyOtpAPIView(APIView):
 
 
 class ResendOtpAPIView(APIView):
+    throttle_classes = (ScopedRateThrottle,)
+    throttle_scope = "mobile_reset_password_otp"
     def post(self, request):
         serializer = ResendOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

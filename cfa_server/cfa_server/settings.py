@@ -411,6 +411,7 @@ OTP_VALIDITY_TIME: int = 5 * 60
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=30),
     "TOKEN_OBTAIN_SERIALIZER": "api.serializers.CustomTokenObtainSerializer",
+    "ROTATE_REFRESH_TOKENS": True,
 }

@@ -25,10 +25,10 @@ from api.models import (
 from api.npr import detectVehicleNumber
 from api.otp import send_sms
 from api.mixins import PasswordDecriptionMixin
-from rest_framework_simplejwt.serializers import TokenObtainSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
-class CustomTokenObtainSerializer(TokenObtainSerializer):
+class CustomTokenObtainSerializer(TokenObtainPairSerializer):
     default_error_messages = {
         "no_active_account": "Unable to login with given credentials"
     }

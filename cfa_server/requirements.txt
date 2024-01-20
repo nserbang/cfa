@@ -47,3 +47,4 @@ libmagic==1.0
 django-session-timeout==0.1.0
 django-password-validators==1.7.1
 psycopg[c]==3.1.12
+djangorestframework-simplejwt==5.3.1

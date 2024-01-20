@@ -24,6 +24,11 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 from api.viewset.case import *  # noqa
 from api.viewset.district import *
@@ -279,6 +284,10 @@ urlpatterns = [
     path("api/v1/cases/accept/<pk>/", CaseAcceptAPIView.as_view(), name="case_accept"),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<str:case_type>/", HomePageView.as_view(), name="case"),
+    # jwt
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Swagger

@@ -9,10 +9,29 @@ from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from api.models import *
 from django.contrib.auth import authenticate
-from api.models import Case, PoliceStation, cUser, PoliceOfficer, UserOTPBaseKey, District, PoliceStationContact, Media, Comment, LostVehicle, CaseHistory
+from api.models import (
+    Case,
+    PoliceStation,
+    cUser,
+    PoliceOfficer,
+    UserOTPBaseKey,
+    District,
+    PoliceStationContact,
+    Media,
+    Comment,
+    LostVehicle,
+    CaseHistory,
+)
 from api.npr import detectVehicleNumber
 from api.otp import send_sms
 from api.mixins import PasswordDecriptionMixin
+from rest_framework_simplejwt.serializers import TokenObtainSerializer
+
+
+class CustomTokenObtainSerializer(TokenObtainSerializer):
+    default_error_messages = {
+        "no_active_account": "Unable to login with given credentials"
+    }
 
 
 class DistrictSerializer(serializers.ModelSerializer):

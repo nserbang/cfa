@@ -28,7 +28,7 @@ from api.mixins import PasswordDecriptionMixin
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
-class CustomTokenObtainSerializer(TokenObtainPairSerializer):
+class CustomTokenObtainSerializer(PasswordDecriptionMixin, TokenObtainPairSerializer):
     default_error_messages = {
         "no_active_account": "Unable to login with given credentials"
     }

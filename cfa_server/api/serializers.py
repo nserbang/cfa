@@ -28,10 +28,18 @@ from api.mixins import PasswordDecriptionMixin
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
-class CustomTokenObtainSerializer(PasswordDecriptionMixin, TokenObtainPairSerializer):
+class CustomTokenObtainSerializer(TokenObtainPairSerializer):
     default_error_messages = {
         "no_active_account": "Unable to login with given credentials"
     }
+
+    def validate(self, data):
+        data = super().validate(data)
+        user = UserProfileSerializer(
+            self.user, context={"request": self.context["request"]}
+        )
+        data["user"] = user.data
+        return data
 
 
 class DistrictSerializer(serializers.ModelSerializer):

@@ -285,9 +285,9 @@ urlpatterns = [
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<str:case_type>/", HomePageView.as_view(), name="case"),
     # jwt
-    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
+    path("api/v1/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/v1/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Swagger

@@ -571,7 +571,10 @@ class ResendOTPSerializer(serializers.Serializer):
         user, _ = cUser.objects.get_or_create(mobile=mobile)
         if user.is_verified:
             raise serializers.ValidationError({"mobile": "Mobile already verified"})
-        UserOTPBaseKey.send_otp_verification_code(user)
+        try:
+            UserOTPBaseKey.send_otp_verification_code(user)
+        except:
+            raise serializers.ValidationError({"mobile": "Too many attempts"})
         return data
 
 
@@ -691,7 +694,12 @@ class PasswordResetOtpSerializer(serializers.Serializer):
         except cUser.DoesNotExist:
             pass
         else:
-            UserOTPBaseKey.send_otp_verification_code(user, verification=False)
+            try:
+                UserOTPBaseKey.send_otp_verification_code(user, verification=False)
+            except:
+                raise serializers.ValidationError({"mobile": "Too many attempts"})
+                
+            
 
 
 class PasswordResetSerializer(PasswordDecriptionMixin, serializers.Serializer):

@@ -518,7 +518,6 @@ class LoggedInUser(models.Model):
         return self.user.username
 
 class UserOTPBaseKey(models.Model):
-
     user = models.OneToOneField(
         cUser,
         related_name="user_otp",
@@ -526,20 +525,45 @@ class UserOTPBaseKey(models.Model):
         unique=True
     )
     base_32_secret_key = models.CharField(max_length=32, null=True, blank=True)
-    
+    otp_generation_count = models.IntegerField(default=0)
+    last_otp_generation_time = models.DateTimeField(null=True, blank=True)
+
     @classmethod
     def generate_otp(cls, user, digits=6) -> int:
-        secret_key = random_base32()
+        # Check if OTP generation count should be reset
+        if cls.should_reset_otp_generation_count(user):
+            cls.objects.filter(user=user).update(otp_generation_count=0, last_otp_generation_time=timezone.now())
 
+        # Check if OTP generation is allowed
+        if cls.is_otp_generation_allowed(user):
+            secret_key = random_base32()
+            user_otp_key, created = cls.objects.update_or_create(
+                user=user,
+                defaults={'base_32_secret_key': secret_key,
+                          'otp_generation_count': models.F('otp_generation_count') + 1,
+                          'last_otp_generation_time': timezone.now()}
+            )
+            otp = TOTP(secret_key, interval=settings.OTP_VALIDITY_TIME, digits=digits).now()
+            return otp
+        else:
+            # If OTP generation limit is reached, you can handle it accordingly
+            raise Exception('Too many attempts')
 
-        user_otp_key, created = cls.objects.update_or_create(
-            user=user,
-            defaults={'base_32_secret_key': secret_key}
-        )
+    @classmethod
+    def should_reset_otp_generation_count(cls, user) -> bool:
+        # Check if it's been more than an hour since the last OTP generation
+        if not user.user_otp.last_otp_generation_time:
+            return False  # No need to reset if no OTP generated yet
 
-        otp = TOTP(secret_key, interval=settings.OTP_VALIDITY_TIME, digits=digits).now()
+        current_time = timezone.now()
+        one_hour_ago = current_time - timezone.timedelta(hours=1)
 
-        return otp
+        return user.user_otp.last_otp_generation_time < one_hour_ago
+
+    @classmethod
+    def is_otp_generation_allowed(cls, user) -> bool:
+        # Check if OTP generation count is less than 5 within the last hour
+        return user.user_otp.otp_generation_count < 5
 
     @classmethod
     def validate_otp(cls, user, otp: int, digits=6) -> bool:

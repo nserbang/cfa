@@ -104,6 +104,8 @@ class PasswordResetOtpAPIView(APIView):
 
 class PasswordResetAPIView(APIView):
     permission_classes = ()
+    throttle_classes = (ScopedRateThrottle,)
+    throttle_scope = "mobile_reset_password_otp"
 
     def post(self, request, *args, **kwargs):
         serializer = PasswordResetSerializer(data=request.data, context={"request": request})

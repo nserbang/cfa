@@ -25,6 +25,9 @@ from api.models import cUser, UserOTPBaseKey
 
 
 class UserRegistrationViewApiView(APIView):
+    throttle_classes = (ScopedRateThrottle,)
+    throttle_scope = "mobile_reset_password_otp"
+
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -47,6 +50,7 @@ class VerifyOtpAPIView(APIView):
 class ResendOtpAPIView(APIView):
     throttle_classes = (ScopedRateThrottle,)
     throttle_scope = "mobile_reset_password_otp"
+
     def post(self, request):
         serializer = ResendOTPSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -108,7 +112,9 @@ class PasswordResetAPIView(APIView):
     throttle_scope = "mobile_reset_password_otp"
 
     def post(self, request, *args, **kwargs):
-        serializer = PasswordResetSerializer(data=request.data, context={"request": request})
+        serializer = PasswordResetSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "Password reset successful."})

@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "rest_framework",
     "api",
-    "rest_framework.authtoken",
+    # "rest_framework.authtoken",
     "drf_spectacular",
     "django_filters",
     "debug_toolbar",
@@ -139,7 +139,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "mobile_reset_password_otp": "5/hour",
+        "mobile_reset_password_otp": "5/day",
     },
 }
 

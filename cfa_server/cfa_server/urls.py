@@ -147,8 +147,8 @@ urlpatterns = [
         ResendOtpAPIView.as_view(),
         name="resend_otp",
     ),
-    path("api/v1/login/", UserLoginView.as_view(), name="user-login"),
-    path("api/v1/logout/", LogoutAPIView.as_view(), name="user-logout"),
+    # path("api/v1/login/", UserLoginView.as_view(), name="user-login"),
+    # path("api/v1/logout/", LogoutAPIView.as_view(), name="user-logout"),
     path(
         "api/v1/change-password/",
         ChangePasswordAPIView.as_view(),

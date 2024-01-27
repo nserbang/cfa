@@ -29,7 +29,7 @@ def has_numbers_and_characters(s):
 # OUTPUT: Vehicle number annotated input image, list of vehicle numbers detected in the image
 
 
-def detectVehicleNumber(img=None, numbers=None):
+def detectVehicleNumber(img=None, numbers=None, is_police=False):
     # cv.imshow(" Found :",img)
     ret_nums = []
     # cv.imshow("Grayscale Image", img)
@@ -43,7 +43,19 @@ def detectVehicleNumber(img=None, numbers=None):
         ).exists()
         if found:
             log.info(" Vehicle found ")
-            ret_nums.append({numbers: True})
+            vehicle = LostVehicle.objects.get(
+                Q(regNumber=numbers) | Q(chasisNumber=numbers) | Q(engineNumber=numbers)
+            )
+            ret_nums.append({
+                numbers: True, 
+                'case_id':vehicle.caseId_id, 
+                'chasis_number':vehicle.chasisNumber if is_police else '*******',
+                'engineNumber':vehicle.engineNumber if is_police else '*******',
+                'make':vehicle.make,
+                'model':vehicle.model,
+                'color':vehicle.color,
+                'description': vehicle.description,
+                })
         else:
             log.info(" Vehicle not found ")
             ret_nums.append({numbers: False})
@@ -92,7 +104,19 @@ def detectVehicleNumber(img=None, numbers=None):
             if has_numbers_and_characters(num) is True:
                 rcn = LostVehicle.objects.filter(regNumber=num).exists()
                 if rcn:
-                    ret_nums.append({rcn: True})
+                    vehicle = LostVehicle.objects.get(
+                        Q(regNumber=num) | Q(chasisNumber=num) | Q(engineNumber=num)
+                    )
+                    ret_nums.append({         
+                        numbers: True, 
+                        'case_id':vehicle.caseId_id, 
+                        'chasis_number':vehicle.chasisNumber if is_police else '*******',
+                        'engineNumber':vehicle.engineNumber if is_police else '*******',
+                        'make':vehicle.make,
+                        'model':vehicle.model,
+                        'color':vehicle.color,
+                        'description': vehicle.description,
+                    })
                 else:
                     ret_nums.append({rcn: False})
             # print (' NUMBER  in image : ',num)

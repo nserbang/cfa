@@ -591,11 +591,18 @@ class CheckLostVehicleSerializer(serializers.Serializer):
             )
         return data
 
-    def check_vehicle(self):
+    def check_vehicle(self, request):
         image = self.validated_data.get("image", None)
         registration_no = self.validated_data.get("registration_no", None)
         registration_numbers = []
-        registration_numbers = detectVehicleNumber(image, registration_no)
+        
+        is_police = False
+        
+        try:
+            is_police = request.user.is_police
+        except:
+            is_police = False
+        registration_numbers = detectVehicleNumber(image, registration_no, is_police)
         return registration_numbers
 
 

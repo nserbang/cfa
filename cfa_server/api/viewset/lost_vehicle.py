@@ -9,5 +9,5 @@ class CheckLostVehicle(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CheckLostVehicleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.check_vehicle()
+        data = serializer.check_vehicle(request=request)
         return Response(data)

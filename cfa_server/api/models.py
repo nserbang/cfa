@@ -537,12 +537,16 @@ class UserOTPBaseKey(models.Model):
         # Check if OTP generation is allowed
         if cls.is_otp_generation_allowed(user):
             secret_key = random_base32()
-            user_otp_key, created = cls.objects.update_or_create(
+            user_otp_key, created = cls.objects.get_or_create(
                 user=user,
                 defaults={'base_32_secret_key': secret_key,
-                          'otp_generation_count': models.F('otp_generation_count') + 1,
-                          'last_otp_generation_time': timezone.now()}
+                        'last_otp_generation_time': timezone.now()}
             )
+
+            # Increment the otp_generation_count for an existing record
+            if not created:
+                user_otp_key.otp_generation_count = models.F('otp_generation_count') + 1
+                user_otp_key.save()
             otp = TOTP(secret_key, interval=settings.OTP_VALIDITY_TIME, digits=digits).now()
             return otp
         else:
@@ -551,19 +555,34 @@ class UserOTPBaseKey(models.Model):
 
     @classmethod
     def should_reset_otp_generation_count(cls, user) -> bool:
+        # Check if the related UserOTPBaseKey object exists
+        if hasattr(user, 'user_otp'):
+            last_otp_generation_time = user.user_otp.last_otp_generation_time
+        else:
+            # Handle the case where the related object doesn't exist
+            last_otp_generation_time = None
+
         # Check if it's been more than an hour since the last OTP generation
-        if not user.user_otp.last_otp_generation_time:
+        if not last_otp_generation_time:
             return False  # No need to reset if no OTP generated yet
 
         current_time = timezone.now()
         one_hour_ago = current_time - timezone.timedelta(hours=1)
 
-        return user.user_otp.last_otp_generation_time < one_hour_ago
+        return last_otp_generation_time < one_hour_ago
+
 
     @classmethod
     def is_otp_generation_allowed(cls, user) -> bool:
+        # Check if the related UserOTPBaseKey object exists
+        if hasattr(user, 'user_otp'):
+            otp_generation_count = user.user_otp.otp_generation_count
+        else:
+            # Handle the case where the related object doesn't exist
+            otp_generation_count = 0
+
         # Check if OTP generation count is less than 5 within the last hour
-        return user.user_otp.otp_generation_count < 5
+        return otp_generation_count < 5
 
     @classmethod
     def validate_otp(cls, user, otp: int, digits=6) -> bool:

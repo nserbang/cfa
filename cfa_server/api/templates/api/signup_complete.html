@@ -3,7 +3,7 @@
 {% block title %}Complete Registration{% endblock title %}
 
 {% block content %}
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.0.0-rc.1/jsencrypt.min.js" nonce="{{ request.csp_nonce }}"></script>
+<script type="text/javascript" nonce="{{ request.csp_nonce }}" src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.0.0-rc.1/jsencrypt.min.js" nonce="{{ request.csp_nonce }}"></script>
 
 <div class="d-flex justify-content-center align-items-center align-middle">
 <div class="card">
@@ -17,7 +17,7 @@
     </div>
 </div>
 </div>
-<script>
+<script nonce="{{ request.csp_nonce }}">
 
     function getCookie(cookieName) {
         const name = cookieName + "=";
@@ -43,7 +43,7 @@
         return encryptedData;
     }
   </script>
-<script>
+<script nonce="{{ request.csp_nonce }}">
     // Wait for the DOM to be fully loaded
     document.addEventListener('DOMContentLoaded', function() {
       var completeSignupForm = document.getElementById('complete-signup-form');
@@ -76,7 +76,7 @@
 
 </script>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
     // Disable copy-paste and keyboard shortcuts
     window.onload = function() {
         var passwordField = document.getElementById("id_password");
@@ -127,7 +127,7 @@
                 return false;
             }
         });
-        
+
     };
   </script>
 

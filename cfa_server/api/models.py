@@ -540,7 +540,7 @@ class UserOTPBaseKey(models.Model):
         # Check if OTP generation is allowed
         if cls.is_otp_generation_allowed(user):
             secret_key = random_base32()
-            user_otp_key, created = cls.objects.get_or_create(
+            user_otp_key, created = cls.objects.update_or_create(
                 user=user,
                 defaults={
                     "base_32_secret_key": secret_key,

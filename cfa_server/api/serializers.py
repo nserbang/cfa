@@ -595,9 +595,9 @@ class CheckLostVehicleSerializer(serializers.Serializer):
         image = self.validated_data.get("image", None)
         registration_no = self.validated_data.get("registration_no", None)
         registration_numbers = []
-        
+
         is_police = False
-        
+
         try:
             is_police = request.user.is_police
         except:
@@ -705,8 +705,6 @@ class PasswordResetOtpSerializer(serializers.Serializer):
                 UserOTPBaseKey.send_otp_verification_code(user, verification=False)
             except:
                 raise serializers.ValidationError({"mobile": "Too many attempts"})
-                
-            
 
 
 class PasswordResetSerializer(PasswordDecriptionMixin, serializers.Serializer):

@@ -79,7 +79,7 @@ MIDDLEWARE = [
     "api.middleware.DisableOptionsMiddleware",  # Disable options
     "api.middleware.HSTSMiddleware",
     "api.middleware.RSAMiddleware",
-    "csp.middleware.CSPMiddleware",
+    "api.middleware.CustomCSPMiddleware",
 ]
 
 if DEBUG:

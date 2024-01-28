@@ -1,8 +1,6 @@
-from datetime import timezone
 from django.contrib.sessions.models import Session
 from django.http import HttpResponseNotAllowed
-from rest_framework.request import Request as RestRequest
-from django.conf import settings
+from csp.middleware import CSPMiddleware
 
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -147,3 +145,10 @@ class RSAMiddleware:
             )
 
         return response
+
+
+class CustomCSPMiddleware(CSPMiddleware):
+    def process_response(self, request, response):
+        if request.path.startswith("/admin/api"):
+            return response
+        return super().process_response(request, response)

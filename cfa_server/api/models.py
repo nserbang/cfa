@@ -104,6 +104,9 @@ class cUser(AbstractUser):
     def is_admin(self):
         return self.role == "admin"
 
+    def __str__(self):
+        return self.mobile
+
 
 # Holds list of police stations
 class PoliceStation(models.Model):
@@ -515,7 +518,7 @@ class LoggedInUser(models.Model):
     session_key = models.CharField(max_length=32, null=True, blank=True)
 
     def __str__(self):
-        return self.user.username
+        return self.user.mobile
 
 
 class UserOTPBaseKey(models.Model):
@@ -605,7 +608,7 @@ class UserOTPBaseKey(models.Model):
     @classmethod
     def send_otp_verification_code(cls, user, verification=True):
         otp_code = cls.generate_otp(user)
-
+        print(otp_code)
         if verification:
             text = f"Victory Trading Agency user registration authentication verification OTP is {otp_code}"
         else:

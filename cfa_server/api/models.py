@@ -416,12 +416,12 @@ class Emergency(models.Model):
     number = models.CharField(max_length=100, null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     long = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    # geo_location = models.PointField(blank=True, null=True, srid=4326)
+    geo_location = models.PointField(blank=True, null=True, srid=4326)
 
-    # def save(self, **kwargs):
-    #     if self.lat and self.long:
-    #         self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
-    #     super().save(**kwargs)
+    def save(self, **kwargs):
+        if self.lat and self.long:
+            self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
+        super().save(**kwargs)
 
     def tid_display(self):
         return self.tid.service_type

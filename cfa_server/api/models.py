@@ -1,3 +1,4 @@
+import imghdr
 import re
 from django.contrib.gis.db import models
 from django.forms import ValidationError
@@ -50,7 +51,13 @@ MobileValidator = mobile_validator
 
 
 def file_type_validator(f):
-    mime_type = magic.from_buffer(f.read(1024), mime=True)
+    f.seek(0)
+    mime_type = magic.from_buffer(f.read(), mime=True)
+    # if mime_type == 'application/x-empty':
+    #     # Attempt to use imghdr for image file types
+    #     image_type = imghdr.what(f)
+    #     if image_type is not None:
+    #         mime_type = f'image/{image_type}'
     if mime_type not in settings.ALLOWED_FILE_TYPES:
         raise ValidationError(f"You can't upload this file: {f.name}.")
     f.seek(0)
@@ -120,7 +127,6 @@ class PoliceStation(models.Model):
     # GPS location of the police station
     lat = models.DecimalField(max_digits=9, decimal_places=6, default=0.0)
     long = models.DecimalField(max_digits=9, decimal_places=6, default=0.0)
-    distance = models.DecimalField(max_digits=9, decimal_places=2, null=True)
     geo_location = models.PointField(blank=True, null=True, srid=4326)
 
     def __str__(self):
@@ -399,6 +405,8 @@ class EmergencyType(models.Model):
     emtid = models.BigAutoField(primary_key=True)
     service_type = models.CharField(max_length=30, blank=False)
 
+    def __str__(self):
+        return self.service_type
 
 # Table for emergency helpline numbers with their name and gps location
 class Emergency(models.Model):
@@ -408,18 +416,20 @@ class Emergency(models.Model):
     number = models.CharField(max_length=100, null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     long = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    geo_location = models.PointField(blank=True, null=True, srid=4326)
+    # geo_location = models.PointField(blank=True, null=True, srid=4326)
 
-    def save(self, **kwargs):
-        if self.lat and self.long:
-            self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
-        super().save(**kwargs)
+    # def save(self, **kwargs):
+    #     if self.lat and self.long:
+    #         self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
+    #     super().save(**kwargs)
 
     def tid_display(self):
         return self.tid.service_type
 
     tid_display.short_description = "Emergency Type"
 
+    def __str__(self):
+        return f"{self.name} - {self.tid_display}"
 
 class Information(models.Model):
     inid = models.BigAutoField(primary_key=True)

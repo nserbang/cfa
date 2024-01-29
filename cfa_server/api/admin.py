@@ -274,8 +274,23 @@ admin.site.register(Comment, CommentAdmin)
 
 @admin.register(Information)
 class InformationAdmin(admin.ModelAdmin):
-    pass
 
+    def information_id(self):
+        return self.inid
+    
+
+    def information_type(self):
+        return self.get_information_type_display()
+    
+
+    def title(self):
+        return self.heading
+    
+    information_id.short_description = "Information ID"
+    information_type.short_description = "Type"
+    title.short_description = "Title"
+    list_display = [information_id, information_type, title]
+    
 
 
 # @admin.register(Victim)
@@ -306,9 +321,14 @@ class EmergencyAdminForm(forms.ModelForm):
         model = Emergency
         fields = '__all__'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove placeholder for the name field
+        self.fields['name'].widget.attrs.pop('placeholder', None)
+
 class EmergencyAdmin(admin.ModelAdmin):
     form = EmergencyAdminForm
-    list_display = ('emid', 'tid_display', 'name', 'number', 'lat', 'long', 'geo_location')
+    list_display = ('emid', 'tid_display', 'name', 'number', 'lat', 'long')
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "tid":

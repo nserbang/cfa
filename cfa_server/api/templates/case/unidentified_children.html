@@ -9,7 +9,7 @@
     <div class="col-lg-9 col-md-9 col-sm-12">
         <div class="d-flex flex-row">
             <h4 class="flex-fill">Unidentified Children</h4>
-            <a href="{% url 'add_case' %}">Add Case</a>
+            <a href="{% url 'add_case' %}">Report new case</a>
         </div>
         {% for case in cases %}
         {% include 'case/case_card.html' %}

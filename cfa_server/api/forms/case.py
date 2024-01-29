@@ -217,6 +217,9 @@ class CaseUpdateForm(forms.ModelForm):
         case.cstate = self.cleaned_data["cstate"]
         case.updated = timezone.now()
 
+        if not self.cleaned_data["oid"]:
+            case.oid = self.instance.oid
+
         noti_title = {
             "accepted": "Your case no.{} has been accepted.",
             "rejected": "Your case no.{} has been rejected.",

@@ -386,7 +386,10 @@ AXES_RESET_ON_SUCCESS = True
 CSRF_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
 
 CSP_DEFAULT_SRC = "'self'"
-CSP_SCRIPT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js",
+)
 CSP_IMG_SRC = ("'self'",)
 CSP_SCRIPT_HASHES = (
     "'sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3'",

@@ -1,5 +1,25 @@
+let comments = document.querySelectorAll("[class*=comment-]")
+
+comments.forEach(comment => {
+    comment.addEventListener('click', function updateComment(event) {
+        let caseID = event.target.getAttribute('data-bs-target').split("-")[1]
+        showHideCommentAndHistory(caseID)
+    });
+  });
+
+
+let caseHistories = document.querySelectorAll("[class*=case-history-]")
+
+caseHistories.forEach(history => {
+    history.addEventListener('click', function updateHistory(event) {
+        event.preventDefault()
+        let caseID = event.target.getAttribute('data-bs-target').split("-")[1]
+        getCaseHistory(caseID)
+    });
+  });
+
+
 function showHideCommentAndHistory(id) {
-    console.log('skdfjsdklfjklsdf', id)
     let comment = document.getElementById("comment-" + id)
     let history = document.getElementById("history-" + id)
     if (comment.classList.contains('d-none')) {
@@ -27,8 +47,7 @@ function changeStatus() {
 }
 
 
-function getCaseHistory(event, caseId) {
-    event.preventDefault();
+function getCaseHistory(caseId) {
     let comment = document.getElementById("comment-" + caseId)
     let history = document.getElementById("history-" + caseId)
     if (history.classList.contains('d-none')) {

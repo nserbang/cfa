@@ -8,8 +8,8 @@
     <title>{% block title %}CFA{% endblock title %}</title>
     <!-- <link rel="shortcut icon" href= "{% static 'images/favicon.ico' %}"> -->
     {% block css %}{% endblock css %}
-    <link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
-    <link href="{% static 'css/venobox.min.css' %}" rel="stylesheet">
+    <link nonce="{{CSP_NONCE}}" href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
+    <link nonce="{{CSP_NONCE}}" href="{% static 'css/venobox.min.css' %}" rel="stylesheet">
     <style nonce="{{CSP_NONCE}}">
       .side-menu a {
         font-size: .80rem !important;
@@ -72,9 +72,9 @@
 
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous" nonce="{{ request.csp_nonce }}"></script>
-<script type="text/javascript" src="{% static 'js/venobox.min.js' %}" ></script>
-<script type="text/javascript" src="{% static 'js/custom.js' %}"></script>
+<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous" nonce="{{ request.csp_nonce }}"></script>
+<script nonce="{{CSP_NONCE}}" type="text/javascript" src="{% static 'js/venobox.min.js' %}" ></script>
+<script nonce="{{ request.csp_nonce }}" type="text/javascript" src="{% static 'js/custom.js' %}"></script>
 <script nonce="{{CSP_NONCE}}">
   new VenoBox({
     selector: '.image',

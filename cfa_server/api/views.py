@@ -130,7 +130,7 @@ class HomePageView(View):
             "drug_case": "Drug Case Reported",
             "extortion_case": "Extortion Case Reported",
         }
-        return header_map.get(self.kwargs.get("title", "my-complaints"))
+        return header_map.get(self.kwargs.get("title"), "Case Listings")
 
     def get_case_type(self):
         case_type = {

@@ -70,7 +70,7 @@
         <div class="d-flex flex-row justify-content-between">
             <a href="{% if user.is_authenticated %}{% url 'add_like' case.pk %}{% endif %}" class="btn btn-primary btn-sm {% if not user.is_authenticated or case.has_liked %}disabled{% endif %}" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" nonce="{{ request.csp_nonce }}">Like: {{ case.like_count }}</a>
 
-            <button onclick="showHideCommentAndHistory({{ case.pk }})" data-bs-target="#comment-{{case.pk}}"  class="comment-{{ case.pk }} btn btn-primary btn-sm" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Comment: {{ case.comment_count }}</button>
+            <button data-bs-target="#comment-{{case.pk}}" class="comment-{{ case.pk }} btn btn-primary btn-sm" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Comment: {{ case.comment_count }}</button>
 
             {% if user.is_authenticated %}
                 {% if case.cstate == 'pending' and case.is_location_visible %}
@@ -95,7 +95,7 @@
                 </div>
             {% endif %}
 
-            <a href="" class="btn btn-primary btn-sm" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" data-bs-target="#history-{{case.pk}}" onclick="getCaseHistory(event, {{case.pk}})" nonce="{{ request.csp_nonce }}">Case history</a>
+            <a href="" class="case-history-{{case.pk}} btn btn-primary btn-sm" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" data-bs-target="#history-{{case.pk}}" nonce="{{ request.csp_nonce }}">Case history</a>
         </div>
         <div id="comment-{{case.pk}}" class="pt-2 d-none">
             {% if user.is_authenticated %}

@@ -23,7 +23,7 @@
             </div>
         </div>
     </div>
-    {% else %}
+    {% endif %}
     <div class="row pt-1">
         <div class="col-auto text-center flex-column d-none d-sm-flex">
             <div class="row h-50">
@@ -50,7 +50,7 @@
                         {% for media in new.medias.all %}
                             <div class="col-auto">{{ media.mtype }}
                                 {% if media.mtype == 'photo' %}
-                                    <a class="image" onclick="openVenobox(this)" href="{{ media.path.url }}">
+                                    <a class="image" href="{{ media.path.url }}">
                                         <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
                                     </a>
                                 {% elif media.mtype == 'video' %}
@@ -74,7 +74,7 @@
             </div>
         </div>
     </div>
-    {% endif %}
+
 {% empty %}
 <div class="row pt-2">
     No history found.

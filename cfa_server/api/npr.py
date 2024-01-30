@@ -38,24 +38,38 @@ def detectVehicleNumber(img=None, numbers=None, is_police=False):
         log.debug(" Trying to detect vehicle number from passed value :", numbers)
         # TO DO: search num in lostVehicle. If found, return as it is
         # fetch numbers from the lostVehicle table and return it
-        found = LostVehicle.objects.filter(
+        vehicle = LostVehicle.objects.filter(
             Q(regNumber=numbers) | Q(chasisNumber=numbers) | Q(engineNumber=numbers)
-        ).exists()
-        if found:
+        ).first()
+        if vehicle:
             log.info(" Vehicle found ")
-            vehicle = LostVehicle.objects.get(
-                Q(regNumber=numbers) | Q(chasisNumber=numbers) | Q(engineNumber=numbers)
+            case = vehicle.caseId
+            case_detail = {
+                "case_no": case.cid,
+                "case_type": case.type,
+                "request_type": vehicle.type,
+                "status": case.cstate,
+                "police_station": {
+                    "id": case.pid_id,
+                    "name": case.pid.name,
+                    "lat": case.pid.lat,
+                    "long": case.pid.long,
+                },
+                "reported_on": str(case.created),
+            }
+            ret_nums.append(
+                {
+                    numbers: True,
+                    "case_detail": case_detail,
+                    "case_id": vehicle.caseId_id,
+                    "chasis_number": vehicle.chasisNumber if is_police else "*******",
+                    "engineNumber": vehicle.engineNumber if is_police else "*******",
+                    "make": vehicle.make,
+                    "model": vehicle.model,
+                    "color": vehicle.color,
+                    "description": vehicle.description,
+                }
             )
-            ret_nums.append({
-                numbers: True, 
-                'case_id':vehicle.caseId_id, 
-                'chasis_number':vehicle.chasisNumber if is_police else '*******',
-                'engineNumber':vehicle.engineNumber if is_police else '*******',
-                'make':vehicle.make,
-                'model':vehicle.model,
-                'color':vehicle.color,
-                'description': vehicle.description,
-                })
         else:
             log.info(" Vehicle not found ")
             ret_nums.append({numbers: False})
@@ -104,19 +118,40 @@ def detectVehicleNumber(img=None, numbers=None, is_police=False):
             if has_numbers_and_characters(num) is True:
                 rcn = LostVehicle.objects.filter(regNumber=num).exists()
                 if rcn:
-                    vehicle = LostVehicle.objects.get(
+                    vehicle = LostVehicle.objects.filter(
                         Q(regNumber=num) | Q(chasisNumber=num) | Q(engineNumber=num)
+                    ).first()
+                    case = vehicle.caseId
+                    case_detail = {
+                        "case_no": case.cid,
+                        "case_type": case.type,
+                        "request_type": vehicle.type,
+                        "status": case.cstate,
+                        "police_station": {
+                            "id": case.pid_id,
+                            "name": case.pid.name,
+                            "lat": case.pid.lat,
+                            "long": case.pid.long,
+                        },
+                        "reported_on": str(case.created),
+                    }
+                    ret_nums.append(
+                        {
+                            numbers: True,
+                            "case_detail": case_detail,
+                            "case_id": vehicle.caseId_id,
+                            "chasis_number": vehicle.chasisNumber
+                            if is_police
+                            else "*******",
+                            "engineNumber": vehicle.engineNumber
+                            if is_police
+                            else "*******",
+                            "make": vehicle.make,
+                            "model": vehicle.model,
+                            "color": vehicle.color,
+                            "description": vehicle.description,
+                        }
                     )
-                    ret_nums.append({         
-                        numbers: True, 
-                        'case_id':vehicle.caseId_id, 
-                        'chasis_number':vehicle.chasisNumber if is_police else '*******',
-                        'engineNumber':vehicle.engineNumber if is_police else '*******',
-                        'make':vehicle.make,
-                        'model':vehicle.model,
-                        'color':vehicle.color,
-                        'description': vehicle.description,
-                    })
                 else:
                     ret_nums.append({rcn: False})
             # print (' NUMBER  in image : ',num)

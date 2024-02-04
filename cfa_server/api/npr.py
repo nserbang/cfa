@@ -31,7 +31,7 @@ def has_numbers_and_characters(s):
 
 def detectVehicleNumber(img=None, numbers=None, is_police=False, user=None):
     # cv.imshow(" Found :",img)
-    ret_nums = []
+    found_vechicles = []
     # cv.imshow("Grayscale Image", img)
     # cv.waitKey(0)
     vehicles = (
@@ -70,10 +70,10 @@ def detectVehicleNumber(img=None, numbers=None, is_police=False, user=None):
             | Q(lostvehicle__engineNumber=numbers)
         ).first()
         if vehicle:
-            return {"case": vehicle, "number": True}
+            found_vechicles.append(vehicle)
         else:
             log.info(" Vehicle not found ")
-            return {"case": vehicle, "number": False}
+
     if img is not None:
         log.info(" Trying to detect vehicle number from image ")
         image_data_bytes = img.read()
@@ -120,11 +120,11 @@ def detectVehicleNumber(img=None, numbers=None, is_police=False, user=None):
                     | Q(lostvehicle__engineNumber=numbers)
                 ).first()
                 if vehicle:
-                    return {"case": vehicle, "rcn": True}
+                    found_vechicles.append(vehicle)
                 else:
-                    return {"case": vehicle, "rcn": False}
-    log.info(" Returning : ", ret_nums)
-    return ret_nums
+                    log.info(" Vehicle not found ")
+    log.info(" Returning : ", found_vechicles)
+    return found_vechicles
 
 
 # cp = cv.VideoCapture(0)

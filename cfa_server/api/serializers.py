@@ -597,15 +597,16 @@ class CheckLostVehicleSerializer(serializers.Serializer):
         response = []
 
         is_police = request.user.is_authenticated and request.user.is_police
-        resp = detectVehicleNumber(image, registration_no, is_police, request.user)
-        case_ = resp.pop("case", None)
-        if case_:
-            case_serializer = CaseSerializer(case_)
-            case_data = case_serializer.data
+        found_vechicles = detectVehicleNumber(
+            image, registration_no, is_police, request.user
+        )
+        if found_vechicles:
+            case_serializer = CaseSerializer(found_vechicles, many=True)
+            response = case_serializer.data
             if not (request.user.is_authenticated and request.user.is_police):
-                case_data["vehicle_detail"]["chasisNumber"] = "*******"
-                case_data["vehicle_detail"]["engineNumber"] = "*******"
-            response = {**case_data, **resp}
+                for item in response:
+                    item["vehicle_detail"]["chasisNumber"] = "*******"
+                    item["vehicle_detail"]["engineNumber"] = "*******"
         return response
 
 

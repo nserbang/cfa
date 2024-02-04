@@ -594,16 +594,19 @@ class CheckLostVehicleSerializer(serializers.Serializer):
     def check_vehicle(self, request):
         image = self.validated_data.get("image", None)
         registration_no = self.validated_data.get("registration_no", None)
-        registration_numbers = []
+        response = []
 
-        is_police = False
-
-        try:
-            is_police = request.user.is_police
-        except:
-            is_police = False
-        registration_numbers = detectVehicleNumber(image, registration_no, is_police)
-        return registration_numbers
+        is_police = request.user.is_authenticated and request.user.is_police
+        resp = detectVehicleNumber(image, registration_no, is_police, request.user)
+        case_ = resp.pop("case", None)
+        if case_:
+            case_serializer = CaseSerializer(case_)
+            case_data = case_serializer.data
+            if not (request.user.is_authenticated and request.user.is_police):
+                case_data["vehicle_detail"]["chasisNumber"] = "*******"
+                case_data["vehicle_detail"]["engineNumber"] = "*******"
+            response = {**case_data, **resp}
+        return response
 
 
 class VictimSerializer(serializers.ModelSerializer):

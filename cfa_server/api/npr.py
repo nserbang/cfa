@@ -1,8 +1,8 @@
 import cv2 as cv
 import numpy as np
 import pytesseract as pt
-from django.db.models import Q
-from api.models import LostVehicle
+from django.db.models import Q, OuterRef, Count, Exists, Case as MCase, When
+from api.models import Case, Like
 from django.conf import settings
 from api.log import *
 
@@ -29,50 +29,51 @@ def has_numbers_and_characters(s):
 # OUTPUT: Vehicle number annotated input image, list of vehicle numbers detected in the image
 
 
-def detectVehicleNumber(img=None, numbers=None, is_police=False):
+def detectVehicleNumber(img=None, numbers=None, is_police=False, user=None):
     # cv.imshow(" Found :",img)
     ret_nums = []
     # cv.imshow("Grayscale Image", img)
     # cv.waitKey(0)
+    vehicles = (
+        Case.objects.all()
+        .annotate(
+            comment_count=Count("comment", distinct=True),
+            like_count=Count("likes", distinct=True),
+        )
+        .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
+        .prefetch_related("medias")
+    )
+    if user.is_authenticated:
+        liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)
+        vehicles = vehicles.annotate(
+            liked=Exists(liked),
+        )
+        if user.is_police:
+            officer = user.policeofficer_set.first()
+            vehicles = vehicles.annotate(
+                can_act=MCase(
+                    When(
+                        (Q(cstate="pending") & Q(oid__rank=5))
+                        | (~Q(cstate="pending") & Q(oid__rank=4) & Q(oid=officer)),
+                        then=True,
+                    ),
+                    default=False,
+                )
+            )
     if numbers is not None:
         log.debug(" Trying to detect vehicle number from passed value :", numbers)
         # TO DO: search num in lostVehicle. If found, return as it is
         # fetch numbers from the lostVehicle table and return it
-        vehicle = LostVehicle.objects.filter(
-            Q(regNumber=numbers) | Q(chasisNumber=numbers) | Q(engineNumber=numbers)
+        vehicle = vehicles.filter(
+            Q(lostvehicle__regNumber=numbers)
+            | Q(lostvehicle__chasisNumber=numbers)
+            | Q(lostvehicle__engineNumber=numbers)
         ).first()
         if vehicle:
-            log.info(" Vehicle found ")
-            case = vehicle.caseId
-            case_detail = {
-                "case_no": case.cid,
-                "case_type": case.type,
-                "request_type": vehicle.type,
-                "status": case.cstate,
-                "police_station": {
-                    "id": case.pid_id,
-                    "name": case.pid.name,
-                    "lat": case.pid.lat,
-                    "long": case.pid.long,
-                },
-                "reported_on": str(case.created),
-            }
-            ret_nums.append(
-                {
-                    numbers: True,
-                    "case_detail": case_detail,
-                    "case_id": vehicle.caseId_id,
-                    "chasis_number": vehicle.chasisNumber if is_police else "*******",
-                    "engineNumber": vehicle.engineNumber if is_police else "*******",
-                    "make": vehicle.make,
-                    "model": vehicle.model,
-                    "color": vehicle.color,
-                    "description": vehicle.description,
-                }
-            )
+            return {"case": vehicle, "number": True}
         else:
             log.info(" Vehicle not found ")
-            ret_nums.append({numbers: False})
+            return {"case": vehicle, "number": False}
     if img is not None:
         log.info(" Trying to detect vehicle number from image ")
         image_data_bytes = img.read()
@@ -86,7 +87,6 @@ def detectVehicleNumber(img=None, numbers=None, is_police=False):
         grayCar = cv.cvtColor(car, cv.COLOR_RGB2BGR)
 
         npr = []
-        nums = []
         numPlate = cascade.detectMultiScale(grayCar, 1.1, 4)
         for x, y, w, h in numPlate:
             cv.rectangle(
@@ -102,9 +102,7 @@ def detectVehicleNumber(img=None, numbers=None, is_police=False):
         for n in npr:
             width = int(n.shape[1] * 150 / 100)
             height = int(n.shape[0] * 150 / 100)
-            # print(" HELLO width :",width, "Height :",height, " Shape :",n.shape[0])
             dm = (width, height)
-            # print(" NNNN : ",n)
             carTemp = cv.resize(
                 n, dm, interpolation=cv.INTER_AREA
             )  # resize image for OCR
@@ -116,46 +114,15 @@ def detectVehicleNumber(img=None, numbers=None, is_police=False):
             num = pt.image_to_string(grayBlur, config=custom_config)
             num = num.replace("\n", "").replace("\x0c", "")
             if has_numbers_and_characters(num) is True:
-                rcn = LostVehicle.objects.filter(regNumber=num).exists()
-                if rcn:
-                    vehicle = LostVehicle.objects.filter(
-                        Q(regNumber=num) | Q(chasisNumber=num) | Q(engineNumber=num)
-                    ).first()
-                    case = vehicle.caseId
-                    case_detail = {
-                        "case_no": case.cid,
-                        "case_type": case.type,
-                        "request_type": vehicle.type,
-                        "status": case.cstate,
-                        "police_station": {
-                            "id": case.pid_id,
-                            "name": case.pid.name,
-                            "lat": case.pid.lat,
-                            "long": case.pid.long,
-                        },
-                        "reported_on": str(case.created),
-                    }
-                    ret_nums.append(
-                        {
-                            numbers: True,
-                            "case_detail": case_detail,
-                            "case_id": vehicle.caseId_id,
-                            "chasis_number": vehicle.chasisNumber
-                            if is_police
-                            else "*******",
-                            "engineNumber": vehicle.engineNumber
-                            if is_police
-                            else "*******",
-                            "make": vehicle.make,
-                            "model": vehicle.model,
-                            "color": vehicle.color,
-                            "description": vehicle.description,
-                        }
-                    )
+                vehicle = vehicles.filter(
+                    Q(lostvehicle__regNumber=numbers)
+                    | Q(lostvehicle__chasisNumber=numbers)
+                    | Q(lostvehicle__engineNumber=numbers)
+                ).first()
+                if vehicle:
+                    return {"case": vehicle, "rcn": True}
                 else:
-                    ret_nums.append({rcn: False})
-            # print (' NUMBER  in image : ',num)
-            # nums.append(num) # get recognized numbers
+                    return {"case": vehicle, "rcn": False}
     log.info(" Returning : ", ret_nums)
     return ret_nums
 

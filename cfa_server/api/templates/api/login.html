@@ -36,12 +36,12 @@
     function encryptDataWithRSA(data, publicKey, padding) {
         var encrypt = new JSEncrypt();
         encrypt.setPublicKey(publicKey);
-  
+
         // You can specify padding here (e.g., JSEncrypt.RSA_PKCS1_PADDING or JSEncrypt.RSA_OAEP_PADDING)
         encrypt.setPublicKey(publicKey, padding);
-        
+
         var encryptedData = encrypt.encrypt(data);
-        
+
         return encryptedData;
     }
   </script>
@@ -49,57 +49,55 @@
     // Wait for the DOM to be fully loaded
     document.addEventListener('DOMContentLoaded', function() {
       var loginForm = document.getElementById('custom-login-form');
-  
+      var passwordField = document.getElementById('id_password');
+      passwordField.setAttribute('autocomplete', 'off');
       // Add a submit event listener to the form
       loginForm.addEventListener('submit', function(event) {
         // Prevent the default form submission
         event.preventDefault();
-  
+
         // Manually encrypt the form data here
         var usernameField = document.getElementById('id_username');
-        var passwordField = document.getElementById('id_password');
-  
-  
-  
+
         var encrypt = new JSEncrypt();
         // Replace this with your public key
         var base64PublicKey = getCookie('rsa_public_key');
         var publicKey = atob(base64PublicKey);
-  
-  
+
+
         encrypt.setPublicKey(publicKey);
-  
+
         var encryptedPassword = encrypt.encrypt(passwordField.value);
         passwordField.value = encryptedPassword;
-  
+
         loginForm.submit();
       });
     });
-  
-    
-  
+
+
+
 </script>
-  
+
 <script nonce="{{CSP_NONCE}}">
     // Disable copy-paste and keyboard shortcuts
     window.onload = function() {
         var passwordField = document.getElementById("id_password");
-  
+
         passwordField.addEventListener("copy", function(event) {
             event.preventDefault();
             return false;
         });
-  
+
         passwordField.addEventListener("paste", function(event) {
             event.preventDefault();
             return false;
         });
-  
+
         passwordField.addEventListener("cut", function(event) {
             event.preventDefault();
             return false;
         });
-  
+
         passwordField.addEventListener("keydown", function(event) {
             if (event.ctrlKey || event.metaKey) {
                 event.preventDefault();

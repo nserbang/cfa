@@ -78,7 +78,7 @@ from api.views import CustomPasswordChangeView
 from api.views import custom_404_view, custom_400_view, custom_401_view, custom_403_view
 
 
-router = routers.DefaultRouter()
+router = routers.SimpleRouter()
 router.register("district", DistrictViewSet, basename="district")
 router.register("police-station", PoliceStationViewSet, basename="police-station")
 router.register("police-officer", PoliceOfficerViewSet, basename="police-officer")

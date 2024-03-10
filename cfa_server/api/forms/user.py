@@ -1,6 +1,11 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import (
+    UserCreationForm,
+    UserChangeForm,
+    AuthenticationForm,
+)
 from api.models import cUser, District, PoliceStation, PoliceOfficer
+from captcha.fields import CaptchaField
 
 
 class cUserCreationForm(UserCreationForm):
@@ -14,6 +19,10 @@ class cUserChangeForm(UserChangeForm):
         model = cUser
         fields = ("mobile", "email")
         error_messages = {"mobile": {"unique": ("This mobile is already registered.")}}
+
+
+class cUserAuthenticationForm(AuthenticationForm):
+    captcha = CaptchaField()
 
 
 class AddOfficerForm(forms.Form):

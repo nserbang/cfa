@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "axes",
     "django_password_validators",
     "django_password_validators.password_history",
+    "captcha",
 ]
 
 MIDDLEWARE = [

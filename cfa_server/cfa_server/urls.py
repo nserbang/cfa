@@ -77,6 +77,10 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from api.views import CustomPasswordChangeView
 from api.views import custom_404_view, custom_400_view, custom_401_view, custom_403_view
 
+from api.forms.user import cUserAuthenticationForm
+
+admin.autodiscover()
+admin.site.login_form = cUserAuthenticationForm
 
 router = routers.SimpleRouter()
 router.register("district", DistrictViewSet, basename="district")
@@ -123,6 +127,7 @@ router.register("comment", CommentCUDViewSet, basename="comment")
 router.register("devices", FCMDeviceAuthorizedViewSet)
 router.register("banner", BannerViewSet, basename="banner")
 urlpatterns = [
+    path("captcha/", include("captcha.urls")),
     path(
         "admin/password_change/",
         CustomPasswordChangeView.as_view(),

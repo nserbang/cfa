@@ -243,7 +243,15 @@ class LostVehicleAdmin(admin.ModelAdmin):
 
     Id.short_description = "Case ID"
     # PoliceStation.short_description ="Police Station"
-    list_display = [Id, "regNumber", "chasisNumber", "engineNumber", "make", "model", "type"]
+    list_display = [
+        Id,
+        "regNumber",
+        "chasisNumber",
+        "engineNumber",
+        "make",
+        "model",
+        "type",
+    ]
 
 
 admin.site.register(LostVehicle, LostVehicleAdmin)
@@ -274,23 +282,19 @@ admin.site.register(Comment, CommentAdmin)
 
 @admin.register(Information)
 class InformationAdmin(admin.ModelAdmin):
-
     def information_id(self):
         return self.inid
-    
 
     def information_type(self):
         return self.get_information_type_display()
-    
 
     def title(self):
         return self.heading
-    
+
     information_id.short_description = "Information ID"
     information_type.short_description = "Type"
     title.short_description = "Title"
     list_display = [information_id, information_type, title]
-    
 
 
 # @admin.register(Victim)
@@ -316,19 +320,21 @@ class BannerAdmin(admin.ModelAdmin):
         "description",
     ]
 
+
 class EmergencyAdminForm(forms.ModelForm):
     class Meta:
         model = Emergency
-        fields = '__all__'
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Remove placeholder for the name field
-        self.fields['name'].widget.attrs.pop('placeholder', None)
+        self.fields["name"].widget.attrs.pop("placeholder", None)
+
 
 class EmergencyAdmin(admin.ModelAdmin):
     form = EmergencyAdminForm
-    list_display = ('emid', 'tid_display', 'name', 'number', 'lat', 'long')
+    list_display = ("emid", "tid_display", "name", "number", "lat", "long")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "tid":
@@ -338,9 +344,9 @@ class EmergencyAdmin(admin.ModelAdmin):
     def tid_display(self, obj):
         return obj.tid.service_type
 
-class EmergencyTypeAdmin(admin.ModelAdmin):
 
-    list_display = ("emtid","service_type")
+class EmergencyTypeAdmin(admin.ModelAdmin):
+    list_display = ("emtid", "service_type")
 
 
 """ admin.site.register(Victim)

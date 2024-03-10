@@ -3,10 +3,29 @@
 
 {% block content %}
 
+{% block extrastyle %}
+{{ block.super }}
+<style nonce="{{ request.csp_nonce }}">
+  .captcha-row {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+  .captcha {
+    border-radius: 5px;
+  }
+  #id_captcha_1 {
+    flex-grow: 2;
+    margin-right: 4px;
+    height: 25px;
+  }
+</style>
+{% endblock %}
+
+
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.0.0-rc.1/jsencrypt.min.js" nonce="{{ request.csp_nonce }}"></script>
 
 <form id="custom-login-form" method="post" action="{% url 'custom_admin_login' %}">
-  
+
   {% csrf_token %}
   <div class="form-row">
     {{ form.username.errors }}
@@ -18,6 +37,10 @@
     <input type="password" name="password" autocomplete="OFF" required="" id="id_password">
     <input type="hidden" name="next" value="{{ next }}">
   </div>
+  <div class="form-row captcha-row">
+    {{ form.captcha }}
+  </div>
+  {{ form.captcha.errors }}
   {% url 'admin_password_reset' as password_reset_url %}
   {% if password_reset_url %}
   <div class="password-reset-link">
@@ -48,9 +71,9 @@
 
       // You can specify padding here (e.g., JSEncrypt.RSA_PKCS1_PADDING or JSEncrypt.RSA_OAEP_PADDING)
       encrypt.setPublicKey(publicKey, padding);
-      
+
       var encryptedData = encrypt.encrypt(data);
-      
+
       return encryptedData;
   }
   // Wait for the DOM to be fully loaded

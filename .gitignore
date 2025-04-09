@@ -4,11 +4,13 @@ __pycache__/
 cfa_app/cache
 cfa_server/app.log
 venv/
+.venv/
 cfa_server/api.log
 api.log
 .vscode/
 hello/
 db.sqlite3
+static/
 cfa_server/db.sqlite3
 files/
 media/
@@ -17,3 +19,4 @@ cfa_server/uploads
 cfa_server/systemctl
 cfa_server/db_temp.sqlite3
 credentials.json
+cfa_server/api/migrations/

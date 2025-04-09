@@ -74,6 +74,9 @@ class VerifyOtpFrom(forms.Form):
 
     def clean(self):
         cd = super().clean()
+        #mob = cd.get('mobile')
+        #if not mob:
+            #raise forms.ValidationError(" Mobile numbe is required");
         self.user = cUser.objects.filter(mobile=self.mobile.strip()).first()
         if not UserOTPBaseKey.validate_otp(self.user, cd["otp"]):
             raise ValidationError("Otp is Invalid or expired.")

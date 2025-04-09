@@ -153,6 +153,7 @@ admin.site.register(PoliceStationContact, PoliceStationContactAdmin)
 
 class PoliceOfficerAdmin(admin.ModelAdmin):
     list_display = ["oid", "pid", "rank", "entryDate", "mobile", "status"]
+    #autocomplete_fields =['mobile']
     search_fields = [
         "name__icontains",
         "pid__pid__icontains",

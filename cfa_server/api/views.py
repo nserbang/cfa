@@ -251,6 +251,8 @@ class HomePageView(View):
 class UserRegistrationView(View):
     def get(self, request, *args, **kwargs):
         form = UserRegistrationForm
+        #with open("/cfa_server/api.log","a") as file:
+         #   file.write(" Entering user sign up ")
         return render(request, "api/signup.html", {"form": form})
 
     def post(self, request, *args, **kwargs):

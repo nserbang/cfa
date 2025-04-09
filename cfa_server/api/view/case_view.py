@@ -2,10 +2,12 @@
 from api.view_includes import *
 from api.log import log
 from api.utl import local_update
+import logging
+logger = logging.getLogger(__name__)
 
 class CaseViewSet(viewsets.ViewSet):
     def list(self,request): 
-        log.info("Entering")
+        logger.info("Entering")
         try:
             user1 = request.query_params.get('user')            
             if user1:             
@@ -24,7 +26,7 @@ class CaseViewSet(viewsets.ViewSet):
         return JsonResponse(serialized.data, safe=False) 
 
     def create(self, request):
-        log.info(" Entering")
+        logger.info(" Entering")
         #print(" Json : ",json.loads(request.data))             
         serializer = CaseSerializer(data=json.loads(request.data))
         #print(" Error :", serializer.error_messages)
@@ -35,11 +37,11 @@ class CaseViewSet(viewsets.ViewSet):
             serialized = CaseSerializer(cs)
             log.info(" Exiting with success") 
             return JsonResponse(serialized.data, status = HTTPStatus.OK)
-        log.info(" Exiting ") 
+        logger.info(" Exiting ") 
         return JsonResponse({"message": "Case not saved"}, status=HTTPStatus.BAD_REQUEST)
     
     def lupdate(self, instance, data):
-        log.info("Entering")
+        logger.info("Entering")
         for field, value in data.items():           
             if field == 'oid':                
                 oid = PoliceOfficer.objects.get(pk=value)
@@ -65,7 +67,7 @@ class CaseViewSet(viewsets.ViewSet):
         #log.info("Exiting")
 
     def update(self, request, pk = None):       
-        log.info("Entering")  
+        logger.info("Entering")  
         cid = pk
         try:
             cs = Case.objects.get(pk = cid)            
@@ -84,13 +86,14 @@ class CaseViewSet(viewsets.ViewSet):
         cs = self.lupdate(cs,json.loads(request.data))
         cs.save()
         #serialized = CaseSerializer(cs)
-        log.info("Exiting with OK")
+        logger.info("Exiting with OK")
         return JsonResponse({" message:":"OK"}, status=HTTPStatus.ACCEPTED)
         #return JsonResponse(serialized, status=HTTPStatus.ACCEPTED, safe=True)
         #log.info("Exiting")
         #return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
     def destroy(self, request, pk = None):
+        logger.info("Entering")
         cid = pk
         try:
             cs = Case.objects.get(pk=cid)
@@ -102,22 +105,23 @@ class CaseViewSet(viewsets.ViewSet):
         return JsonResponse({"message": "Case deleted"}, status=HTTPStatus.OK)
     
     def retrieve(self, request, pk = None):
-        log.info("Entering") 
+        logger.info("Entering") 
         cid = pk
         try:
             cs = Case.objects.get(pk=cid)
         except Case.DoesNotExist:
-            log.info("Exiting")
+            logger.info("Exiting")
             return JsonResponse({"message": "Case not found"}, status=HTTPStatus.NOT_FOUND)
         except ValidationError:
-            log.info("Exiting") 
+            logger.info("Exiting") 
             return JsonResponse({"message": "invalid input"}, status=HTTPStatus.BAD_REQUEST)
         serialized = CaseSerializer(cs)
-        log.info("Exiting with success")
+        logger.info("Exiting with success")
         return JsonResponse(serialized.data, status=200)
     
 class CaseHistoryViewSet(viewsets.ViewSet):
     def list(self,request):
+        logger.info("Entering")
         try:
             #uid = request
             ch = CaseHistory.objects.all()
@@ -129,7 +133,7 @@ class CaseHistoryViewSet(viewsets.ViewSet):
         return JsonResponse(serialized.data, safe=False) 
 
     def create(self, request):   
-        log.info("Entering")         
+        logger.info("Entering")         
         serializer = CaseHistorySerializer(data=json.loads(request.data))       
         if serializer.is_valid():           
             ch  = CaseHistory(**serializer.validated_data)
@@ -137,10 +141,11 @@ class CaseHistoryViewSet(viewsets.ViewSet):
             serialized = CaseHistorySerializer(ch)
             log.info("Returning with Success") 
             return JsonResponse(serialized.data, status = HTTPStatus.OK)
-        log.info("Returning with error") 
+        logger.info("Returning with error") 
         return JsonResponse({"message": "CaseHistory not saved"}, status=HTTPStatus.BAD_REQUEST)
     
     def update(self, request, pk = None): 
+        logger.info("Entering")
         chid = pk    
         try:
             ch = CaseHistory.objects.get(pk = chid)            
@@ -156,6 +161,7 @@ class CaseHistoryViewSet(viewsets.ViewSet):
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
     def partial_update(self, request, pk = None): 
+        logger.info("Entering")
         chid = pk    
         try:
             ch = CaseHistory.objects.get(pk = chid)            
@@ -171,6 +177,7 @@ class CaseHistoryViewSet(viewsets.ViewSet):
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
     def destroy(self, request, pk = None):
+        logger.info("Entering")
         chid = pk
         try:
             ch = CaseHistory.objects.get(pk=chid)
@@ -182,6 +189,7 @@ class CaseHistoryViewSet(viewsets.ViewSet):
         return JsonResponse({"message": "CaseHistory deleted"}, status=HTTPStatus.OK)
     
     def retrieve(self, request, pk = None):
+        logger.info("Entering")
         chid = pk
         try:
             ch = CaseHistory.objects.get(pk=chid)
@@ -194,6 +202,7 @@ class CaseHistoryViewSet(viewsets.ViewSet):
     
 class MediaViewSet(viewsets.ViewSet):
     def list(self,request):
+        logger.info("Entering")
         try:
             md = Media.objects.all()
         except Media.DoesNotExist:
@@ -204,6 +213,7 @@ class MediaViewSet(viewsets.ViewSet):
         return JsonResponse(serialized.data, safe=False) 
 
     def create(self, request):     
+        logger.info("Entering")
         log.info("Entering")
         serializer = MediaSerializer(data=json.loads(request.data))
         print(" Media : ",serializer.error_messages, " dd : ",serializer)
@@ -215,6 +225,7 @@ class MediaViewSet(viewsets.ViewSet):
         return JsonResponse({"message": "Media not saved"}, status=HTTPStatus.BAD_REQUEST)
     
     def update(self, request, pk = None):
+        logger.info("Entering")
         mid = pk     
         try:
             md = Media.objects.get(pk = mid)            
@@ -230,6 +241,7 @@ class MediaViewSet(viewsets.ViewSet):
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
     def destroy(self, request, pk = None):
+        logger.info("Entering")
         mid = pk
         try:
             md = Media.objects.get(pk=mid)
@@ -241,6 +253,7 @@ class MediaViewSet(viewsets.ViewSet):
         return JsonResponse({"message": "Media deleted"}, status=HTTPStatus.OK)
     
     def partial_destroy(self, request, pk = None):
+        logger.info("Entering")
         mid = pk
         try:
             md = Media.objects.get(pk=mid)
@@ -264,6 +277,7 @@ class MediaViewSet(viewsets.ViewSet):
     
 class LostVehicleViewSet(viewsets.ViewSet):
     def list(self,request):
+        logger.info("Entering")
         try:
             lv = LostVehicle.objects.all()
         except LostVehicle.DoesNotExist:
@@ -274,6 +288,7 @@ class LostVehicleViewSet(viewsets.ViewSet):
         return JsonResponse(serialized.data, safe=False) 
 
     def create(self, request): 
+        logger.info("Entering")
         log.info("Entering")       
         serializer = LostVehicleSerializer(data=json.loads(request.data))
         print(" Creating Vehicle :",serializer.error_messages, "\n Values ",serializer, "\n Received :",json.loads(request.data))
@@ -287,6 +302,7 @@ class LostVehicleViewSet(viewsets.ViewSet):
         return JsonResponse({"message": "Lost vehicle not saved"}, status=HTTPStatus.BAD_REQUEST)
     
     def update(self, request, pk = None):
+        logger.info("Entering")
         log.info(" Entering")
         caseId  = pk             
         try:
@@ -308,6 +324,7 @@ class LostVehicleViewSet(viewsets.ViewSet):
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
     def partial_update(self, request, pk = None):
+        logger.info("Entering")
         caseId  = pk             
         try:
             lv = LostVehicle.objects.get(pk = caseId)            
@@ -323,6 +340,7 @@ class LostVehicleViewSet(viewsets.ViewSet):
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
     
     def destroy(self, request, pk = None):
+        logger.info("Entering")
         caseId  = pk 
         try:
             lv = LostVehicle.objects.get(pk=caseId)
@@ -334,6 +352,7 @@ class LostVehicleViewSet(viewsets.ViewSet):
         return JsonResponse({"message": "LostVehicle deleted"}, status=HTTPStatus.OK)
     
     def retrieve(self, request, pk):
+        logger.info("Entering")
         #pk = caseId
         try:
             lv = LostVehicle.objects.get(caseId=pk)
@@ -346,6 +365,7 @@ class LostVehicleViewSet(viewsets.ViewSet):
 
 class CommentViewSet(viewsets.ViewSet):
     def list(self,request):
+        logger.info("Entering")
         try:
             lv = Comment.objects.all()
         except Comment.DoesNotExist:
@@ -356,7 +376,7 @@ class CommentViewSet(viewsets.ViewSet):
         return JsonResponse(serialized.data, safe=False) 
 
     def create(self, request): 
-        log.info("Entering")       
+        logger.info("Entering")       
         serializer = CommentSerializer(data=json.loads(request.data))
         print(" Creating Comment :",serializer.error_messages, "\n Values ",serializer, "\n Received :",json.loads(request.data))
         if serializer.is_valid():
@@ -369,7 +389,7 @@ class CommentViewSet(viewsets.ViewSet):
         return JsonResponse({"message": "Comment not saved"}, status=HTTPStatus.BAD_REQUEST)
     
     def update(self, request, pk = None):
-        log.info("Entering ")
+        logger.info("Entering ")
         caseId  = pk             
         try:
             lv = Comment.objects.get(pk = caseId) 
@@ -386,7 +406,7 @@ class CommentViewSet(viewsets.ViewSet):
             serialized = CommentSerializer(lv)
             log.info(" Exiting with success")
             return JsonResponse(serialized.data, status=HTTPStatus.ACCEPTED)
-        log.info(" Exiting with error")
+        logger.info(" Exiting with error")
         return JsonResponse(serializer.errors, status=HTTPStatus.BAD_REQUEST)
         
     def destroy(self, request, pk = None):
@@ -401,6 +421,7 @@ class CommentViewSet(viewsets.ViewSet):
         return JsonResponse({"message": "Comment deleted"}, status=HTTPStatus.OK)
     
     def retrieve(self, request, pk):
+        logger.info("Entering")
         #pk = caseId
         try:
             lv = Comment.objects.get(cmtid=pk)

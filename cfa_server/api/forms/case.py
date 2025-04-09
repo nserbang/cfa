@@ -153,7 +153,8 @@ class CaseForm(forms.ModelForm):
         if case.oid_id:
             send_sms(case.oid.mobile, desc)
         else:
-            officers = self.pid.policeofficer_set.filter(
+            #officers = self.pid.policeofficer_set.filter(
+            officers = case.pid.policeofficer_set.filter( # pid in self is null. get it from the case.pid
                 Q(report_on_this=True) | Q(rank="5")
             ).values("user_id", "user__mobile")
             for officer in officers:

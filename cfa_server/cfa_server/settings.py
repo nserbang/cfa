@@ -33,8 +33,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-0mfz%)780(7i=w)p8w^n$s7j#(u!bq$1zd(m!@19sa5$9wb^gw"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = ENVIRONMENT == "DEVELOPMENT"
-
+#DEBUG = ENVIRONMENT == "DEVELOPMENT"
+DEBUG = False
 ALLOWED_HOSTS = ["*"]
 TIME_ZONE = "Asia/Kolkata"
 
@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "rest_framework",
     "api",
-    # "rest_framework.authtoken",
+   ## "rest_framework.authtoken", ## enabline tis nabame
     "drf_spectacular",
     "django_filters",
     "debug_toolbar",
@@ -81,6 +81,7 @@ MIDDLEWARE = [
     "api.middleware.HSTSMiddleware",
     "api.middleware.RSAMiddleware",
     "api.middleware.CustomCSPMiddleware",
+   # "debug_toolbar.middlewar.DebugToolbarMiddleware",
 ]
 
 if DEBUG:
@@ -115,7 +116,7 @@ WSGI_APPLICATION = "cfa_server.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
+"""
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
@@ -124,6 +125,17 @@ DATABASES = {
         "PASSWORD": os.environ.get("DB_PASSWORD", ""),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", 5432),
+    }
+}
+"""
+DATABASES = {
+    "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": "cdb",
+        "USER": "cuser",
+        "PASSWORD": "password",
+        "HOST": "localhost",
+        "PORT": 5432,
     }
 }
 # STATIC_ROOT = 'portal/static/'
@@ -216,8 +228,9 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-
-""" LOGGING = {
+# start logg
+""" 
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
@@ -255,7 +268,8 @@ AUTHENTICATION_BACKENDS = [
     },
 }
 
- """
+"""
+# end log 
 """
 LOGGING = {
     'version': 1,
@@ -291,7 +305,37 @@ LOGGING = {
     },
 }
  """
-
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} : {asctime} : {module} : {filename}: {funcName} : {lineno} :  {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': './api.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'level': 'DEBUG',
+           # 'propagate': True,
+        },
+    },
+}
 INTERNAL_IPS = ["127.0.0.1"]
 
 
@@ -327,7 +371,7 @@ FCM_DJANGO_SETTINGS = {
 
 
 cred = credentials.Certificate(str(BASE_DIR) + "/credentials.json")
-firebase_admin.initialize_app(cred)
+firebase_admin.initialize_app(cred, {'projectId':'drug-b3460'})
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "CFA API",
@@ -356,13 +400,14 @@ ALLOWED_FILE_TYPES = (
 )
 
 CORS_ALLOWED_ORIGINS = [
-    "https://arpreport.merrygold.xyz",
-    "http://193.168.195.153:9001",
+    "https://apcrime.arunachal.gov.in",
+    "http://10.0.104.12:9005",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://arpreport.merrygold.xyz",
-    "http://193.168.195.153:9001",
+    "https://apcrime.arunachal.gov.in",
+#    "http://10.0.104.12:9005",
+    "http://localhost"
 ]
 
 
@@ -374,7 +419,7 @@ SESSION_COOKIE_SAMESITE = "Strict"  # or 'Lax'
 # SESSION_COOKIE_DOMAIN="printing.merrygold.xyz"
 
 SESSION_COOKIE_AGE = 1800
-SESSION_EXPIRE_SECONDS = 600  # 10 mins
+SESSION_EXPIRE_SECONDS = 1200  # 10 mins
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = 10  # 10 mins
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -382,7 +427,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 2
 AXES_RESET_ON_SUCCESS = True
-
+AXES_DISABLE_ACCESS_LOG = True # new added 
+AXES_NEVER_LOCKOUT_WHITELIST = True # new added 
 
 CSRF_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
 

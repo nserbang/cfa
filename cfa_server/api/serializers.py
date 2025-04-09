@@ -1,7 +1,8 @@
 import magic
 from django.utils import timezone
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
+#from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import MethodNotAllowed
 from django.db.models import Q
 from django.contrib.auth import get_user_model
@@ -273,9 +274,8 @@ class CaseSerializerCreate(serializers.ModelSerializer):
 
 class CaseUpdateSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
-    pid = serializers.PrimaryKeyRelatedField(
-        queryset=PoliceStation.objects.all(), required=False
-    )
+    #pid = serializers.PrimaryKeyRelatedField(
+        #queryset=PoliceStation.objects.all(), required=False)
     lat = serializers.CharField(max_length=10, required=False)
     long = serializers.CharField(max_length=10, required=False)
 
@@ -344,7 +344,8 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
                 Q(pid__did=instance.oid.pid.did, rank=9)
                 | Q(oid__in=instance.oid.policestation_supervisor.values("officer_id"))
             ).values("user_id", "user__mobile")
-            instance.send_notitication(message, [o["user_id"] for o in supervisors])
+            # commenting :serbang
+            #instance.send_notitication(message, [o["user_id"] for o in supervisors])
             for supervisor in supervisors:
                 send_sms(message, supervisor["user__mobile"])
 
@@ -554,12 +555,14 @@ class OTPVerificationSerializer(serializers.Serializer):
         user = self.validated_data["user"]
         user.is_verified = True
         user.save()
-        token, _ = Token.objects.get_or_create(user=user)
+        #token,_ = Token.objects.filter(user=user).first()
+        token = RefreshToken.for_user(user)
         return {
             "message": "Otp verification successful.",
             "user_id": user.id,
             "mobile": user.mobile,
-            "token": token.key,
+            "token": str(token.access_token),
+            "refresh":str(token),
         }
 
 

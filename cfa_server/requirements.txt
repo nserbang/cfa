@@ -18,7 +18,8 @@ MarkupSafe==2.1.3
 openapi-codec==1.3.2
 packaging==23.1
 pytz==2023.3
-PyYAML==6.0
+cython
+PyYAML==6.0.2
 requests==2.31.0
 simplejson==3.19.1
 sqlparse==0.4.4

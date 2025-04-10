@@ -3,81 +3,102 @@
 {% block title %}Add Complaints{% endblock title %}
 
 {% block content %}
-
-<div class='row'>
-    <div class="col-lg-3 col-md-3 col-sm-12">
-        {% include 'case/side_menu.html' %}
-    </div>
-    <div class="col-lg-9 col-md-9 col-sm-12 pb-2">
-        <h4 class="flex-fill">Report a new case</h4>
-        <form method="post" id="main-form" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <div class="row">
-                <p>Select a location:</p>
-                <div class="col-12">
-                    <div id="map" style="height: 250px; width: vw;" class="rounded mb-3"></div>
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3 col-md-3 col-sm-12">
+            {% include 'case/side_menu.html' %}
+        </div>
+        <div class="col-lg-9 col-md-9 col-sm-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Report a New Case</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="main-form" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="row mb-3">
+                            <p class="fw-bold">Select a location:</p>
+                            <p class="text-muted">Drag position marker to select the exact place of incident</p>
+                            <div class="col-12">
+                                <div id="map" style="height: 300px; width: 100%;" class="rounded border"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button id="case-submit" type="submit" class="btn btn-primary py-2 px-4">Submit</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <button id="case-submit" type="submit" class="btn btn-primary py-1">Submit</button>
-        </form>
+        </div>
     </div>
 </div>
 
 <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-        <div class="modal-header">
-            <h1 class="modal-title fs-5" id="confirmationModalLabel">Are you sure you want to submit?</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <div id="yes-no">
-                <button id="yes-botton" class="btn btn-primary">Yes</button>
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">No</button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div id="main-submit-show" class="d-none">
-                <div class="row pb-1">
-                    <div class="col-12 d-flex justify-content-center">
-                        <button id="nearest-station" type="button" class="btn btn-primary p1 m1 mb1">Submit to Nearest Police Station</button>
-                    </div>
+            <div class="modal-body">
+                <div id="yes-no" class="text-center">
+                    <p class="fw-bold">Are you sure you want to submit?</p>
+                    <button id="yes-botton" class="btn btn-primary me-2">Yes</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">No</button>
                 </div>
-                <div class="row">
-                    <div class="col-12 d-flex justify-content-center">
-                        <button id="selected-station" type="button" class="btn btn-primary">Submit to Selected Police Station</button>
+                <div id="main-submit-show" class="d-none">
+                    <div class="row pb-2">
+                        <div class="col-12 text-center">
+                            <button id="nearest-station" type="button" class="btn btn-outline-primary mb-2">Submit to Nearest Police Station</button>
+                        </div>
                     </div>
-                    <div id="choose-station" class="d-none">
-                        <div class="row pt-2">
-                            <div class="col-12 d-flex justify-content-center">
-                                <label for="police-station-select" class="form-label">Select Police Station: </label>
-                                <select class="form-contron" id="police-station-select" aria-label="Select Police Station">
-                                </select>
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <button id="selected-station" type="button" class="btn btn-outline-primary">Submit to Selected Police Station</button>
+                        </div>
+                        <div id="choose-station" class="d-none mt-3">
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <label for="police-station-select" class="form-label">Select Police Station:</label>
+                                    <select class="form-select" id="police-station-select" aria-label="Select Police Station"></select>
+                                </div>
+                            </div>
+                            <div class="col-12 text-center mt-3">
+                                <button id="finalSubmit" type="submit" class="btn btn-primary">Submit</button>
                             </div>
                         </div>
-                        <div class="col-12 d-flex justify-content-center pt-2">
-                            <button id="finalSubmit" type="submit" class="btn btn-primary">Submit</button>
-                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="modal-footer">
-        </div>
+            <div class="modal-footer">
+            </div>
         </div>
     </div>
 </div>
-
-
 {% endblock content %}
 
 {% block javascript %}
-
 <script>
-    (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
-      key: "AIzaSyDM7gudJWf-zdilGmh_cmcI4otu_cJh8Aw",
-      v: "weekly",
-      // Use the 'v' parameter to indicate the version to use (weekly, beta, alpha, etc.).
-      // Add other bootstrap parameters as needed, using camel case.
+    // Load the Google Maps API with your API key
+    (g => {
+        var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+        b = b[c] || (b[c] = {});
+        var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => {
+            await (a = m.createElement("script"));
+            e.set("libraries", [...r] + "");
+            for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
+            e.set("callback", c + ".maps." + q);
+            a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+            d[q] = f;
+            a.onerror = () => h = n(Error(p + " could not load."));
+            a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+            m.head.append(a);
+        }));
+        d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n))
+    })({
+        key: "AIzaSyDM7gudJWf-zdilGmh_cmcI4otu_cJh8Aw", // Your API key
+        v: "weekly",
     });
 </script>
 
@@ -86,12 +107,12 @@
     longitude = 79.0350;
 
     const successCallback = (position) => {
-        latitude = position.coords.latitude
-        longitude = position.coords.longitude
-        lat = document.getElementById('id_lat')
-        lat.value = latitude.toFixed(4)
-        long = document.getElementById('id_long')
-        long.value = longitude.toFixed(4)
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+        lat = document.getElementById('id_lat');
+        lat.value = latitude.toFixed(4);
+        long = document.getElementById('id_long');
+        long.value = longitude.toFixed(4);
     };
 
     const errorCallback = (error) => {
@@ -102,13 +123,23 @@
 
     let map;
     async function initMap() {
-    // Request needed libraries.
+        // Request needed libraries.
         const { Map, InfoWindow } = await google.maps.importLibrary("maps");
         const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+        const { Autocomplete } = await google.maps.importLibrary("places");
+
+        // Initialize the map in satellite mode
         map = new Map(document.getElementById("map"), {
             center: { lat: latitude, lng: longitude },
             zoom: 14,
             mapId: "4504f8b37365c3d0",
+            mapTypeId: "satellite", // Set default mode to satellite
+            styles: [
+                {
+                    featureType: "poi",
+                    stylers: [{ visibility: "on" }]
+                }
+            ]
         });
 
         const infoWindow = new InfoWindow();
@@ -118,44 +149,104 @@
             gmpDraggable: true,
             title: "Drag this marker to select location.",
         });
+
+        // Add a search box
+        const input = document.createElement("input");
+        input.id = "search-box";
+        input.type = "text";
+        input.placeholder = "Search for a place";
+        input.style = "margin-top: 10px; width: 100%; padding: 10px; font-size: 16px;";
+        document.getElementById("map").parentNode.insertBefore(input, document.getElementById("map"));
+
+        const searchBox = new Autocomplete(input);
+
+        // Bias the search box results towards the map's current viewport
+        map.addListener("bounds_changed", () => {
+            searchBox.setBounds(map.getBounds());
+        });
+
+        // Listen for the event when a user selects a place
+        searchBox.addListener("place_changed", () => {
+            const place = searchBox.getPlace();
+
+            if (!place.geometry || !place.geometry.location) {
+                return;
+            }
+
+            // Center the map on the selected location
+            map.setCenter(place.geometry.location);
+            map.setZoom(15); // Adjust zoom level
+
+            // Move the marker to the selected location
+            draggableMarker.position = place.geometry.location;
+            draggableMarker.map = map;
+
+            // Update latitude and longitude fields
+            const lat = document.getElementById('id_lat');
+            const long = document.getElementById('id_long');
+            lat.value = place.geometry.location.lat().toFixed(4);
+            long.value = place.geometry.location.lng().toFixed(4);
+
+            // Update the info window with the place name and coordinates
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: place.geometry.location }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    const placeName = results[0].formatted_address;
+                    infoWindow.close();
+                    infoWindow.setContent(`You selected: ${placeName} (${lat.value}, ${long.value})`);
+                    infoWindow.open(draggableMarker.map, draggableMarker);
+                } else {
+                    console.error("Geocoder failed due to: " + status);
+                    infoWindow.close();
+                    infoWindow.setContent(`You selected: (${lat.value}, ${long.value})`);
+                    infoWindow.open(draggableMarker.map, draggableMarker);
+                }
+            });
+        });
+
         map.addListener('click', function(e) {
             changeMarkerLocation(e.latLng, map);
         });
 
         function changeMarkerLocation(position, map) {
-            draggableMarker.position = position
-            draggableMarker.map = map
-            position = draggableMarker.position;
-            console.log(position);
-            console.log(draggableMarker);
-            latitude = position.h.toFixed(4)
-            longitude = position.i.toFixed(4)
-            lat = document.getElementById('id_lat')
-            lat.value = latitude
-            long = document.getElementById('id_long')
-            long.value = longitude
-            infoWindow.close();
-            infoWindow.setContent(
-                `You selected: ${position.h}, ${position.i}`,
-            );
-            infoWindow.open(draggableMarker.map, draggableMarker);
+            // Update the marker's position
+            draggableMarker.position = position;
+            draggableMarker.map = map;
+
+            // Extract latitude and longitude from the position object
+            latitude = position.lat().toFixed(4);
+            longitude = position.lng().toFixed(4);
+
+            // Update the latitude and longitude input fields
+            const lat = document.getElementById('id_lat');
+            const long = document.getElementById('id_long');
+            lat.value = latitude;
+            long.value = longitude;
+
+            // Use Geocoder to get the place name
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: { lat: parseFloat(latitude), lng: parseFloat(longitude) } }, (results, status) => {
+                if (status === "OK" && results[0]) {
+                    const placeName = results[0].formatted_address;
+
+                    // Update the info window with the place name and coordinates
+                    infoWindow.close();
+                    infoWindow.setContent(`You selected: ${placeName} (${latitude}, ${longitude})`);
+                    infoWindow.open(draggableMarker.map, draggableMarker);
+                } else {
+                    console.error("Geocoder failed due to: " + status);
+
+                    // Fallback to coordinates if place name is not available
+                    infoWindow.close();
+                    infoWindow.setContent(`You selected: (${latitude}, ${longitude})`);
+                    infoWindow.open(draggableMarker.map, draggableMarker);
+                }
+            });
         }
 
         draggableMarker.addListener("dragend", (event) => {
             const position = draggableMarker.position;
-            console.log(position);
-            console.log(draggableMarker);
-            latitude = position.h.toFixed(4)
-            longitude = position.i.toFixed(4)
-            lat = document.getElementById('id_lat')
-            lat.value = latitude
-            long = document.getElementById('id_long')
-            long.value = longitude
-            infoWindow.close();
-            infoWindow.setContent(
-                `You selected: ${position.h}, ${position.i}`,
-            );
-            infoWindow.open(draggableMarker.map, draggableMarker);
+            changeMarkerLocation(position, map);
         });
     }
     initMap();
@@ -163,6 +254,22 @@
     const submitButton = document.getElementById('case-submit');
     submitButton.addEventListener('click', function (el){
         el.preventDefault();
+
+        // Validate Drug Issue Type if Type is Drug
+        const type = document.getElementById('id_type').value;
+        const drugIssueType = document.getElementById('id_drug_issue_type').value;
+        const description = document.getElementById('id_description').value.trim();
+
+        if (type === 'drug' && drugIssueType === '') {
+            alert('Select Drug Issue Type');
+            return; // Prevent form submission
+        }
+
+        if (description === '') {
+            alert('Please add the details of your complaint in the description field.');
+            return; // Prevent form submission
+        }
+
         const myModal = new bootstrap.Modal('#confirmationModal', {
             keyboard: false
         })
@@ -257,18 +364,32 @@
             "color",
         ]
 
+        // Define labels for vehicle fields
+        const vehicleLabels = {
+            "vehicle_lost_type": "Vehicle Lost Type",
+            "regNumber": "Registration Number",
+            "chasisNumber": "Chassis Number",
+            "engineNumber": "Engine Number",
+            "make": "Make",
+            "model": "Model",
+            "color": "Color",
+        };
+
         if (type.value === 'vehicle') {
             for (field of vehicleFields) {
-                console.log('div_id_' + field)
-                var container = document.getElementById('div_id_' + field)
-                console.log(container)
-                container.style.display = 'block'
+                var container = document.getElementById('div_id_' + field);
+                container.style.display = 'block';
+
+                // Update label text
+                var label = container.querySelector('label');
+                if (label && vehicleLabels[field]) {
+                    label.textContent = vehicleLabels[field];
+                }
             }
         } else {
             for (field of vehicleFields) {
-                var container = document.getElementById('div_id_' + field)
-                console.log(container)
-                container.style.display = 'none'
+                var container = document.getElementById('div_id_' + field);
+                container.style.display = 'none';
             }
         }
     }
@@ -279,6 +400,12 @@
         showHideVehicleFields()
     })
 
+    // Prevent form submission on Enter key press
+    document.getElementById('main-form').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+        }
+    });
 </script>
 {% endblock javascript %}
 

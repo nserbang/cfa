@@ -15,6 +15,9 @@ from api.models import (
     PoliceOfficer,
 )
 from api.otp import send_sms
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -79,38 +82,58 @@ class CaseForm(forms.ModelForm):
     ]
 
     def clean(self):
+        logger.info("Entering CaseForm.clean")
         cd = super().clean()
         case_type = cd["type"]
+        logger.debug(f"Validating case type: {case_type}")
+
         if case_type == "drug" and not cd.get("drug_issue_type"):
+            logger.warning("Drug case missing drug_issue_type")
             self.add_error("drug_issue_type", "This field is required")
 
         if case_type == "vehicle":
+            logger.debug("Validating vehicle fields")
             for field in self.vehicle_fields:
                 if not cd.get(field):
+                    logger.warning(f"Vehicle case missing required field: {field}")
                     self.add_error(field, "This field is required")
 
         files = cd.get("documents")
-        for f in files:
-            mime_type = magic.from_buffer(f.read(1024), mime=True)
-            if mime_type not in settings.ALLOWED_DOC_TYPES:
-                self.add_error("documents", f"You can't upload this file: {f.name}.")
-                return
-            f.seek(0)
+        if files:
+            logger.info(f"Validating {len(files)} documents")
+            for f in files:
+                mime_type = magic.from_buffer(f.read(1024), mime=True)
+                logger.debug(f"Checking file {f.name}, MIME type: {mime_type}")
+                if mime_type not in settings.ALLOWED_DOC_TYPES:
+                    logger.warning(f"Invalid file type: {mime_type} for file {f.name}")
+                    self.add_error("documents", f"You can't upload this file: {f.name}.")
+                    return
+                f.seek(0)
+        
+        logger.info("Exiting CaseForm.clean")
         return cd
 
     def __init__(self, *args, **kwargs):
+        logger.info("Entering CaseForm.__init__")
         self.user = kwargs.pop("user")
+        logger.debug(f"Initializing form for user: {self.user}")
         super().__init__(*args, **kwargs)
         self.fields["lat"].widget = forms.widgets.HiddenInput()
         self.fields["long"].widget = forms.widgets.HiddenInput()
         self.fields["pid"].widget = forms.widgets.HiddenInput()
         self.fields["pid"].required = False
+        logger.info("Exiting CaseForm.__init__")
 
     def save(self, commit=False):
+        logger.info("Entering CaseForm.save")
         case = super().save(commit=False)
+        
         geo_location = fromstr(f"POINT({case.long} {case.lat})", srid=4326)
+        logger.debug(f"Created geo location point: ({case.long}, {case.lat})")
+
         if self.cleaned_data["pid"]:
             police_station = self.cleaned_data["pid"]
+            logger.info(f"Using provided police station: {police_station}")
         else:
             user_distance = Distance("geo_location", geo_location)
             police_station = (
@@ -118,15 +141,20 @@ class CaseForm(forms.ModelForm):
                 .order_by("radius")
                 .first()
             )
+            logger.info(f"Found nearest police station: {police_station}")
+
         case.pid = police_station
         case.geo_location = geo_location
         officier = police_station.policeofficer_set.order_by("-rank").first()
         case.oid = officier
         case.user = self.user
         case.save()
+        logger.info(f"Saved case with ID: {case.cid}")
+
         if case.type == "vehicle":
+            logger.info("Processing vehicle case details")
             lost_vehicle_type = self.cleaned_data.pop("vehicle_lost_type", "")
-            LostVehicle.objects.create(
+            vehicle = LostVehicle.objects.create(
                 caseId=case,
                 type=lost_vehicle_type,
                 **{
@@ -135,31 +163,39 @@ class CaseForm(forms.ModelForm):
                     if self.cleaned_data.get(f)
                 },
             )
-        files = self.cleaned_data.get("documents")
-        medias = []
-        for f in files:
-            medias.append(Media(path=f, mtype="document"))
-        medias = Media.objects.bulk_create(medias)
-        case.medias.add(*medias)
+            logger.info(f"Created lost vehicle record: {vehicle.id}")
 
-        CaseHistory.objects.create(
+        files = self.cleaned_data.get("documents")
+        if files:
+            logger.info(f"Processing {len(files)} documents")
+            medias = []
+            for f in files:
+                medias.append(Media(path=f, mtype="document"))
+            medias = Media.objects.bulk_create(medias)
+            case.medias.add(*medias)
+            logger.debug(f"Added {len(medias)} media files to case")
+
+        history = CaseHistory.objects.create(
             case=case,
             user=case.user,
             cstate=case.cstate,
             description="Case created.",
         )
+        logger.info(f"Created case history entry: {history.id}")
 
         desc = f"New case no.{case.cid} of type {case.type} reported at {case.pid}."
         if case.oid_id:
+            logger.info(f"Sending SMS to officer: {case.oid.mobile}")
             send_sms(case.oid.mobile, desc)
         else:
-            #officers = self.pid.policeofficer_set.filter(
-            officers = case.pid.policeofficer_set.filter( # pid in self is null. get it from the case.pid
+            officers = case.pid.policeofficer_set.filter(
                 Q(report_on_this=True) | Q(rank="5")
             ).values("user_id", "user__mobile")
+            logger.info(f"Sending SMS to {len(officers)} officers")
             for officer in officers:
                 send_sms(officer["user__mobile"], desc)
 
+        logger.info("Exiting CaseForm.save")
         return case
 
 

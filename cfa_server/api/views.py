@@ -1,4 +1,5 @@
 import base64
+import logging
 
 from openpyxl import Workbook
 from weasyprint import HTML
@@ -84,42 +85,68 @@ from .models import Emergency, EmergencyType
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
 
+logger = logging.getLogger(__name__)
+
 def emergency(request):
+    logger.info("Entering emergency view")
+    
     # Get user's latitude and longitude from the request
     user_lat = request.GET.get('lat')
     user_long = request.GET.get('long')
     selected_emergency_type = request.GET.get('emergency_type')
+    
+    logger.debug(f"Request parameters - lat: {user_lat}, long: {user_long}, type: {selected_emergency_type}")
 
-    emergencies = Emergency.objects.all()
+    try:
+        emergencies = Emergency.objects.all()
+        logger.info("Retrieved all emergencies")
 
-    if user_lat and user_long:
-        # Convert latitude and longitude to a Point object
-        user_location = Point(float(user_long), float(user_lat), srid=4326)
+        if user_lat and user_long:
+            try:
+                # Convert latitude and longitude to a Point object
+                user_location = Point(float(user_long), float(user_lat), srid=4326)
+                logger.info(f"Created Point object at ({user_lat}, {user_long})")
 
-        # Annotate emergencies with distance and order by distance
-        emergencies = emergencies.annotate(
-            distance=Distance('geo_location', user_location)
-        ).order_by('distance')
+                # Annotate emergencies with distance and order by distance
+                emergencies = emergencies.annotate(
+                    distance=Distance('geo_location', user_location)
+                ).order_by('distance')
+                logger.info("Annotated emergencies with distances")
+            except (ValueError, TypeError) as e:
+                logger.error(f"Error processing coordinates: {str(e)}")
+                raise ValidationError("Invalid coordinates provided")
 
-    # Filter by emergency type if selected
-    if selected_emergency_type:
-        emergencies = emergencies.filter(tid_id=selected_emergency_type)
+        # Filter by emergency type if selected
+        if selected_emergency_type:
+            emergencies = emergencies.filter(tid_id=selected_emergency_type)
+            logger.info(f"Filtered emergencies by type: {selected_emergency_type}")
 
-    # Get all emergency types for the dropdown
-    emergency_types = EmergencyType.objects.all()
+        # Get all emergency types for the dropdown
+        emergency_types = EmergencyType.objects.all()
+        logger.info(f"Retrieved {emergency_types.count()} emergency types")
 
-    # Check if it's an AJAX request
-    if request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        return render(request, 'emergency_list.html', {
-            'items': emergencies,
-        })
-    else:
-        # Pass the data to the template
-        return render(request, 'emergency.html', {
-            'items': emergencies,
-            'emergency_types': emergency_types,
-            'selected_emergency_type': selected_emergency_type,
-        })
+        # Check if it's an AJAX request
+        is_ajax = request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+        logger.debug(f"Is AJAX request: {is_ajax}")
+
+        if is_ajax:
+            logger.info("Rendering emergency list template for AJAX request")
+            return render(request, 'emergency_list.html', {
+                'items': emergencies,
+            })
+        else:
+            logger.info("Rendering full emergency template")
+            return render(request, 'emergency.html', {
+                'items': emergencies,
+                'emergency_types': emergency_types,
+                'selected_emergency_type': selected_emergency_type,
+            })
+
+    except Exception as e:
+        logger.exception(f"Unexpected error in emergency view: {str(e)}")
+        raise
+    finally:
+        logger.info("Exiting emergency view")
 
 
 def logout_view(request):

@@ -12,7 +12,9 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from api.models import Case, CaseHistory, LostVehicle, Comment, Media, Like
 from django.db.models import Q
 from api.viewset.permission import IsPoliceOfficer
+import logging
 
+logger = logging.getLogger(__name__)
 
 from api.serializers import (
     CaseSerializer,
@@ -37,11 +39,16 @@ class CaseViewSet(UserMixin, ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
+        logger.info("Entering get_queryset")
+        
         search = self.request.query_params.get("search", None)
         my_case = self.request.query_params.get("my_case", None)
         lat = self.request.query_params.get("lat")
         long = self.request.query_params.get("long")
         user = self.request.user
+        
+        logger.debug(f"Query params - search: {search}, my_case: {my_case}, lat: {lat}, long: {long}")
+        logger.info(f"User: {user.mobile}, is_authenticated: {user.is_authenticated}")
 
         data = (
             Case.objects.all()
@@ -52,20 +59,19 @@ class CaseViewSet(UserMixin, ModelViewSet):
             .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
             .prefetch_related("medias")
         ).order_by("-created")
-        # if lat and long:
-        #     geo_location = fromstr(f"POINT({long} {lat})", srid=4326)
-        #     user_distance = Distance("geo_location", geo_location)
-        #     data = data.annotate(radius=user_distance).order_by(
-        #         "radius", Coalesce("created", "updated").desc()
-        #     )
+        
+        logger.debug("Base queryset created with annotations and related fields")
+
         if user.is_authenticated:
             liked = Like.objects.filter(case_id=OuterRef("cid"), user=self.request.user)
-            data = data.annotate(
-                liked=Exists(liked),
-            )
+            data = data.annotate(liked=Exists(liked))
+            logger.debug("Added liked annotation for authenticated user")
+
             if user.is_police:
                 officer = user.policeofficer_set.first()
                 rank = int(officer.rank)
+                logger.info(f"Police officer rank: {rank}")
+
                 data = data.annotate(
                     can_act=MCase(
                         When(
@@ -77,72 +83,101 @@ class CaseViewSet(UserMixin, ModelViewSet):
                     )
                 )
                 if rank > 9:
-                    pass
+                    logger.debug("Officer rank > 9, no additional filters")
                 elif rank == 9:
                     data.filter(pid__did_id=officer.pid.did_id)
+                    logger.debug(f"Filtered by district ID: {officer.pid.did_id}")
                 elif rank == 6:
                     data = data.filter(
                         pid_id__in=officer.policestation_supervisor.values("station")
                     )
+                    logger.debug(f"Filtered by police station supervisor values")
                 elif rank == 5:
                     data = data.filter(pid_id=officer.pid_id)
+                    logger.debug(f"Filtered by police station ID: {officer.pid_id}")
                 elif rank == 4:
                     data = data.filter(oid=officer).exclude(cstate="pending")
+                    logger.debug(f"Filtered by officer ID: {officer.id}")
                 else:
                     data = data.filter(Q(user=user) | Q(type="vehicle"))
+                    logger.debug("Applied regular user filters")
+
             elif user.is_user:
                 data = data.filter(Q(user=user) | Q(type="vehicle"))
+                logger.debug("Applied regular user filters")
+
         if search:
+            logger.info(f"Applying search filter: {search}")
             data = data.filter(
                 Q(title__contains=search)
                 | Q(cid__contains=search)
                 | Q(description__contains=search)
             )
-        # if my_case is not None and my_case.lower() == "true":
-        #     request_user_id = self.request.user.id
-        #     data = data.filter(Q(user=request_user_id) | Q(oid__user=request_user_id))
+
+        logger.info("Exiting get_queryset")
         return data
 
     def list(self, request, *args, **kwargs):
+        logger.info("Entering list")
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
         if page is not None:
+            logger.debug(f"Paginating results, page size: {len(page)}")
             self.add_distances(page)
             serializer = self.get_serializer(page, many=True)
+            logger.info("Exiting list with paginated response")
             return self.get_paginated_response(serializer.data)
 
+        logger.debug("No pagination, processing full queryset")
         self.add_distances(queryset)
         serializer = self.get_serializer(queryset, many=True)
+        logger.info("Exiting list with full response")
         return Response(serializer.data)
 
     def add_distances(self, data):
+        logger.info("Entering add_distances")
         lat = self.request.query_params.get("lat")
         lng = self.request.query_params.get("long")
+        
         if lat and lng:
+            logger.debug(f"Calculating distances from coordinates: {lat}, {lng}")
             origin_str = f"{lat},{lng}"
             destinations = []
+            
             for item in data:
                 if loc := item.geo_location:
                     destinations.append(f"{loc.coords[1]},{loc.coords[0]}")
+            
+            logger.debug(f"Processing {len(destinations)} destinations")
             destinations_str = "|".join(destinations)
+            
             url = "https://maps.googleapis.com/maps/api/distancematrix/json?"
-
             params = {
                 "origins": origin_str,
                 "destinations": destinations_str,
                 "key": settings.GOOGLE_MAP_API_KEY,
             }
-            response = requests.get(url, params=params)
-            if response.ok:
-                distances = response.json()
-                for i, item in enumerate(data):
-                    try:
-                        item.distance = distances["rows"][0]["elements"][i]["distance"][
-                            "text"
-                        ]
-                    except (KeyError, ValueError):
-                        item.distance = "Not available"
+            
+            try:
+                response = requests.get(url, params=params)
+                if response.ok:
+                    distances = response.json()
+                    logger.info("Successfully retrieved distances from Google API")
+                    
+                    for i, item in enumerate(data):
+                        try:
+                            item.distance = distances["rows"][0]["elements"][i]["distance"]["text"]
+                            logger.debug(f"Set distance for item {item.cid}: {item.distance}")
+                        except (KeyError, ValueError) as e:
+                            logger.warning(f"Could not set distance for item {item.cid}: {str(e)}")
+                            item.distance = "Not available"
+                else:
+                    logger.error(f"Google API request failed: {response.status_code}")
+            except Exception as e:
+                logger.error(f"Error calculating distances: {str(e)}")
+        
+        logger.info("Exiting add_distances")
 
 
 class CaseHistoryViewSet(UserMixin, ReadOnlyModelViewSet):

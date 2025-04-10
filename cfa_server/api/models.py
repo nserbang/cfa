@@ -27,28 +27,37 @@ from django.core.validators import RegexValidator
 # Initialize logger
 logger = logging.getLogger(__name__)
 def mobile_validator(value):
+    logger.info("Entering mobile_validator")
     pattern = re.compile(r"^[6-9]\d{9}$")
     message = "Enter a valid mobile number."
+    
+    logger.info(f"Validating mobile number: {value}")
     if value == "9999999999":
+        logger.warning("Invalid mobile number: 9999999999 is not allowed")
         raise ValidationError(message)
     if not pattern.match(value):
+        logger.warning(f"Invalid mobile number pattern: {value}")
         raise ValidationError(message)
+    
+    logger.info("Exiting mobile_validator - validation successful")
+    return
 
 MobileValidator = mobile_validator
-#mobile_vaidator = RegexValidator (
-#        regex = r'^\d{10}',
-#        message = "Phone number must contain 10 digits")
-
-#class MobileValidator(RegexValidator):
-#    def __init__(self):
-#        super().__init__(regex = r'^\d{10}$', message = "Phone number must be 10 digits only")
 
 def file_type_validator(f):
+    logger.info("Entering file_type_validator")
+    logger.info(f"Validating file: {f.name}")
+    
     f.seek(0)
     mime_type = magic.from_buffer(f.read(), mime=True)
+    logger.info(f"Detected MIME type: {mime_type}")
+    
     if mime_type not in settings.ALLOWED_FILE_TYPES:
+        logger.warning(f"Invalid file type: {mime_type} for file {f.name}")
         raise ValidationError(f"You can't upload this file: {f.name}.")
     f.seek(0)
+    
+    logger.info("Exiting file_type_validator - validation successful")
     return
 
 class District(models.Model):
@@ -56,6 +65,9 @@ class District(models.Model):
     name = models.CharField(max_length=20)
 
     def __str__(self):
+        logger.info("Entering District.__str__")
+        logger.info(f"District name: {self.name}")
+        logger.info("Exiting District.__str__")
         return self.name
 
 class cUser(AbstractUser):
@@ -109,9 +121,9 @@ class PoliceStation(models.Model):
         try:
             self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
             super().save(**kwargs)
-            logger.debug(f"Saved police station {self.pid} at location {self.lat}, {self.long}")
+            logger.info(f"Saved police station {self.pid} at location {self.lat}, {self.long}")
         except Exception as e:
-            logger.error(f"Error saving police station {self.pid}: {str(e)}", exc_info=True)
+            logger.critical(f"Failed to save police station - ID: {self.pid}, Error: {str(e)}")
             raise
 
 class PoliceStationContact(models.Model):
@@ -221,6 +233,8 @@ class Case(models.Model):
     def add_history_and_media(self, description, medias, user, cstate=None, **kwargs):
         try:
             cstate = cstate or self.cstate
+            logger.info(f"Adding history for case {self.cid} with state {cstate}")
+            
             history = CaseHistory.objects.create(
                 case=self,
                 user=self.user,
@@ -233,13 +247,13 @@ class Case(models.Model):
             if medias:
                 for media in medias:
                     if detect_malicious_patterns_in_media(media.path.path):
-                        logger.warning(f"Malicious media detected in case {self.cid}")
+                        logger.critical(f"SECURITY ALERT: Malicious media detected in case {self.cid}, file: {media.path.path}")
                         raise ValidationError("Malicious media file detected.")
                 history.medias.add(*medias)
                 logger.info(f"Added {len(medias)} media files to case history {history.id}")
                 
         except Exception as e:
-            logger.error(f"Error adding history to case {self.cid}: {str(e)}", exc_info=True)
+            logger.critical(f"Failed to add history to case {self.cid}: {str(e)}")
             raise
 
     def save(self, *args, **kwargs):
@@ -281,8 +295,7 @@ class Case(models.Model):
             raise
 
     def _send_case_notifications(self):
-        logger.info(f"entering ");
-        """Handle all notification logic for new cases"""
+        logger.info(f"Beginning notification process for case {self.cid}")
         desc = f"New case no.{self.cid} of type {self.type} reported at {self.pid}."
         data = {
             "case_id": str(self.cid),
@@ -292,6 +305,7 @@ class Case(models.Model):
             "created": str(self.created),
             "click_action": "FLUTTER_NOTIFICATION_CLICK"
         }
+        logger.debug(f"Notification data prepared: {data}")
 
         if self.oid_id:
             self._notify_assigned_officer(desc, data)
@@ -299,39 +313,36 @@ class Case(models.Model):
             self._notify_station_officers(desc, data)
 
     def _notify_assigned_officer(self, desc, data):
-        logger.info(f"Notify the officer assigned to this case")
+        logger.info(f"Notifying assigned officer for case {self.cid}")
         try:
             devices = FCMDevice.objects.filter(user_id=self.oid.user_id)
             registration_tokens = list(devices.values_list('registration_id', flat=True))
-            logger.info(f" User id = {self.oid.user_id}, registration token : {registration_tokens}") 
+            
             if not registration_tokens:
-                logger.info(f" No devices registered for user")
+                logger.warning(f"No FCM devices found for officer {self.oid.user_id}")
                 return
-            #message = messaging.MulticastMessage(notification = messaging.Notification(title = f"New Case : {self.type}", body = desc), data = data, tokens = registration_tokens)
-            #try:
-                """
-                response = messaging.send_multicast(message)
-                logger.info(" Success : {response.success_count}, Failure : {response.failure_count}")
-            except InvalidArgumentError as e:
-                logger.info(f" Invalid tokens detected : {str(e)}")
-            try:"""
-                #for i, token in enumerate(registration_tokens):
-                  #  if not responses[i].success:
-                        #logger.error (f" Failed to send token {token} : {response.responses[i].exception}")
-           ## except Exception as batch_error:
-             ##   logger.warning(f" Batch send failed, trying individual sends : {str(batch_error)}")
+
             for token in registration_tokens:
                 try:
-                    messaging.send(messaging.Message(notification = messaging.Notification( title = f"New Case : {self.type}", body = desc), data = data, token= token))
+                    messaging.send(messaging.Message(
+                        notification=messaging.Notification(
+                            title=f"New Case : {self.type}",
+                            body=desc
+                        ),
+                        data=data,
+                        token=token
+                    ))
+                    logger.info(f"Successfully sent notification to token {token[:10]}...")
                 except Exception as e:
-                    logger.error(f" Failed to send to token {token} : {str(e)}")
+                    logger.error(f"Failed to send to token {token[:10]}...: {str(e)}")
             
             if self.oid.mobile:
                 send_sms(self.oid.mobile, desc)
                 logger.info(f"SMS sent to officer {self.oid.mobile}")
                 
         except Exception as e:
-            logger.error(f"Error notifying officer {self.oid_id}: {str(e)}", exc_info=True)
+            logger.critical(f"Critical failure in officer notification system: {str(e)}")
+            raise
 
     def _notify_station_officers(self, desc, data):
         logger.info(f"Notify relevant officers at the police station")
@@ -480,6 +491,9 @@ class EmergencyType(models.Model):
     service_type = models.CharField(max_length=30, blank=False)
 
     def __str__(self):
+        logger.info("Entering EmergencyType.__str__")
+        logger.info(f"Service type: {self.service_type}")
+        logger.info("Exiting EmergencyType.__str__")
         return self.service_type
 
 class Emergency(models.Model):
@@ -492,15 +506,28 @@ class Emergency(models.Model):
     long = models.DecimalField(max_digits=9, decimal_places=6, null=False, blank=False)  # Mandatory
 
     def save(self, *args, **kwargs):
-        # Truncate lat and long to 9 characters including the decimal point
+        logger.info("Entering Emergency.save")
+        logger.info(f"Saving Emergency - Name: {self.name}, Lat: {self.lat}, Long: {self.long}")
+        
         if self.lat is not None:
+            original_lat = self.lat
             self.lat = float(str(self.lat)[:9])
+            logger.info(f"Truncated latitude from {original_lat} to {self.lat}")
+            
         if self.long is not None:
+            original_long = self.long
             self.long = float(str(self.long)[:9])
+            logger.info(f"Truncated longitude from {original_long} to {self.long}")
+            
         super().save(*args, **kwargs)
+        logger.info("Exiting Emergency.save")
 
     def __str__(self):
-        return f"{self.name} - {self.tid.service_type if self.tid else 'No Type'}"
+        logger.info("Entering Emergency.__str__")
+        result = f"{self.name} - {self.tid.service_type if self.tid else 'No Type'}"
+        logger.info(f"Emergency string representation: {result}")
+        logger.info("Exiting Emergency.__str__")
+        return result
 
 class Information(models.Model):
     inid = models.BigAutoField(primary_key=True)
@@ -595,18 +622,19 @@ class UserOTPBaseKey(models.Model):
     @classmethod
     def generate_otp(cls, user, digits=6) -> int:
         try:
-            # Check if OTP generation count should be reset
             if cls.should_reset_otp_generation_count(user):
+                logger.info(f"Resetting OTP count for user {user.mobile}")
                 cls.objects.filter(user=user).update(
-                    otp_generation_count=0, 
+                    otp_generation_count=0,
                     last_otp_generation_time=timezone.now()
                 )
-                logger.debug(f"Reset OTP count for user {user.mobile}")
 
-            # Check if OTP generation is allowed
             if not cls.is_otp_generation_allowed(user):
-                logger.warning(f"OTP generation limit reached for user {user.mobile}")
-                raise Exception("Too many attempts")
+                logger.critical(f"SECURITY ALERT: Excessive OTP attempts for user {user.mobile}")
+                raise Exception("Too many OTP generation attempts")
+
+            current_count = getattr(user.user_otp, 'otp_generation_count', 0)
+            logger.info(f"OTP generation attempt {current_count + 1}/5 for user {user.mobile}")
 
             secret_key = random_base32()
             user_otp_key, created = cls.objects.update_or_create(
@@ -620,20 +648,18 @@ class UserOTPBaseKey(models.Model):
             if not created:
                 user_otp_key.otp_generation_count = models.F("otp_generation_count") + 1
                 user_otp_key.save()
-                logger.debug(f"Incremented OTP count for user {user.mobile}")
 
             otp = TOTP(
-                secret_key, 
-                interval=settings.OTP_VALIDITY_TIME, 
+                secret_key,
+                interval=settings.OTP_VALIDITY_TIME,
                 digits=digits
             ).now()
             
-            logger.info(f"Generated OTP for user {user.mobile}")
+            logger.info(f"OTP generated successfully for user {user.mobile}")
             return otp
 
         except Exception as e:
-            logger.error(f"Error generating OTP for user {getattr(user, 'mobile', 'unknown')}: {str(e)}", 
-                       exc_info=True)
+            logger.critical(f"OTP generation failed for user {getattr(user, 'mobile', 'unknown')}: {str(e)}")
             raise
 
     @classmethod

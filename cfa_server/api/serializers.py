@@ -27,6 +27,8 @@ from api.npr import detectVehicleNumber
 from api.otp import send_sms
 from api.mixins import PasswordDecriptionMixin
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+import logging
+logger = logging.getLogger(__name__)
 
 
 class CustomTokenObtainSerializer(PasswordDecriptionMixin, TokenObtainPairSerializer):
@@ -79,10 +81,17 @@ class PoliceStationSerializer(serializers.Serializer):
     contacts = PoliceStationContactSerializer(many=True, read_only=True)
 
     def to_representation(self, instance):
+        logger.info("Entering to_representation")
+        logger.debug(f"Converting police station instance: {instance.pid}")
+        
         data = super().to_representation(instance)
         data["district"] = data.pop("did")
+        
+        logger.debug(f"Transformed data: {data}")
+        logger.info("Exiting to_representation")
         return data
 
+    # Preserve commented code
     # def get_contact(self, police_station):
     #     contacts = police_station.contacts.all()
     #     serializers = PoliceStationContactSerializer(contacts, many=True)
@@ -99,9 +108,15 @@ class PoliceOfficerSerializer(serializers.Serializer):
     mobile = serializers.CharField(read_only=True)
 
     def to_representation(self, instance):
+        logger.info("Entering to_representation")
+        logger.debug(f"Converting police officer instance: {instance.oid}")
+        
         data = super().to_representation(instance)
         data["user"] = cUserSerializer(instance.user).data
         data["pid"] = PoliceStationSerializer(instance.pid).data
+        
+        logger.debug(f"Transformed data: {data}")
+        logger.info("Exiting to_representation")
         return data
 
 
@@ -116,10 +131,18 @@ class MediaSerializer(serializers.ModelSerializer):
         ]
 
     def validate_path(self, data):
+        logger.info("Entering validate_path")
+        logger.debug(f"Validating media path: {data.name}")
+        
         mime_type = magic.from_buffer(data.read(1024), mime=True)
+        logger.info(f"Detected MIME type: {mime_type}")
+        
         if mime_type not in settings.ALLOWED_FILE_TYPES:
+            logger.warning(f"Invalid file type detected: {mime_type}")
             raise serializers.ValidationError("Invalid file.")
+            
         data.seek(0)
+        logger.info("Exiting validate_path")
         return data
 
 
@@ -198,10 +221,20 @@ class CaseSerializer(serializers.ModelSerializer):
         ]
 
     def get_case_type(self, case):
-        return dict(Case.cType)[case.type]
+        logger.info("Entering get_case_type")
+        logger.debug(f"Getting case type for case: {case.cid}")
+        result = dict(Case.cType)[case.type]
+        logger.info(f"Case type: {result}")
+        logger.info("Exiting get_case_type")
+        return result
 
     def get_case_state(self, case):
-        return dict(Case.cState)[case.cstate]
+        logger.info("Entering get_case_state")
+        logger.debug(f"Getting case state for case: {case.cid}")
+        result = dict(Case.cState)[case.cstate]
+        logger.info(f"Case state: {result}")
+        logger.info("Exiting get_case_state")
+        return result
 
     # def get_comment_count(self, case):
     #     return case.comment_set.count()
@@ -241,6 +274,9 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        logger.info("Entering create")
+        logger.debug(f"Creating case with data: {validated_data}")
+        
         request = self.context["request"]
         case = Case(
             type=validated_data["type"],
@@ -249,26 +285,35 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             description=validated_data["description"],
             follow=validated_data["follow"],
         )
-        from django.contrib.gis.db.models.functions import Distance
-
+        
         geo_location = fromstr(f"POINT({case.long} {case.lat})", srid=4326)
         user_distance = Distance("geo_location", geo_location)
+        
         if validated_data.get("pid"):
+            logger.info("Using provided police station")
             police_station = validated_data["pid"]
         else:
+            logger.info("Finding nearest police station")
             police_station = (
                 PoliceStation.objects.annotate(radius=user_distance)
                 .order_by("radius")
                 .first()
             )
+            logger.debug(f"Selected police station: {police_station.pid}")
+        
         case.pid = police_station
         case.geo_location = geo_location
         officier = police_station.policeofficer_set.order_by("-rank").first()
         case.oid = officier
         case.user = request.user
         case.save()
+        
         if validated_data.get("medias"):
+            logger.info(f"Adding {len(validated_data['medias'])} media items")
             case.medias.add(*validated_data["medias"])
+        
+        logger.info(f"Created case {case.cid}")
+        logger.info("Exiting create")
         return case
 
 

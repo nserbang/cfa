@@ -331,11 +331,36 @@ class EmergencyAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Remove placeholder for the name field
         self.fields["name"].widget.attrs.pop("placeholder", None)
+        # Make Name field mandatory
+        self.fields["name"].required = True
+        # Change label of tid to Type
+        self.fields["tid"].label = "Type"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        lat = cleaned_data.get("lat")
+        long = cleaned_data.get("long")
+
+        # Ensure lat and long are no more than 9 digits
+        if lat is not None and len(str(lat).replace('.', '').replace('-', '')) > 8:
+            lat = float(str(lat)[:9])
+        if long is not None and len(str(long).replace('.', '').replace('-', '')) > 8:
+            long = float(str(long)[:9])
+
+        # Ensure lat and long are mandatory
+        if lat is None or long is None:
+            raise forms.ValidationError("Latitude and Longitude are required.")
+
+        # Truncate lat and long to 6 decimal places
+        cleaned_data["lat"] = round(lat, 6)
+        cleaned_data["long"] = round(long, 6)
+
+        return cleaned_data
 
 
 class EmergencyAdmin(admin.ModelAdmin):
     form = EmergencyAdminForm
-    list_display = ("emid", "tid_display", "name", "number", "lat", "long")
+    list_display = ("emid", "tid_display", "name", "number", "address", "lat", "long")  # Added address
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "tid":

@@ -111,7 +111,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "cfa_server.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 """
@@ -434,6 +433,7 @@ CSP_DEFAULT_SRC = "'self'"
 CSP_SCRIPT_SRC = (
     "'self'",
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js",
+    "'unsafe-inline'",
 )
 CSP_IMG_SRC = ("'self'",)
 CSP_SCRIPT_HASHES = (

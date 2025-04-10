@@ -487,21 +487,20 @@ class Emergency(models.Model):
     tid = models.ForeignKey(EmergencyType, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, null=True, default="N/A")
     number = models.CharField(max_length=100, null=True)
-    lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    long = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    geo_location = models.PointField(blank=True, null=True, srid=4326)
+    address = models.TextField(null=True, blank=True)  # New field for address
+    lat = models.DecimalField(max_digits=9, decimal_places=6, null=False, blank=False)  # Mandatory
+    long = models.DecimalField(max_digits=9, decimal_places=6, null=False, blank=False)  # Mandatory
 
-    def save(self, **kwargs):
-        try:
-            if self.lat and self.long:
-                self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
-            super().save(**kwargs)
-        except Exception as e:
-            logger.error(f"Error saving emergency {self.emid}: {str(e)}", exc_info=True)
-            raise
+    def save(self, *args, **kwargs):
+        # Truncate lat and long to 9 characters including the decimal point
+        if self.lat is not None:
+            self.lat = float(str(self.lat)[:9])
+        if self.long is not None:
+            self.long = float(str(self.long)[:9])
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} - {self.tid.service_type}"
+        return f"{self.name} - {self.tid.service_type if self.tid else 'No Type'}"
 
 class Information(models.Model):
     inid = models.BigAutoField(primary_key=True)

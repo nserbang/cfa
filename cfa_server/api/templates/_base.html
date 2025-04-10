@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
-    <title>{% block title %}CFA{% endblock title %}</title>
+    <title>{% block title %}Arunachal Pradesh Crime Report{% endblock title %}</title>
     <!-- <link rel="shortcut icon" href= "{% static 'images/favicon.ico' %}"> -->
     {% block css %}{% endblock css %}
     <link nonce="{{CSP_NONCE}}" href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
@@ -31,9 +31,40 @@
 </a>
 
 <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-  <li><a href="{% url 'home' %}" class="nav-link px-2 text-white">Home</a></li>
-  <li><a href="{% url 'about' %}" class="nav-link px-2 text-white">About</a></li>
+  <li class="nav-item">
+    <a href="{% url 'home' %}" class="nav-link px-3 text-white fw-bold hover-effect">Home</a>
+  </li>
+  <li class="nav-item">
+    <a href="{% url 'home' %}" class="nav-link px-3 text-white fw-bold hover-effect">Search Lost Vehicle</a>
+  </li>
+  <li class="nav-item">
+    <a href="{% url 'emergency' %}" class="nav-link px-3 text-white fw-bold hover-effect">Emergency Services</a>
+  </li>
+  <li class="nav-item">
+    <a href="{% url 'information' %}" class="nav-link px-3 text-white fw-bold hover-effect">Educational Information</a>
+  </li>
+  <li class="nav-item">
+    <a href="{% url 'about' %}" class="nav-link px-3 text-white fw-bold hover-effect">About</a>
+  </li>
+  <li class="nav-item">
+    <a href="{% url 'about' %}" class="nav-link px-3 text-white fw-bold hover-effect">Help</a>
+  </li>
 </ul>
+
+<style nonce="{{CSP_NONCE}}">
+  .nav-link {
+    transition: all 0.3s ease-in-out;
+    border-radius: 5px;
+  }
+  .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffc107 !important;
+    text-decoration: none;
+  }
+  .hover-effect {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+</style>
 
 <div class="text-end">
   {% if user.is_authenticated %}

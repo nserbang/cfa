@@ -79,42 +79,47 @@ def information(request):
     return render(request, "information.html", vars)
 
 
+from django.shortcuts import render
+from .models import Emergency, EmergencyType
+from django.contrib.gis.geos import Point
+from django.core.exceptions import ValidationError
+
 def emergency(request):
-    limit = int(request.GET.get("limit", 10))
-    page = int(request.GET.get("page", 0))
-    hospitals = Emergency.objects.all()
-    items = [
-        {
-            "name": "Police Station - 1",
-            "contact_number": 2442112,
-            "type": "Police Station",
-            "away": 120,
-        },
-        {
-            "name": "Police Station - 2",
-            "contact_number": 2442113,
-            "type": "Police Station",
-            "away": 60,
-        },
-        {
-            "name": "Hospital - 1",
-            "contact_number": 2442912,
-            "type": "Hospital",
-            "away": 27,
-        },
-        {
-            "name": "Hospital - 2",
-            "contact_number": 2443112,
-            "type": "Hospital",
-            "away": 24,
-        },
-    ]
+    # Get user's latitude and longitude from the request
+    user_lat = request.GET.get('lat')
+    user_long = request.GET.get('long')
+    selected_emergency_type = request.GET.get('emergency_type')
 
-    vars = {
-        "items": items,
-    }
+    emergencies = Emergency.objects.all()
 
-    return render(request, "emergency.html", vars)
+    if user_lat and user_long:
+        # Convert latitude and longitude to a Point object
+        user_location = Point(float(user_long), float(user_lat), srid=4326)
+
+        # Annotate emergencies with distance and order by distance
+        emergencies = emergencies.annotate(
+            distance=Distance('geo_location', user_location)
+        ).order_by('distance')
+
+    # Filter by emergency type if selected
+    if selected_emergency_type:
+        emergencies = emergencies.filter(tid_id=selected_emergency_type)
+
+    # Get all emergency types for the dropdown
+    emergency_types = EmergencyType.objects.all()
+
+    # Check if it's an AJAX request
+    if request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        return render(request, 'emergency_list.html', {
+            'items': emergencies,
+        })
+    else:
+        # Pass the data to the template
+        return render(request, 'emergency.html', {
+            'items': emergencies,
+            'emergency_types': emergency_types,
+            'selected_emergency_type': selected_emergency_type,
+        })
 
 
 def logout_view(request):

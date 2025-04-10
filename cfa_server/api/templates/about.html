@@ -1,0 +1,16 @@
+{% extends "_base.html" %}
+
+{% block title %}About Us{% endblock title %}
+
+{% block content %}
+<div class="container py-4">
+  <h1>About Us</h1>
+  <div class="mt-4">
+    {% if about_content %}
+      {{ about_content.content|safe }}
+    {% else %}
+      <p>No content available for the About page.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}

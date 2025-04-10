@@ -350,6 +350,11 @@ class EmergencyTypeAdmin(admin.ModelAdmin):
     list_display = ("emtid", "service_type")
 
 
+@admin.register(AboutPage)
+class AboutPageAdmin(admin.ModelAdmin):
+    pass # Use default admin interface
+
+
 """ admin.site.register(Victim)
 admin.site.register(Criminal) """
 admin.site.register(Privacy)

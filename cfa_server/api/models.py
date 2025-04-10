@@ -697,3 +697,9 @@ class UserOTPBaseKey(models.Model):
             logger.error(f"Failed to send OTP to user {user.mobile}: {str(e)}", 
                        exc_info=True)
             return False
+
+class AboutPage(models.Model):
+    content = RichTextField()
+
+    def __str__(self):
+        return "About Page Content"  # A simple representation

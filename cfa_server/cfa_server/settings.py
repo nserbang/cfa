@@ -94,9 +94,7 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             os.path.join(BASE_DIR, "api/templates"),
-            "api/templates",
-            "cfa_server/templates",
-            "templates",
+            os.path.join(BASE_DIR, "templates"), # Add this line if you have project-level templates
         ],
         "APP_DIRS": True,
         "OPTIONS": {

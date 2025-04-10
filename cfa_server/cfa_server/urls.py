@@ -67,6 +67,7 @@ from api.views import (
     RemovePoliceOfficerListView,
     RemoveOfficerView,
     ChangeDesignation,
+    about,
 )
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
@@ -175,6 +176,7 @@ urlpatterns = [
     path("api/v1/check-vehicle/", CheckLostVehicle.as_view(), name="check_vehicle"),
     path("", HomePageView.as_view(), name="home"),
     path("home/", HomePageView.as_view(), name="home"),
+    path("About/", about, name="about"),
     path("emergency/", emergency, name="emergency"),
     path("information/", information, name="information"),
     path(
@@ -293,6 +295,7 @@ urlpatterns = [
     path("api/v1/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/v1/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
+   # path('', include('api.urls')), 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Swagger

@@ -711,3 +711,11 @@ def custom_401_view(request, exception=None):
 
 def custom_403_view(request, exception=None):
     return render(request, "custom_error.html", status=403)
+
+
+from django.shortcuts import render
+from .models import AboutPage
+
+def about(request):
+    about_content = AboutPage.objects.first()  # Get the first (and only) AboutPage object
+    return render(request, 'about.html', {'about_content': about_content})

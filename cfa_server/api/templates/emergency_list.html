@@ -1,0 +1,42 @@
+<div class="row">
+    {% for item in items %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title font-weight-bold">{{ item.name }}</h5>
+                <p class="card-text"><small class="text-muted">{{ item.tid.service_type }}</small></p>
+                <p class="card-text">
+                    <strong>Contact:</strong> <a href="tel:{{ item.number }}">{{ item.number }}</a>
+                </p>
+                {% if item.distance %}
+                <div class="mt-auto">
+                    <span class="badge badge-primary">{{ item.distance.km|floatformat:2 }} KM Away</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+                <button class="btn btn-sm btn-outline-primary mt-2 map-button" data-lat="{{ item.lat }}" data-long="{{ item.long }}" data-name="{{ item.name }}">
+                    Go to this place
+                </button>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p class="text-center">No emergency contacts found for the selected type.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.map-button').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const destLat = this.getAttribute('data-lat');
+                const destLong = this.getAttribute('data-long');
+                const placeName = this.getAttribute('data-name');
+                openMap(destLat, destLong, placeName);
+            });
+        });
+    });
+</script>

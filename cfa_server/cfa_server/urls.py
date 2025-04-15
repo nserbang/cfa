@@ -117,7 +117,7 @@ router.register(
 router.register(
     r"emergency-type/(?P<emergency_type_id>\d+)/emergency",
     EmergencyViewSet,
-    basename="emergencies",
+    basename="emergencies-type",
 )
 router.register(
     r"district/(?P<district_id>\d+)/police-station",
@@ -295,7 +295,7 @@ urlpatterns = [
     path("api/v1/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/v1/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-   # path('', include('api.urls')), 
+    # path('', include('api.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Swagger

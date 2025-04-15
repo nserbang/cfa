@@ -1,3 +1,4 @@
+import numpy.core.multiarray
 import cv2 as cv
 import numpy as np
 import pytesseract as pt

@@ -87,15 +87,18 @@ from django.core.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
+
 def emergency(request):
     logger.info("Entering emergency view")
-    
+
     # Get user's latitude and longitude from the request
-    user_lat = request.GET.get('lat')
-    user_long = request.GET.get('long')
-    selected_emergency_type = request.GET.get('emergency_type')
-    
-    logger.debug(f"Request parameters - lat: {user_lat}, long: {user_long}, type: {selected_emergency_type}")
+    user_lat = request.GET.get("lat")
+    user_long = request.GET.get("long")
+    selected_emergency_type = request.GET.get("emergency_type")
+
+    logger.debug(
+        f"Request parameters - lat: {user_lat}, long: {user_long}, type: {selected_emergency_type}"
+    )
 
     try:
         emergencies = Emergency.objects.all()
@@ -109,8 +112,8 @@ def emergency(request):
 
                 # Annotate emergencies with distance and order by distance
                 emergencies = emergencies.annotate(
-                    distance=Distance('geo_location', user_location)
-                ).order_by('distance')
+                    distance=Distance("geo_location", user_location)
+                ).order_by("distance")
                 logger.info("Annotated emergencies with distances")
             except (ValueError, TypeError) as e:
                 logger.error(f"Error processing coordinates: {str(e)}")
@@ -126,21 +129,29 @@ def emergency(request):
         logger.info(f"Retrieved {emergency_types.count()} emergency types")
 
         # Check if it's an AJAX request
-        is_ajax = request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+        is_ajax = request.headers.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest"
         logger.debug(f"Is AJAX request: {is_ajax}")
 
         if is_ajax:
             logger.info("Rendering emergency list template for AJAX request")
-            return render(request, 'emergency_list.html', {
-                'items': emergencies,
-            })
+            return render(
+                request,
+                "emergency_list.html",
+                {
+                    "items": emergencies,
+                },
+            )
         else:
             logger.info("Rendering full emergency template")
-            return render(request, 'emergency.html', {
-                'items': emergencies,
-                'emergency_types': emergency_types,
-                'selected_emergency_type': selected_emergency_type,
-            })
+            return render(
+                request,
+                "emergency.html",
+                {
+                    "items": emergencies,
+                    "emergency_types": emergency_types,
+                    "selected_emergency_type": selected_emergency_type,
+                },
+            )
 
     except Exception as e:
         logger.exception(f"Unexpected error in emergency view: {str(e)}")
@@ -283,12 +294,15 @@ class HomePageView(View):
 class UserRegistrationView(View):
     def get(self, request, *args, **kwargs):
         form = UserRegistrationForm
-        #with open("/cfa_server/api.log","a") as file:
-         #   file.write(" Entering user sign up ")
+        # with open("/cfa_server/api.log","a") as file:
+        #   file.write(" Entering user sign up ")
         return render(request, "api/signup.html", {"form": form})
 
     def post(self, request, *args, **kwargs):
         form = UserRegistrationForm(request.POST)
+        import ipdb
+
+        ipdb.set_trace()
         if form.is_valid():
             user = form.save()
             UserOTPBaseKey.send_otp_verification_code(user)
@@ -748,6 +762,9 @@ def custom_403_view(request, exception=None):
 from django.shortcuts import render
 from .models import AboutPage
 
+
 def about(request):
-    about_content = AboutPage.objects.first()  # Get the first (and only) AboutPage object
-    return render(request, 'about.html', {'about_content': about_content})
+    about_content = (
+        AboutPage.objects.first()
+    )  # Get the first (and only) AboutPage object
+    return render(request, "about.html", {"about_content": about_content})

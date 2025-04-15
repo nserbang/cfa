@@ -20,3 +20,5 @@ cfa_server/systemctl
 cfa_server/db_temp.sqlite3
 credentials.json
 cfa_server/api/migrations/
+pyrightconfig.json
+.zed

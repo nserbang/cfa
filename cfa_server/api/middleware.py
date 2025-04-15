@@ -10,10 +10,13 @@ import base64
 
 from api.models import LoggedInUser
 import logging
+
 logger = logging.getLogger(__name__)
 
 
 class OneSessionPerUserMiddleware:
+    async_capable = False
+
     # Called only once when the web server starts
     def __init__(self, get_response):
         logger.info("OneSessionPerUserMiddleware initializing")
@@ -28,23 +31,33 @@ class OneSessionPerUserMiddleware:
             logger.info("Request path starts with /api/v1, skipping session check.")
             pass
         elif request.user.is_authenticated:
-            logger.info(f"User {request.user.username} is authenticated, checking session.")
+            logger.info(
+                f"User {request.user.username} is authenticated, checking session."
+            )
             if not hasattr(request.user, "logged_in_user"):
                 # If the user doesn't have a related logged_in_user instance, create one
-                logger.info(f"User {request.user.username} doesn't have logged_in_user, creating one.")
+                logger.info(
+                    f"User {request.user.username} doesn't have logged_in_user, creating one."
+                )
                 logged_in_user = LoggedInUser.objects.create(
                     user=request.user, session_key=request.session.session_key
                 )
                 request.user.logged_in_user = logged_in_user
-                logger.info(f"Created logged_in_user for {request.user.username} with session key {request.session.session_key}.")
+                logger.info(
+                    f"Created logged_in_user for {request.user.username} with session key {request.session.session_key}."
+                )
             stored_session_key = request.user.logged_in_user.session_key
-            logger.info(f"Stored session key for user {request.user.username}: {stored_session_key}")
+            logger.info(
+                f"Stored session key for user {request.user.username}: {stored_session_key}"
+            )
 
             # if there is a stored_session_key  in our database and it is
             # different from the current session, delete the stored_session_key
             # session_key with from the Session table
             if stored_session_key and stored_session_key != request.session.session_key:
-                logger.info(f"Stored session key is different from current session key, deleting old session.")
+                logger.info(
+                    f"Stored session key is different from current session key, deleting old session."
+                )
                 session = Session.objects.filter(session_key=stored_session_key)
                 if session:
                     session.delete()
@@ -52,7 +65,9 @@ class OneSessionPerUserMiddleware:
 
             request.user.logged_in_user.session_key = request.session.session_key
             request.user.logged_in_user.save()
-            logger.info(f"Updated logged_in_user session key to {request.session.session_key} and saved.")
+            logger.info(
+                f"Updated logged_in_user session key to {request.session.session_key} and saved."
+            )
 
         response = self.get_response(request)
         logger.info("Exiting OneSessionPerUserMiddleware __call__")
@@ -60,6 +75,8 @@ class OneSessionPerUserMiddleware:
 
 
 class DisableOptionsMiddleware:
+    async_capable = False
+
     def __init__(self, get_response):
         logger.info("DisableOptionsMiddleware initializing")
         self.get_response = get_response
@@ -68,13 +85,17 @@ class DisableOptionsMiddleware:
     def __call__(self, request):
         logger.info("Entering DisableOptionsMiddleware __call__")
         if request.method == "OPTIONS":
-            logger.warning("Received OPTIONS request, returning HttpResponseNotAllowed.")
+            logger.warning(
+                "Received OPTIONS request, returning HttpResponseNotAllowed."
+            )
             return HttpResponseNotAllowed(["GET", "POST", "HEAD"])
         logger.info("Exiting DisableOptionsMiddleware __call__")
         return self.get_response(request)
 
 
 class HSTSMiddleware:
+    async_capable = False
+
     def __init__(self, get_response):
         logger.info("HSTSMiddleware initializing")
         self.get_response = get_response
@@ -130,6 +151,8 @@ def decrypt_password(request):
 
 
 class RSAMiddleware:
+    async_capable = False
+
     def __init__(self, get_response):
         logger.info("RSAMiddleware initializing")
         self.get_response = get_response
@@ -138,7 +161,9 @@ class RSAMiddleware:
     def __call__(self, request):
         logger.info("Entering RSAMiddleware __call__")
         if "private_key" in request.session and not request.path.startswith("/api/"):
-            logger.info("Private key found in session and not an API request, decrypting password.")
+            logger.info(
+                "Private key found in session and not an API request, decrypting password."
+            )
             decrypt_password(request)
         response = self.get_response(request)
         if "private_key" not in request.session:
@@ -180,6 +205,8 @@ class RSAMiddleware:
 
 
 class CustomCSPMiddleware(CSPMiddleware):
+    async_capable = False
+
     def __init__(self, get_response):
         logger.info("CustomCSPMiddleware initializing")
         self.get_response = get_response

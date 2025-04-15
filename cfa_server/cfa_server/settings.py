@@ -33,8 +33,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-0mfz%)780(7i=w)p8w^n$s7j#(u!bq$1zd(m!@19sa5$9wb^gw"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = ENVIRONMENT == "DEVELOPMENT"
-DEBUG = False
+# DEBUG = ENVIRONMENT == "DEVELOPMENT"
+DEBUG = True
 ALLOWED_HOSTS = ["*"]
 TIME_ZONE = "Asia/Kolkata"
 
@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "rest_framework",
     "api",
-   ## "rest_framework.authtoken", ## enabline tis nabame
+    ## "rest_framework.authtoken", ## enabline tis nabame
     "drf_spectacular",
     "django_filters",
     "debug_toolbar",
@@ -81,7 +81,7 @@ MIDDLEWARE = [
     "api.middleware.HSTSMiddleware",
     "api.middleware.RSAMiddleware",
     "api.middleware.CustomCSPMiddleware",
-   # "debug_toolbar.middlewar.DebugToolbarMiddleware",
+    # "debug_toolbar.middlewar.DebugToolbarMiddleware",
 ]
 
 if DEBUG:
@@ -94,7 +94,9 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             os.path.join(BASE_DIR, "api/templates"),
-            os.path.join(BASE_DIR, "templates"), # Add this line if you have project-level templates
+            os.path.join(
+                BASE_DIR, "templates"
+            ),  # Add this line if you have project-level templates
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -226,7 +228,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # start logg
-""" 
+"""
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -266,7 +268,7 @@ LOGGING = {
 }
 
 """
-# end log 
+# end log
 """
 LOGGING = {
     'version': 1,
@@ -303,33 +305,33 @@ LOGGING = {
 }
  """
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} : {asctime} : {module} : {filename}: {funcName} : {lineno} :  {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} : {asctime} : {module} : {filename}: {funcName} : {lineno} :  {message}",
+            "style": "{",
         },
     },
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': './api.log',
-            'formatter': 'verbose',
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "./api.log",
+            "formatter": "verbose",
         },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
     },
-    'loggers': {
-        '': {
-            'handlers': ['file'],
-            'level': 'INFO',
-            'level': 'DEBUG',
-           # 'propagate': True,
+    "loggers": {
+        "": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "level": "DEBUG",
+            # 'propagate': True,
         },
     },
 }
@@ -368,7 +370,7 @@ FCM_DJANGO_SETTINGS = {
 
 
 cred = credentials.Certificate(str(BASE_DIR) + "/credentials.json")
-firebase_admin.initialize_app(cred, {'projectId':'drug-b3460'})
+firebase_admin.initialize_app(cred, {"projectId": "drug-b3460"})
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "CFA API",
@@ -403,8 +405,8 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://apcrime.arunachal.gov.in",
-#    "http://10.0.104.12:9005",
-    "http://localhost"
+    #    "http://10.0.104.12:9005",
+    "http://localhost",
 ]
 
 
@@ -424,8 +426,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 2
 AXES_RESET_ON_SUCCESS = True
-AXES_DISABLE_ACCESS_LOG = True # new added 
-AXES_NEVER_LOCKOUT_WHITELIST = True # new added 
+AXES_DISABLE_ACCESS_LOG = True  # new added
+AXES_NEVER_LOCKOUT_WHITELIST = True  # new added
 
 CSRF_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
 

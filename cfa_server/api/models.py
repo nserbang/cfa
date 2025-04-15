@@ -24,13 +24,16 @@ import magic
 from pyotp import TOTP, random_base32
 from firebase_admin.exceptions import InvalidArgumentError
 from django.core.validators import RegexValidator
+
 # Initialize logger
 logger = logging.getLogger(__name__)
+
+
 def mobile_validator(value):
     logger.info("Entering mobile_validator")
     pattern = re.compile(r"^[6-9]\d{9}$")
     message = "Enter a valid mobile number."
-    
+
     logger.info(f"Validating mobile number: {value}")
     if value == "9999999999":
         logger.warning("Invalid mobile number: 9999999999 is not allowed")
@@ -38,27 +41,30 @@ def mobile_validator(value):
     if not pattern.match(value):
         logger.warning(f"Invalid mobile number pattern: {value}")
         raise ValidationError(message)
-    
+
     logger.info("Exiting mobile_validator - validation successful")
     return
 
+
 MobileValidator = mobile_validator
+
 
 def file_type_validator(f):
     logger.info("Entering file_type_validator")
     logger.info(f"Validating file: {f.name}")
-    
+
     f.seek(0)
     mime_type = magic.from_buffer(f.read(), mime=True)
     logger.info(f"Detected MIME type: {mime_type}")
-    
+
     if mime_type not in settings.ALLOWED_FILE_TYPES:
         logger.warning(f"Invalid file type: {mime_type} for file {f.name}")
         raise ValidationError(f"You can't upload this file: {f.name}.")
     f.seek(0)
-    
+
     logger.info("Exiting file_type_validator - validation successful")
     return
+
 
 class District(models.Model):
     did = models.AutoField(primary_key=True)
@@ -70,6 +76,7 @@ class District(models.Model):
         logger.info("Exiting District.__str__")
         return self.name
 
+
 class cUser(AbstractUser):
     username = None
     ROLES = (
@@ -77,7 +84,7 @@ class cUser(AbstractUser):
         ("police", "Police"),
         ("admin", "Admin"),
     )
-    #mobile = models.CharField(max_length=26, unique=True, validators=[MobileValidator])
+    # mobile = models.CharField(max_length=26, unique=True, validators=[MobileValidator])
     mobile = models.CharField(max_length=26, unique=True, validators=[MobileValidator])
     is_verified = models.BooleanField(default=False)
     role = models.CharField(max_length=10, choices=ROLES, default="user")
@@ -105,6 +112,7 @@ class cUser(AbstractUser):
     def __str__(self):
         return self.mobile
 
+
 class PoliceStation(models.Model):
     pid = models.BigAutoField(primary_key=True)
     did = models.ForeignKey(District, on_delete=models.CASCADE)
@@ -121,16 +129,22 @@ class PoliceStation(models.Model):
         try:
             self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
             super().save(**kwargs)
-            logger.info(f"Saved police station {self.pid} at location {self.lat}, {self.long}")
+            logger.info(
+                f"Saved police station {self.pid} at location {self.lat}, {self.long}"
+            )
         except Exception as e:
-            logger.critical(f"Failed to save police station - ID: {self.pid}, Error: {str(e)}")
+            logger.critical(
+                f"Failed to save police station - ID: {self.pid}, Error: {str(e)}"
+            )
             raise
+
 
 class PoliceStationContact(models.Model):
     ps_cid = models.BigAutoField(primary_key=True)
     pid = models.ForeignKey(PoliceStation, on_delete=models.CASCADE)
     contactName = models.CharField(max_length=50, null=True)
     number = models.CharField(max_length=15)
+
 
 class PoliceOfficer(models.Model):
     RANKS = (
@@ -161,6 +175,7 @@ class PoliceOfficer(models.Model):
     mobile = models.CharField(max_length=55, null=True)
     report_on_this = models.BooleanField(default=False)
 
+
 class PoliceStationSupervisor(models.Model):
     officer = models.ForeignKey(
         PoliceOfficer, on_delete=models.CASCADE, related_name="policestation_supervisor"
@@ -171,16 +186,19 @@ class PoliceStationSupervisor(models.Model):
 
     class Meta:
         unique_together = ["officer", "station"]
-def print_class_members(cls, print_method = True, print_private = False):
+
+
+def print_class_members(cls, print_method=True, print_private=False):
     s = f"\n {'='*50} class : {cls.__name__} {'='*50}"
     for name, value in inspect.getmembers(cls):
-        if not print_private and name.startswith('_'):
+        if not print_private and name.startswith("_"):
             continue
 
         if not print_methods and inspect.ismethod(valud) or inspect.isfunction(value):
             continue
-        s = s+ f"\n {name } : {value}"
+        s = s + f"\n {name } : {value}"
     return s
+
 
 class Case(models.Model):
     cType = (
@@ -207,7 +225,7 @@ class Case(models.Model):
         ("needs_counselling", "Needs Counselling"),
         ("needs_rehabilitation", "Needs Rehabilitation"),
     )
-    
+
     cid = models.BigAutoField(primary_key=True)
     pid = models.ForeignKey(PoliceStation, on_delete=models.DO_NOTHING)
     user = models.ForeignKey(cUser, on_delete=models.DO_NOTHING)
@@ -222,7 +240,9 @@ class Case(models.Model):
     lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     long = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     geo_location = models.PointField(blank=True, null=True, srid=4326)
-    distance = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    distance = models.DecimalField(
+        max_digits=9, decimal_places=2, null=True, blank=True
+    )
     description = models.TextField(null=True)
     follow = models.BooleanField(default=False)
     medias = models.ManyToManyField("Media", related_name="cases", blank=True)
@@ -234,7 +254,7 @@ class Case(models.Model):
         try:
             cstate = cstate or self.cstate
             logger.info(f"Adding history for case {self.cid} with state {cstate}")
-            
+
             history = CaseHistory.objects.create(
                 case=self,
                 user=self.user,
@@ -243,15 +263,19 @@ class Case(models.Model):
                 lat=kwargs.get("lat") if cstate == "visited" else None,
                 long=kwargs.get("long") if cstate == "visited" else None,
             )
-            
+
             if medias:
                 for media in medias:
                     if detect_malicious_patterns_in_media(media.path.path):
-                        logger.critical(f"SECURITY ALERT: Malicious media detected in case {self.cid}, file: {media.path.path}")
+                        logger.critical(
+                            f"SECURITY ALERT: Malicious media detected in case {self.cid}, file: {media.path.path}"
+                        )
                         raise ValidationError("Malicious media file detected.")
                 history.medias.add(*medias)
-                logger.info(f"Added {len(medias)} media files to case history {history.id}")
-                
+                logger.info(
+                    f"Added {len(medias)} media files to case history {history.id}"
+                )
+
         except Exception as e:
             logger.critical(f"Failed to add history to case {self.cid}: {str(e)}")
             raise
@@ -260,18 +284,22 @@ class Case(models.Model):
         try:
             if self.pid:
                 if not self.geo_location:
-                    self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
-                
+                    self.geo_location = fromstr(
+                        f"POINT({self.long} {self.lat})", srid=4326
+                    )
+
                 point_one = (self.geo_location.y, self.geo_location.x)
                 point_two = (self.pid.geo_location.y, self.pid.geo_location.x)
                 self.distance = distance.great_circle(point_one, point_two).km
-                logger.debug(f"Calculated distance for case {self.cid}: {self.distance} km")
+                logger.debug(
+                    f"Calculated distance for case {self.cid}: {self.distance} km"
+                )
 
             if not self.pk:
                 with transaction.atomic():
                     super().save(*args, **kwargs)
                     logger.info(f"Created new case {self.cid} of type {self.type}")
-                    
+
                     CaseHistory.objects.create(
                         case=self,
                         user=self.user,
@@ -283,15 +311,19 @@ class Case(models.Model):
                     try:
                         self._send_case_notifications()
                     except Exception as e:
-                        logger.error(f"Error sending notifications for case {self.cid}: {str(e)}", 
-                                    exc_info=True)
+                        logger.error(
+                            f"Error sending notifications for case {self.cid}: {str(e)}",
+                            exc_info=True,
+                        )
                 return
-            
+
             super().save(*args, **kwargs)
-            
+
         except Exception as e:
-            logger.critical(f"Error saving case {getattr(self, 'cid', 'new')}: {str(e)}", 
-                          exc_info=True)
+            logger.critical(
+                f"Error saving case {getattr(self, 'cid', 'new')}: {str(e)}",
+                exc_info=True,
+            )
             raise
 
     def _send_case_notifications(self):
@@ -303,7 +335,7 @@ class Case(models.Model):
             "type": self.type,
             "state": self.cstate,
             "created": str(self.created),
-            "click_action": "FLUTTER_NOTIFICATION_CLICK"
+            "click_action": "FLUTTER_NOTIFICATION_CLICK",
         }
         logger.debug(f"Notification data prepared: {data}")
 
@@ -316,32 +348,39 @@ class Case(models.Model):
         logger.info(f"Notifying assigned officer for case {self.cid}")
         try:
             devices = FCMDevice.objects.filter(user_id=self.oid.user_id)
-            registration_tokens = list(devices.values_list('registration_id', flat=True))
-            
+            registration_tokens = list(
+                devices.values_list("registration_id", flat=True)
+            )
+
             if not registration_tokens:
                 logger.warning(f"No FCM devices found for officer {self.oid.user_id}")
                 return
 
             for token in registration_tokens:
                 try:
-                    messaging.send(messaging.Message(
-                        notification=messaging.Notification(
-                            title=f"New Case : {self.type}",
-                            body=desc
-                        ),
-                        data=data,
-                        token=token
-                    ))
-                    logger.info(f"Successfully sent notification to token {token[:10]}...")
+                    messaging.send(
+                        messaging.Message(
+                            notification=messaging.Notification(
+                                title=f"New Case : {self.type}", body=desc
+                            ),
+                            data=data,
+                            token=token,
+                        )
+                    )
+                    logger.info(
+                        f"Successfully sent notification to token {token[:10]}..."
+                    )
                 except Exception as e:
                     logger.error(f"Failed to send to token {token[:10]}...: {str(e)}")
-            
+
             if self.oid.mobile:
                 send_sms(self.oid.mobile, desc)
                 logger.info(f"SMS sent to officer {self.oid.mobile}")
-                
+
         except Exception as e:
-            logger.critical(f"Critical failure in officer notification system: {str(e)}")
+            logger.critical(
+                f"Critical failure in officer notification system: {str(e)}"
+            )
             raise
 
     def _notify_station_officers(self, desc, data):
@@ -350,34 +389,33 @@ class Case(models.Model):
             officers = self.pid.policeofficer_set.filter(
                 Q(report_on_this=True) | Q(rank="5")
             ).values("user_id", "user__mobile")
-            
+
             user_ids = [o["user_id"] for o in officers]
             devices = FCMDevice.objects.filter(user_id__in=user_ids)
-            registration_tokens = list(devices.values_list('registration_id', flat=True))
-            
+            registration_tokens = list(
+                devices.values_list("registration_id", flat=True)
+            )
+
             if registration_tokens:
                 notification = messaging.Notification(
-                    title=f"New Case: {self.type}",
-                    body=desc
+                    title=f"New Case: {self.type}", body=desc
                 )
                 logger.info(f" Notification: {notification}")
                 response = messaging.send_multicast(
                     messaging.MulticastMessage(
-                        notification=notification,
-                        data=data,
-                        tokens=registration_tokens
+                        notification=notification, data=data, tokens=registration_tokens
                     )
                 )
                 logger.info(
                     f"Sent FCM to {len(registration_tokens)} officers. "
                     f"Success: {response.success_count}, Failures: {response.failure_count}"
                 )
-            
+
             for officer in officers:
                 if officer["user__mobile"]:
                     send_sms(officer["user__mobile"], desc)
                     logger.info(f"SMS sent to officer {officer['user__mobile']}")
-                    
+
         except Exception as e:
             logger.error(f"Error notifying station officers: {str(e)}", exc_info=True)
 
@@ -391,22 +429,19 @@ class Case(models.Model):
                 "type": self.type,
                 "state": self.cstate,
                 "created": str(self.created),
-                "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                "click_action": "FLUTTER_NOTIFICATION_CLICK",
             }
-            
+
             devices = FCMDevice.objects.filter(user_id__in=user_ids)
-            registration_tokens = list(devices.values_list('registration_id', flat=True))
-            
+            registration_tokens = list(
+                devices.values_list("registration_id", flat=True)
+            )
+
             if registration_tokens:
-                notification = messaging.Notification(
-                    title=title,
-                    body=desc
-                )
+                notification = messaging.Notification(title=title, body=desc)
                 response = messaging.send_multicast(
                     messaging.MulticastMessage(
-                        notification=notification,
-                        data=data,
-                        tokens=registration_tokens
+                        notification=notification, data=data, tokens=registration_tokens
                     )
                 )
                 logger.info(
@@ -414,16 +449,17 @@ class Case(models.Model):
                     f"Success: {response.success_count}, Failures: {response.failure_count}"
                 )
                 return True
-            
+
             logger.warning(f"No devices found for users {user_ids}")
             return False
-                
+
         except Exception as e:
             logger.error(
                 f"Error sending notification for case {self.cid}: {str(e)}",
-                exc_info=True
+                exc_info=True,
             )
             return False
+
 
 class Media(models.Model):
     Mtype = (
@@ -435,6 +471,7 @@ class Media(models.Model):
     mtype = models.CharField(max_length=10, choices=Mtype, default="photo")
     path = models.FileField(upload_to=get_upload_path, validators=[file_type_validator])
     description = models.TextField(null=True)
+
 
 class CaseHistory(models.Model):
     case = models.ForeignKey(Case, on_delete=models.DO_NOTHING)
@@ -462,6 +499,7 @@ class CaseHistory(models.Model):
             logger.error(f"Error saving case history: {str(e)}", exc_info=True)
             raise
 
+
 class LostVehicle(models.Model):
     type = (
         ("stolen", "Stolen"),
@@ -478,6 +516,7 @@ class LostVehicle(models.Model):
     color = models.CharField(max_length=56, blank=True, default="")
     type = models.CharField(max_length=10, choices=type, null=False, default="stolen")
 
+
 class Comment(models.Model):
     cmtid = models.BigAutoField(primary_key=True)
     cid = models.ForeignKey(Case, on_delete=models.CASCADE)
@@ -485,6 +524,7 @@ class Comment(models.Model):
     content = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     medias = models.ManyToManyField(Media, related_name="comments", blank=True)
+
 
 class EmergencyType(models.Model):
     emtid = models.BigAutoField(primary_key=True)
@@ -496,29 +536,36 @@ class EmergencyType(models.Model):
         logger.info("Exiting EmergencyType.__str__")
         return self.service_type
 
+
 class Emergency(models.Model):
     emid = models.BigAutoField(primary_key=True)
     tid = models.ForeignKey(EmergencyType, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, null=True, default="N/A")
     number = models.CharField(max_length=100, null=True)
     address = models.TextField(null=True, blank=True)  # New field for address
-    lat = models.DecimalField(max_digits=9, decimal_places=6, null=False, blank=False)  # Mandatory
-    long = models.DecimalField(max_digits=9, decimal_places=6, null=False, blank=False)  # Mandatory
+    lat = models.DecimalField(
+        max_digits=9, decimal_places=6, null=False, blank=False
+    )  # Mandatory
+    long = models.DecimalField(
+        max_digits=9, decimal_places=6, null=False, blank=False
+    )  # Mandatory
 
     def save(self, *args, **kwargs):
         logger.info("Entering Emergency.save")
-        logger.info(f"Saving Emergency - Name: {self.name}, Lat: {self.lat}, Long: {self.long}")
-        
+        logger.info(
+            f"Saving Emergency - Name: {self.name}, Lat: {self.lat}, Long: {self.long}"
+        )
+
         if self.lat is not None:
             original_lat = self.lat
             self.lat = float(str(self.lat)[:9])
             logger.info(f"Truncated latitude from {original_lat} to {self.lat}")
-            
+
         if self.long is not None:
             original_long = self.long
             self.long = float(str(self.long)[:9])
             logger.info(f"Truncated longitude from {original_long} to {self.long}")
-            
+
         super().save(*args, **kwargs)
         logger.info("Exiting Emergency.save")
 
@@ -528,6 +575,7 @@ class Emergency(models.Model):
         logger.info(f"Emergency string representation: {result}")
         logger.info("Exiting Emergency.__str__")
         return result
+
 
 class Information(models.Model):
     inid = models.BigAutoField(primary_key=True)
@@ -541,6 +589,7 @@ class Information(models.Model):
     )
     heading = models.TextField(blank=False, null=False)
     content = models.TextField(blank=False, null=True)
+
 
 class Victim(models.Model):
     Vtype = (
@@ -557,6 +606,7 @@ class Victim(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     content = RichTextUploadingField()
 
+
 class Criminal(models.Model):
     Ctype = (
         ("offender", "Habitual offender"),
@@ -570,17 +620,21 @@ class Criminal(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     content = RichTextUploadingField()
 
+
 class Privacy(models.Model):
     id = models.BigAutoField(primary_key=True)
     content = RichTextUploadingField()
+
 
 class TermsCondition(models.Model):
     id = models.BigAutoField(primary_key=True)
     content = RichTextUploadingField()
 
+
 class Contact(models.Model):
     id = models.BigAutoField(primary_key=True)
     content = RichTextUploadingField()
+
 
 class Like(models.Model):
     case = models.ForeignKey(Case, related_name="likes", on_delete=models.CASCADE)
@@ -589,6 +643,7 @@ class Like(models.Model):
 
     class Meta:
         unique_together = ("case", "user")
+
 
 class Banner(models.Model):
     bid = models.BigAutoField(primary_key=True)
@@ -602,6 +657,7 @@ class Banner(models.Model):
     path = models.FileField(upload_to=get_upload_path, validators=[file_type_validator])
     description = models.TextField(null=True)
 
+
 class LoggedInUser(models.Model):
     user = models.OneToOneField(
         cUser, related_name="logged_in_user", on_delete=models.CASCADE
@@ -610,6 +666,7 @@ class LoggedInUser(models.Model):
 
     def __str__(self):
         return self.user.mobile
+
 
 class UserOTPBaseKey(models.Model):
     user = models.OneToOneField(
@@ -625,16 +682,19 @@ class UserOTPBaseKey(models.Model):
             if cls.should_reset_otp_generation_count(user):
                 logger.info(f"Resetting OTP count for user {user.mobile}")
                 cls.objects.filter(user=user).update(
-                    otp_generation_count=0,
-                    last_otp_generation_time=timezone.now()
+                    otp_generation_count=0, last_otp_generation_time=timezone.now()
                 )
 
             if not cls.is_otp_generation_allowed(user):
-                logger.critical(f"SECURITY ALERT: Excessive OTP attempts for user {user.mobile}")
+                logger.critical(
+                    f"SECURITY ALERT: Excessive OTP attempts for user {user.mobile}"
+                )
                 raise Exception("Too many OTP generation attempts")
 
-            current_count = getattr(user.user_otp, 'otp_generation_count', 0)
-            logger.info(f"OTP generation attempt {current_count + 1}/5 for user {user.mobile}")
+            current_count = getattr(user.user_otp, "otp_generation_count", 0)
+            logger.info(
+                f"OTP generation attempt {current_count + 1}/5 for user {user.mobile}"
+            )
 
             secret_key = random_base32()
             user_otp_key, created = cls.objects.update_or_create(
@@ -650,16 +710,16 @@ class UserOTPBaseKey(models.Model):
                 user_otp_key.save()
 
             otp = TOTP(
-                secret_key,
-                interval=settings.OTP_VALIDITY_TIME,
-                digits=digits
+                secret_key, interval=settings.OTP_VALIDITY_TIME, digits=digits
             ).now()
-            
+
             logger.info(f"OTP generated successfully for user {user.mobile}")
             return otp
 
         except Exception as e:
-            logger.critical(f"OTP generation failed for user {getattr(user, 'mobile', 'unknown')}: {str(e)}")
+            logger.critical(
+                f"OTP generation failed for user {getattr(user, 'mobile', 'unknown')}: {str(e)}"
+            )
             raise
 
     @classmethod
@@ -700,28 +760,33 @@ class UserOTPBaseKey(models.Model):
                 digits=digits,
             ).verify(otp)
         except Exception as e:
-            logger.error(f"Error validating OTP for user {getattr(user, 'mobile', 'unknown')}: {str(e)}", 
-                       exc_info=True)
+            logger.error(
+                f"Error validating OTP for user {getattr(user, 'mobile', 'unknown')}: {str(e)}",
+                exc_info=True,
+            )
             return False
 
     @classmethod
     def send_otp_verification_code(cls, user, verification=True):
         try:
             logger.info(f"Starting OTP send process for user {user.mobile}")
-            
+
             otp_code = cls.generate_otp(user)
+            print("OTTTTTPPPPPPP", otp_code)
             text = f"User Registration OTP for AP Crime Report is: {otp_code} AP Crime Team"
-            
+
             logger.debug(f"Sending SMS to {user.mobile}: {text[:30]}...")
             send_sms(user.mobile, text)
-            
+
             logger.info(f"OTP sent successfully to user {user.mobile}")
             return True
-            
+
         except Exception as e:
-            logger.error(f"Failed to send OTP to user {user.mobile}: {str(e)}", 
-                       exc_info=True)
+            logger.error(
+                f"Failed to send OTP to user {user.mobile}: {str(e)}", exc_info=True
+            )
             return False
+
 
 class AboutPage(models.Model):
     content = RichTextField()

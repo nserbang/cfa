@@ -5,26 +5,28 @@
 {% block content %}
 <div class="container py-4">
     <div class="row">
-        <div class="col-lg-3 col-md-3 col-sm-12">
+        <!-- Sidebar -->
+        <div class="col-lg-3 col-md-4 col-sm-12 mb-4">
             {% include 'case/side_menu.html' %}
         </div>
-        <div class="col-lg-9 col-md-9 col-sm-12">
+        <!-- Main Content -->
+        <div class="col-lg-9 col-md-8 col-sm-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Report a New Case</h4>
+                    <h4 class="mb-0 text-center text-lg-start">Report a New Case</h4>
                 </div>
                 <div class="card-body">
                     <form method="post" id="main-form" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{ form|crispy }}
                         <div class="row mb-3">
-                            <p class="fw-bold">Select a location:</p>
-                            <p class="text-muted">Drag position marker to select the exact place of incident</p>
+                            <p class="fw-bold text-center text-lg-start">Select a location:</p>
+                            <p class="text-muted text-center text-lg-start">Drag position marker to select the exact place of incident</p>
                             <div class="col-12">
                                 <div id="map" style="height: 300px; width: 100%;" class="rounded border"></div>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-end">
+                        <div class="d-flex justify-content-center justify-content-lg-end">
                             <button id="case-submit" type="submit" class="btn btn-primary py-2 px-4">Submit</button>
                         </div>
                     </form>
@@ -34,8 +36,9 @@
     </div>
 </div>
 
+<!-- Modal -->
 <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
@@ -71,8 +74,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-            </div>
+            <div class="modal-footer"></div>
         </div>
     </div>
 </div>
@@ -296,12 +298,12 @@
     submitToSelectedStationButton.addEventListener('click', function (el){
         el.preventDefault();
         chooseStation = document.getElementById('choose-station');
-        chooseStation.classList.remove("d-none")
-        getPoliceStations(latitude, longitude)
+        chooseStation.classList.remove("d-none");
+        getPoliceStations(latitude, longitude);
     })
 
     function getPoliceStations(lat, long) {
-        url = `/nearest/police/stations/?lat=${lat}&${long}`
+        url = `/nearest/police/stations/?lat=${lat}&${long}`;
         fetch(url, {
             method: 'GET',
             headers: {
@@ -315,14 +317,14 @@
             return response.json();
         })
         .then(data => {
-            console.log(data)
-            selectStation = document.getElementById('police-station-select')
+            console.log(data);
+            selectStation = document.getElementById('police-station-select');
             if(data){
                 for(station of data) {
                     const opt = document.createElement("option");
                     opt.value = station.pid;
                     opt.text = station.name;
-                    selectStation.add(opt, null)
+                    selectStation.add(opt, null);
                 }
             }
         })
@@ -334,24 +336,24 @@
     const finalSubmitButton = document.getElementById('finalSubmit');
     finalSubmitButton.addEventListener('click', function (el){
         el.preventDefault();
-        selectStation = document.getElementById('police-station-select')
-        policeStation = document.getElementById('id_pid')
-        policeStation.value = selectStation.value
+        selectStation = document.getElementById('police-station-select');
+        policeStation = document.getElementById('id_pid');
+        policeStation.value = selectStation.value;
         const form = document.getElementById('main-form');
-        form.submit()
+        form.submit();
     })
 
-    let type = document.getElementById('id_type')
+    let type = document.getElementById('id_type');
     function showHideDrugIssutType() {
-        let drugIssueTypeDiv = document.getElementById('div_id_drug_issue_type')
-        console.log(type.value)
+        let drugIssueTypeDiv = document.getElementById('div_id_drug_issue_type');
+        console.log(type.value);
         if (type.value === 'drug') {
-            drugIssueTypeDiv.style.display = 'block'
+            drugIssueTypeDiv.style.display = 'block';
         } else {
-            drugIssueTypeDiv.style.display = 'none'
+            drugIssueTypeDiv.style.display = 'none';
         }
     }
-    showHideDrugIssutType()
+    showHideDrugIssutType();
 
     function showHideVehicleFields() {
         vehicleFields = [
@@ -362,7 +364,7 @@
             "make",
             "model",
             "color",
-        ]
+        ];
 
         // Define labels for vehicle fields
         const vehicleLabels = {
@@ -393,12 +395,12 @@
             }
         }
     }
-    showHideVehicleFields()
+    showHideVehicleFields();
 
     type.addEventListener("change", function(event) {
-        showHideDrugIssutType()
-        showHideVehicleFields()
-    })
+        showHideDrugIssutType();
+        showHideVehicleFields();
+    });
 
     // Prevent form submission on Enter key press
     document.getElementById('main-form').addEventListener('keydown', function(event) {

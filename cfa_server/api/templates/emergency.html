@@ -36,7 +36,7 @@
 <input type="hidden" id="user_long" name="long" value="">
 
 {% block javascript %}
-<script>
+<script nonce="{{ request.csp_nonce }}">
     let userLat = null;
     let userLong = null;
 

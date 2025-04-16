@@ -28,10 +28,12 @@
     {% endfor %}
 </div>
 
-<script>
+<script nonce="{{ request.csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOM fully loaded and parsed');
         document.querySelectorAll('.map-button').forEach(function (button) {
             button.addEventListener('click', function () {
+                console.log
                 const destLat = this.getAttribute('data-lat');
                 const destLong = this.getAttribute('data-long');
                 const placeName = this.getAttribute('data-name');

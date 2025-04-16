@@ -56,8 +56,10 @@ from api.view.cuser_views import *
 from api.forms.user import AddOfficerForm, RemoveOfficerForm, ChangeDesignationForm
 from api.forms.case import CaseForm, CaseUpdateForm
 
+logger = logging.getLogger(__name__)
 
 def information(request):
+    logger.info("Entering information function")
     limit = int(request.GET.get("limit", 10))
     page = int(request.GET.get("page", 0))
     cases = Case.objects.all()
@@ -76,7 +78,7 @@ def information(request):
         items.append(case)
 
     vars = {"items": items, "home": True}
-
+    logger.info("Exiting information function")
     return render(request, "information.html", vars)
 
 
@@ -85,12 +87,8 @@ from .models import Emergency, EmergencyType
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
 
-logger = logging.getLogger(__name__)
-
-
 def emergency(request):
-    logger.info("Entering emergency view")
-
+    logger.info("Entering emergency function")
     # Get user's latitude and longitude from the request
     user_lat = request.GET.get("lat")
     user_long = request.GET.get("long")
@@ -154,14 +152,16 @@ def emergency(request):
             )
 
     except Exception as e:
-        logger.exception(f"Unexpected error in emergency view: {str(e)}")
+        logger.exception(f"Unexpected error in emergency function: {str(e)}")
         raise
     finally:
-        logger.info("Exiting emergency view")
+        logger.info("Exiting emergency function")
 
 
 def logout_view(request):
+    logger.info("Entering logout_view function")
     logout(request)
+    logger.info("Exiting logout_view function")
     return redirect("/")  # Replace 'home' with the URL name of your home page
 
 
@@ -300,9 +300,9 @@ class UserRegistrationView(View):
 
     def post(self, request, *args, **kwargs):
         form = UserRegistrationForm(request.POST)
-        import ipdb
+        #import ipdb
 
-        ipdb.set_trace()
+        #ipdb.set_trace()
         if form.is_valid():
             user = form.save()
             UserOTPBaseKey.send_otp_verification_code(user)
@@ -764,7 +764,51 @@ from .models import AboutPage
 
 
 def about(request):
+    logger.info("Entering about function")
     about_content = (
         AboutPage.objects.first()
     )  # Get the first (and only) AboutPage object
+    logger.info("Exiting about function")
     return render(request, "about.html", {"about_content": about_content})
+
+
+from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from .models import Case
+from django.db.models import Count
+
+#@login_required
+def dashboard_view(request):
+    logger.info("Entering dashboard_view function")
+    # Ensure only users with the "Police" role can access this view
+    if not request.user.is_police:
+        logger.warning("Unauthorized access attempt to dashboard_view")
+        return render(request, '403.html', status=403)  # Render a 403 Forbidden page
+
+    # Get filter parameter from the request
+    ctype_filter = request.GET.get('ctype', None)
+
+    # Filter cases based on the selected `Ctype`
+    cases = Case.objects.all()
+    if ctype_filter:
+        cases = cases.filter(type=ctype_filter)
+
+    # Group cases by `Ctype` for the pie chart
+    case_summary = (
+        cases.values('type')
+        .annotate(count=Count('type'))
+        .order_by('type')
+    )
+
+    # Paginate the cases (10 cases per page)
+    paginator = Paginator(cases, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'cases': page_obj,  # Paginated cases
+        'case_summary': case_summary,  # Data for the pie chart
+        'ctype_filter': ctype_filter,  # Current filter
+    }
+    logger.info("Exiting dashboard_view function")
+    return render(request, 'dashboard.html', context)

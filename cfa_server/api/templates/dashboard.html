@@ -1,0 +1,106 @@
+{% extends '_base.html' %}
+{% block title %}Dashboard{% endblock title %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-center mb-4">Case Dashboard</h1>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <form method="get" class="d-flex justify-content-end">
+                <select name="ctype" class="form-select w-auto me-2">
+                    <option value="">All Types</option>
+                    <option value="drug" {% if ctype_filter == "drug" %}selected{% endif %}>Drug</option>
+                    <option value="vehicle" {% if ctype_filter == "vehicle" %}selected{% endif %}>Vehicle</option>
+                    <option value="extortion" {% if ctype_filter == "extortion" %}selected{% endif %}>Extortion</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pie Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3>Case Distribution</h3>
+            <canvas id="casePieChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Case List -->
+    <div class="row">
+        <div class="col-12">
+            <h3>All Cases</h3>
+            <table class="table table-bordered table-striped">
+                <thead class="table-primary">
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>State</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in cases %}
+                    <tr>
+                        <td>{{ case.cid }}</td>
+                        <td>{{ case.title }}</td>
+                        <td>{{ case.get_type_display }}</td>
+                        <td>{{ case.get_cstate_display }}</td>
+                        <td>{{ case.created|date:"Y-m-d H:i" }}</td>
+                        <td>{{ case.updated|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No cases found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if cases.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ cases.previous_page_number }}{% if ctype_filter %}&ctype={{ ctype_filter }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for num in cases.paginator.page_range %}
+                    <li class="page-item {% if cases.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if ctype_filter %}&ctype={{ ctype_filter }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if cases.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ cases.next_page_number }}{% if ctype_filter %}&ctype={{ ctype_filter }}{% endif %}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script nonce="{{ request.csp_nonce }}">
+    const ctx = document.getElementById('casePieChart').getContext('2d');
+    const caseData = {
+        labels: [{% for summary in case_summary %}"{{ summary.type|title }}",{% endfor %}],
+        datasets: [{
+            label: 'Case Distribution',
+            data: [{% for summary in case_summary %}{{ summary.count }},{% endfor %}],
+            backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d'],
+        }]
+    };
+    const config = {
+        type: 'pie',
+        data: caseData,
+    };
+    new Chart(ctx, config);
+</script>
+{% endblock content %}

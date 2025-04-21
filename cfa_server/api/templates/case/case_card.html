@@ -37,6 +37,14 @@
             </tbody>
           </table>
       <ul class="list-unstyled">
+        {% if case.type == 'vehicle' %}
+            <li class=""><span class="fw-bold">Vehicle Lost Type</span> : <span>{{ case.lostvehicle.get_type_display }}</span></li>
+            <li class=""><span class="fw-bold">Registration no.</span> : <span>{{ case.lostvehicle.regNumber }}</span></li>
+            <li class=""><span class="fw-bold">Chasis no.</span> : <span>{{ case.lostvehicle.chasisNumber }}</span></li>
+            <li class=""><span class="fw-bold">Make</span> : <span>{{ case.lostvehicle.make }}</span></li>
+            <li class=""><span class="fw-bold">Model</span> : <span>{{ case.lostvehicle.model }}</span></li>
+            <li class=""><span class="fw-bold">Color</span> : <span>{{ case.lostvehicle.color }}</span></li> <br>
+        {% endif %}
         <li class=""><span class="fw-bold">Description</span> :</li>
         <div><p class="pt-0">{{ case.description|format_email }}</p></div>
         <div class="row">
@@ -46,7 +54,7 @@
                         <a class="image" href="{{ media.path.url }}">
                             <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
                         </a>
-                    {% elif media.mtype == 'video' %}
+                    {% elif media.mtype == 'video' %}>
                         <video width="320" height="240" controls>
                             <source src="{{ media.path.url }}">
                         </video>

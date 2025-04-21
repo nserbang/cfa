@@ -3,6 +3,7 @@ from django.utils.html import format_html
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 import logging
+
 logger = logging.getLogger(__name__)
 
 from api.forms.banner import BannerForm
@@ -209,7 +210,7 @@ class PoliceStationAdmin(admin.ModelAdmin):
 
     district.short_description = "District"
 
-    list_display = ["pid", district, "name", "address", "lat", "long", "station"]
+    list_display = ["pid", "district", "name", "address", "lat", "long", "station"]
     list_select_related = ("did",)
     district.admin_order_field = "did__did"
     search_fields = ["name"]
@@ -308,7 +309,7 @@ class PoliceOfficerAdmin(admin.ModelAdmin):
         return results
 
     list_display = ["oid", "pid", "rank", "entryDate", "mobile", "status"]
-    #autocomplete_fields =['mobile']
+    # autocomplete_fields =['mobile']
     search_fields = [
         "name__icontains",
         "pid__pid__icontains",
@@ -404,7 +405,7 @@ class CaseAdmin(admin.ModelAdmin):
     # search_fields = ['number__icontains','contactName__icontains','pid__pid__icontains']
     list_display = [
         "cid",
-        PoliceStation,
+        # PoliceStation,
         "user",
         # officer_name,
         "type",
@@ -732,12 +733,12 @@ class EmergencyAdminForm(forms.ModelForm):
 
         # Ensure lat and long are no more than 9 digits
         if lat is not None:
-            lat_str = str(lat).replace('.', '').replace('-', '')
+            lat_str = str(lat).replace(".", "").replace("-", "")
             if len(lat_str) > 8:
                 lat = float(str(lat)[:9])
                 logger.warning(f"Latitude truncated to 9 digits: {lat}")
         if long is not None:
-            long_str = str(long).replace('.', '').replace('-', '')
+            long_str = str(long).replace(".", "").replace("-", "")
             if len(long_str) > 8:
                 long = float(str(long)[:9])
                 logger.warning(f"Longitude truncated to 9 digits: {long}")
@@ -782,7 +783,15 @@ class EmergencyAdmin(admin.ModelAdmin):
         return results
 
     form = EmergencyAdminForm
-    list_display = ("emid", "tid_display", "name", "number", "address", "lat", "long")  # Added address
+    list_display = (
+        "emid",
+        "tid_display",
+        "name",
+        "number",
+        "address",
+        "lat",
+        "long",
+    )  # Added address
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         logger.info("Entering formfield_for_foreignkey")
@@ -859,7 +868,7 @@ class AboutPageAdmin(admin.ModelAdmin):
         logger.info("Exiting get_search_results")
         return results
 
-    pass # Use default admin interface
+    pass  # Use default admin interface
 
 
 """ admin.site.register(Victim)

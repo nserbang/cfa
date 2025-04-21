@@ -690,8 +690,10 @@ class UserOTPBaseKey(models.Model):
                     f"SECURITY ALERT: Excessive OTP attempts for user {user.mobile}"
                 )
                 raise Exception("Too many OTP generation attempts")
-
-            current_count = getattr(user.user_otp, "otp_generation_count", 0)
+            user_opt = getattr(user, "user_opt", None)
+            current_count = 0
+            if user_opt:
+                current_count = getattr(user_opt, "otp_generation_count", 0)
             logger.info(
                 f"OTP generation attempt {current_count + 1}/5 for user {user.mobile}"
             )

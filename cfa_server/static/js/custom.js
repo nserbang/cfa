@@ -1,4 +1,4 @@
-const comments = document.querySelectorAll("[class*=comment-]")
+let comments = document.querySelectorAll("[class*=comment-]")
 
 comments.forEach(comment => {
     comment.addEventListener('click', function updateComment(event) {
@@ -82,22 +82,4 @@ function openVenobox(e){
         spinner: 'rotating-plane'
     });
     vobx.open()
-}
-
-function openMap(destLat, destLong, placeName) {
-    // Retrieve user latitude and longitude from hidden input fields
-    const userLat = document.getElementById('user_lat').value;
-    const userLong = document.getElementById('user_long').value;
-
-    // Check if user location is available
-    if (!userLat || !userLong) {
-        alert("Please allow location access to use this feature.");
-        return;
-    }
-
-    // Construct the Google Maps URL
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLong}&destination=${destLat},${destLong}&travelmode=driving`;
-
-    // Open the URL in a new tab
-    window.open(url, '_blank');
 }

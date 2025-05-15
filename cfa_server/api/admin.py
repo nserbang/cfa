@@ -409,7 +409,7 @@ class CaseAdmin(admin.ModelAdmin):
         "user",
         # officer_name,
         "type",
-        "title",
+        #"title",
         "cstate",
         "created",
         "lat",

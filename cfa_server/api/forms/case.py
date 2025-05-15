@@ -39,11 +39,15 @@ class MultipleFileField(forms.FileField):
 
 
 class CaseForm(forms.ModelForm):
-    VEHICLE_LOST_CHOICES = (  # Represent criminal type
+    VEHICLE_LOST_CHOICES = (# Represent criminal type
         ("stolen", "Stolen"),
         ("abandoned", "Abandoned"),
     )
-    vehicle_lost_type = forms.ChoiceField(choices=VEHICLE_LOST_CHOICES, required=False)
+    vehicle_lost_type = forms.ChoiceField(
+            choices=VEHICLE_LOST_CHOICES,
+            required=False,
+            label="Type of Vehicle Lost",
+            initial="stolen")
     regNumber = forms.CharField(max_length=30, required=False)
     chasisNumber = forms.CharField(max_length=50, required=False)
     engineNumber = forms.CharField(max_length=50, required=False)

@@ -28,6 +28,12 @@ from django.core.validators import RegexValidator
 # Initialize logger
 logger = logging.getLogger(__name__)
 
+Mtype = (
+        ("video", "Video"),
+        ("photo", "Photo"),
+        ("audio", "Audio"),
+        ("document", "Document"),
+    )
 
 def mobile_validator(value):
     logger.info("Entering mobile_validator")
@@ -188,18 +194,6 @@ class PoliceStationSupervisor(models.Model):
         unique_together = ["officer", "station"]
 
 
-def print_class_members(cls, print_method=True, print_private=False):
-    s = f"\n {'='*50} class : {cls.__name__} {'='*50}"
-    for name, value in inspect.getmembers(cls):
-        if not print_private and name.startswith("_"):
-            continue
-
-        if not print_methods and inspect.ismethod(valud) or inspect.isfunction(value):
-            continue
-        s = s + f"\n {name } : {value}"
-    return s
-
-
 class Case(models.Model):
     cType = (
         ("drug", "Drug"),
@@ -233,7 +227,7 @@ class Case(models.Model):
         PoliceOfficer, on_delete=models.SET_NULL, null=True, blank=True
     )
     type = models.CharField(max_length=10, choices=cType, default="drug")
-    title = models.CharField(max_length=250, null=True)
+    #title = models.CharField(max_length=250, null=True)
     cstate = models.CharField(max_length=15, choices=cState, default="pending")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(blank=True, null=True)
@@ -249,15 +243,16 @@ class Case(models.Model):
     drug_issue_type = models.CharField(
         max_length=20, choices=DRUG_ISSUE_TYPE, blank=True, default=""
     )
-
+    #This function is used in ase update method to update the case status and send notification to the user
     def add_history_and_media(self, description, medias, user, cstate=None, **kwargs):
+        flag = None
         try:
             cstate = cstate or self.cstate
             logger.info(f"Adding history for case {self.cid} with state {cstate}")
 
             history = CaseHistory.objects.create(
                 case=self,
-                user=self.user,
+                user=user,
                 description=description,
                 cstate=cstate,
                 lat=kwargs.get("lat") if cstate == "visited" else None,
@@ -271,7 +266,14 @@ class Case(models.Model):
                             f"SECURITY ALERT: Malicious media detected in case {self.cid}, file: {media.path.path}"
                         )
                         raise ValidationError("Malicious media file detected.")
-                history.medias.add(*medias)
+                try:
+                    history.medias.add(*medias)
+                    flag = True
+                except Exception as e:
+                    logger.error(f"Failed to add medias to case history {history.id}: {str(e)}")
+                    # Delete all medias added to the history so far
+                    history.medias.clear()
+                    raise
                 logger.info(
                     f"Added {len(medias)} media files to case history {history.id}"
                 )
@@ -279,6 +281,7 @@ class Case(models.Model):
         except Exception as e:
             logger.critical(f"Failed to add history to case {self.cid}: {str(e)}")
             raise
+        return flag
 
     def save(self, *args, **kwargs):
         try:
@@ -294,7 +297,7 @@ class Case(models.Model):
                 logger.debug(
                     f"Calculated distance for case {self.cid}: {self.distance} km"
                 )
-
+            """ # Saving media is being handled in CaseCreateView and CaseUpdateView save/update methods
             if not self.pk:
                 with transaction.atomic():
                     super().save(*args, **kwargs)
@@ -315,16 +318,19 @@ class Case(models.Model):
                             f"Error sending notifications for case {self.cid}: {str(e)}",
                             exc_info=True,
                         )
-                return
+                return self.cid # Return the case ID after saving
+            """
 
             super().save(*args, **kwargs)
+            return self.cid # Return the case ID after saving
 
         except Exception as e:
             logger.critical(
                 f"Error saving case {getattr(self, 'cid', 'new')}: {str(e)}",
                 exc_info=True,
             )
-            raise
+            #raise # Uncomment this line to raise the error again after logging
+            return None # Return None if an error occurs. This is used for removing case object if antying wrong happens
 
     def _send_case_notifications(self):
         logger.info(f"Beginning notification process for case {self.cid}")
@@ -461,19 +467,29 @@ class Case(models.Model):
             return False
 
 
+
+
+#This model stores the media files uploaded by the user. It can be a video, photo, audio or document.
 class Media(models.Model):
-    Mtype = (
-        ("video", "Video"),
-        ("photo", "Photo"),
-        ("audio", "Audio"),
-        ("document", "Document"),
-    )
+    #mid = models.BigAutoField(primary_key=True)
     mtype = models.CharField(max_length=10, choices=Mtype, default="photo")
     path = models.FileField(upload_to=get_upload_path, validators=[file_type_validator])
+    created = models.DateTimeField(auto_now_add=True)
     description = models.TextField(null=True)
+    def save(self, **kwargs):
+        try:
+            super().save(**kwargs)
+            logger.info(f"Saved media file {self.mid} of type {self.mtype}")
+            return self.mid  # Return the media ID after saving
+        except Exception as e:
+            logger.error(f"Error saving media file: {str(e)}", exc_info=True)
+            raise   
+        #return None  # Return None if an error occurs 
 
 
-class CaseHistory(models.Model):
+
+
+class CaseHistory(models.Model): 
     case = models.ForeignKey(Case, on_delete=models.DO_NOTHING)
     user = models.ForeignKey(cUser, on_delete=models.DO_NOTHING)
     cstate = models.CharField(max_length=15, choices=Case.cState)
@@ -482,7 +498,7 @@ class CaseHistory(models.Model):
     lat = models.CharField(max_length=10, blank=True, null=True)
     long = models.CharField(max_length=10, blank=True, null=True)
     geo_location = models.PointField(blank=True, null=True, srid=4326)
-    medias = models.ManyToManyField(Media, related_name="case_histories")
+    medias = models.ManyToManyField(Media, related_name="case_histories", blank=True)
 
     def distance(self):
         if self.case.geo_location and self.geo_location:
@@ -495,9 +511,11 @@ class CaseHistory(models.Model):
                 self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
             super().save(**kwargs)
             logger.debug(f"Saved case history for case {self.case_id}")
+            return self.id  # Return the case history ID after saving
         except Exception as e:
             logger.error(f"Error saving case history: {str(e)}", exc_info=True)
             raise
+        return None  # Return None if an error occurs
 
 
 class LostVehicle(models.Model):
@@ -505,16 +523,25 @@ class LostVehicle(models.Model):
         ("stolen", "Stolen"),
         ("abandoned", "Abandoned"),
     )
-
-    caseId = models.OneToOneField(Case, on_delete=models.DO_NOTHING)
-    regNumber = models.CharField(max_length=30, unique=True)
+    #lvId = models.BigAutoField(primary_key=True)    
+    caseId = models.OneToOneField(Case, on_delete=models.CASCADE, null=True)
+    regNumber = models.CharField(max_length=30)
     chasisNumber = models.CharField(max_length=50, null=True, default="N/A")
     engineNumber = models.CharField(max_length=50, null=True, default="N/A")
     make = models.CharField(max_length=50, null=True, default="N/A")
     model = models.CharField(max_length=50, null=True, default="N/A")
     description = models.CharField(max_length=500, null=True, default="N/A")
     color = models.CharField(max_length=56, blank=True, default="")
-    type = models.CharField(max_length=10, choices=type, null=False, default="stolen")
+    vehicle_lost_type = models.CharField(max_length=10, choices=type, null=False, default="stolen")
+    def save(self, **kwargs):
+        try:
+            super().save(**kwargs)
+            logger.info(f"Saved lost vehicle {self.id} with reg number {self.regNumber}")
+            return self.id  # Return the lost vehicle ID after saving
+        except Exception as e:
+            logger.error(f"Error saving lost vehicle: {str(e)}", exc_info=True)
+            raise
+        return None  # Return None if an error occurs
 
 
 class Comment(models.Model):

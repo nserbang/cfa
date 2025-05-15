@@ -102,7 +102,7 @@ def detect_malicious_patterns_in_media(file_path):
     # Add more media types as needed
 
     # Check for malicious patterns based on the media type
-    if media_type and malicious_patterns.get(media_type):
+    if media_type and media_type in malicious_patterns:
         with open(file_path, 'rb') as file:
             content = file.read().decode(errors='ignore')  # Read content as text
             for pattern in malicious_patterns_file[media_type]:

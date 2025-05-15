@@ -28,6 +28,8 @@ from api.otp import send_sms
 from api.mixins import PasswordDecriptionMixin
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 import logging
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.geos import fromstr
 logger = logging.getLogger(__name__)
 
 
@@ -203,7 +205,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "police_officer",
             "user_detail",
             "case_type",
-            "title",
+           # "title",
             "case_state",
             "created",
             "lat",
@@ -253,10 +255,20 @@ class CaseSerializer(serializers.ModelSerializer):
 
 
 class CaseSerializerCreate(serializers.ModelSerializer):
-    pid = serializers.PrimaryKeyRelatedField(
+    pid=serializers.PrimaryKeyRelatedField(
         queryset=PoliceStation.objects.all(), required=False
     )
-    distance = serializers.CharField(read_only=True)
+    distance=serializers.CharField(read_only=True)
+    docs=serializers.ListField(
+            child=serializers.CharField(allow_blank=True),
+            required=False, allow_empty=True, write_only=True)
+    regNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
+    chasisNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
+    engineNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
+    make=serializers.CharField(required=False, allow_blank=True, write_only=True)
+    model=serializers.CharField(required=False, allow_blank=True, write_only=True)
+    color=serializers.CharField(required=False, allow_blank=True, write_only=True)
+    vehicle_lost_type=serializers.CharField(required=False, allow_blank=True, write_only=True)
 
     class Meta:
         model = Case
@@ -271,12 +283,23 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             "distance",
             "medias",
             "drug_issue_type",
+            #  Adding vehicle_detail",
+            "docs",
+            "regNumber",
+            "chasisNumber",
+            "engineNumber",
+            "make",
+            "model",
+            "color",
+            "vehicle_lost_type"            
         ]
 
     def create(self, validated_data):
         logger.info("Entering create")
         logger.debug(f"Creating case with data: {validated_data}")
-        
+        isDev = settings.DEVENV
+     
+        logger.info(" DEV ENVIROMENT: {}".format(settings.DEVENV))
         request = self.context["request"]
         case = Case(
             type=validated_data["type"],
@@ -299,19 +322,92 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                 .order_by("radius")
                 .first()
             )
+            if not police_station:
+                logger.error("No police station found within the radius")
+                raise serializers.ValidationError(
+                    {"pid": "No police station found within the radius."}
+                )
             logger.debug(f"Selected police station: {police_station.pid}")
         
         case.pid = police_station
         case.geo_location = geo_location
-        officier = police_station.policeofficer_set.order_by("-rank").first()
-        case.oid = officier
+        officer = police_station.policeofficer_set.order_by("-rank").first()
+        if not officer:
+            raise serializers.ValidationError(
+                {"officer": "No officer found for this police station."}
+            )
+        logger.debug(f"Selected officer: {officer.oid}")     
+        case.oid = officer
         case.user = request.user
-        case.save()
-        
-        if validated_data.get("medias"):
-            logger.info(f"Adding {len(validated_data['medias'])} media items")
-            case.medias.add(*validated_data["medias"])
-        
+
+        # create first case history
+
+
+        from django.db import transaction
+
+        files = validated_data.pop("medias", [])
+        if files:
+            logger.info(f"Adding {len(files)} media items")
+            with transaction.atomic():
+                media_objects = [
+                    Media(
+                        mtype=file["mtype"],
+                        path=file["path"],
+                        description=file.get("description", ""),
+                    )
+                    for file in files
+                ]
+                Media.objects.bulk_create(media_objects)
+                logger.debug(f"Created {len(media_objects)} media items")
+                case.medias.add(*media_objects)
+
+
+
+
+        from django.db import transaction
+
+        with transaction.atomic():
+            #caseId = case  # save this at the end
+            caseId = case.save()  # save this at the end
+            #logger.info(f"Case saved with ID: {case.cid}")
+            # Create the case history
+            history = CaseHistory(
+                case=case,
+                cstate=case.cstate,
+                description="Initial case History",
+                user=request.user,
+                lat=validated_data["lat"],
+                long=validated_data["long"],
+            )
+            history.save()  # Save the history object to the database
+            #logger.info(f"Initial Case history created with ID: {history.id}")
+            type = validated_data.get("type")
+            if type == "vehicle":
+                logger.info("Creating lost vehicle details")
+                vehicle_detail_data = {
+                    "regNumber": validated_data.get("regNumber"),
+                    "chasisNumber": validated_data.get("chasisNumber"),
+                    "engineNumber": validated_data.get("engineNumber"),
+                    "make": validated_data.get("make"),
+                    "model": validated_data.get("model"),
+                    "color": validated_data.get("color"),
+                    "vehicle_lost_type": validated_data.get("vehicle_lost_type"),
+                }
+               # if all(vehicle_detail_data.values()):
+                if (validated_data.get("regNumber")) is not None:
+                    #case.save()
+                    #logger.info(f"Case saved with ID: {case.cid}")
+                    #history.save()
+                    #logger.info(f"Initial Case history created with ID: {history.id}")
+                    lv = LostVehicle.objects.create(caseId=case, **vehicle_detail_data)
+                    logger.info(f" Lost vehicle case created with ID : {lv.id} ")
+                else:
+                    history.delete()
+                    case.delete();
+                    raise serializers.ValidationError(
+                        {"vehicle_detail": "At lest registration number required."}
+                    )       
+   
         logger.info(f"Created case {case.cid}")
         logger.info("Exiting create")
         return case

@@ -34,14 +34,11 @@ class OneSessionPerUserMiddleware:
             logger.info(
                 f"User {request.user.username} is authenticated, checking session."
             )
-            if not hasattr(request.user, "logged_in_user"):
-                # If the user doesn't have a related logged_in_user instance, create one
-                logger.info(
-                    f"User {request.user.username} doesn't have logged_in_user, creating one."
-                )
-                logged_in_user = LoggedInUser.objects.create(
-                    user=request.user, session_key=request.session.session_key
-                )
+            logged_in_user, created = LoggedInUser.objects.get_or_create(
+                user=request.user,
+                defaults={"session_key": request.session.session_key},
+            )
+            if created:
                 request.user.logged_in_user = logged_in_user
                 logger.info(
                     f"Created logged_in_user for {request.user.username} with session key {request.session.session_key}."
@@ -58,7 +55,7 @@ class OneSessionPerUserMiddleware:
                 logger.info(
                     f"Stored session key is different from current session key, deleting old session."
                 )
-                session = Session.objects.filter(session_key=stored_session_key)
+                session = Session.objects.filter(session_key=stored_session_key).first()
                 if session:
                     session.delete()
                     logger.info(f"Deleted old session with key {stored_session_key}.")
@@ -133,19 +130,24 @@ def decrypt_password(request):
         private_key_pem = base64.b64decode(private_key_pem_b64)
         private_key = serialization.load_pem_private_key(private_key_pem, password=None)
         request.POST._mutable = True
+        post_data = request.POST.copy()
         for key in password_fields:
             if key in post_data.keys():
                 logger.info(f"Decrypting password field: {key}")
                 b64_encrypted_value = post_data[key]
 
                 encrypted_value = base64.b64decode(b64_encrypted_value)
-                decrypted_value = private_key.decrypt(
-                    encrypted_value,
-                    padding.PKCS1v15(),
-                )
-                decrypted_value = decrypted_value.decode("utf-8")
-                request.POST[key] = decrypted_value
+                try:
+                    decrypted_value = private_key.decrypt(
+                        encrypted_value,
+                        padding.PKCS1v15(),
+                    )
+                    decrypted_value = decrypted_value.decode("utf-8")
+                    post_data[key] = decrypted_value
+                except Exception as e:
+                    logger.error(f"Failed to decrypt {key}: {e}")
                 logger.info(f"Decrypted {key} successfully.")
+        request.POST = post_data
         request.POST._mutable = False
         logger.info("Exiting decrypt_password")
 
@@ -165,6 +167,8 @@ class RSAMiddleware:
                 "Private key found in session and not an API request, decrypting password."
             )
             decrypt_password(request)
+        else:
+            logger.info(f" RSAMiddleware __call__. private_key {request.session} path : {request.path}")
         response = self.get_response(request)
         if "private_key" not in request.session:
             logger.info("Private key not found in session, generating new keys.")
@@ -197,20 +201,18 @@ class RSAMiddleware:
                 "rsa_public_key",
                 request.session["public_key"],
                 httponly=not settings.DEBUG,
+                secure=True,
             )
             logger.info("Set rsa_public_key cookie.")
-
         logger.info("Exiting RSAMiddleware __call__")
         return response
-
 
 class CustomCSPMiddleware(CSPMiddleware):
     async_capable = False
 
     def __init__(self, get_response):
+        super().__init__(get_response)
         logger.info("CustomCSPMiddleware initializing")
-        self.get_response = get_response
-        logger.info("CustomCSPMiddleware initialized")
 
     def process_response(self, request, response):
         logger.info("Entering CustomCSPMiddleware process_response")

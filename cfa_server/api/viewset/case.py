@@ -32,6 +32,7 @@ from api.serializers import (
 )
 from api.mixins import UserMixin
 
+from django.contrib.auth.models import AnonymousUser
 
 class CaseViewSet(UserMixin, ModelViewSet):
     serializer_class = CaseSerializer
@@ -42,13 +43,19 @@ class CaseViewSet(UserMixin, ModelViewSet):
         logger.info("Entering get_queryset")
         
         search = self.request.query_params.get("search", None)
-        my_case = self.request.query_params.get("my_case", None)
+        my_case = self.request.query_params.get("my_case", None) 
+        #if my_case is None:
+                #return None;
         lat = self.request.query_params.get("lat")
         long = self.request.query_params.get("long")
         user = self.request.user
         
         logger.debug(f"Query params - search: {search}, my_case: {my_case}, lat: {lat}, long: {long}")
-        logger.info(f"User: {user.mobile}, is_authenticated: {user.is_authenticated}")
+        #if user is not None and hasattr(user,'mobile'):dd
+        if user.is_authenticated and hasattr(user,'mobile'):
+            logger.info(f"User: {user.mobile}, is_authenticated: {user.is_authenticated}")
+        else:
+            logger.info(f"User.mobile not exist")
 
         data = (
             Case.objects.all()
@@ -85,19 +92,20 @@ class CaseViewSet(UserMixin, ModelViewSet):
                 if rank > 9:
                     logger.debug("Officer rank > 9, no additional filters")
                 elif rank == 9:
+                    logger.debug("Officer rank  = 9")
                     data.filter(pid__did_id=officer.pid.did_id)
-                    logger.debug(f"Filtered by district ID: {officer.pid.did_id}")
                 elif rank == 6:
+                    logger.debug("Officer rank  = 6")
                     data = data.filter(
                         pid_id__in=officer.policestation_supervisor.values("station")
                     )
                     logger.debug(f"Filtered by police station supervisor values")
                 elif rank == 5:
+                    logger.debug("Officer rank  = 5")
                     data = data.filter(pid_id=officer.pid_id)
-                    logger.debug(f"Filtered by police station ID: {officer.pid_id}")
                 elif rank == 4:
+                    logger.debug("Officer rank  = 4")
                     data = data.filter(oid=officer).exclude(cstate="pending")
-                    logger.debug(f"Filtered by officer ID: {officer.id}")
                 else:
                     data = data.filter(Q(user=user) | Q(type="vehicle"))
                     logger.debug("Applied regular user filters")
@@ -114,13 +122,20 @@ class CaseViewSet(UserMixin, ModelViewSet):
                 | Q(description__contains=search)
             )
 
-        logger.info("Exiting get_queryset")
+        logger.info(f"Exiting get_queryset query data: {data.exists()}")
         return data
 
     def list(self, request, *args, **kwargs):
         logger.info("Entering list")
         queryset = self.filter_queryset(self.get_queryset())
-
+        if queryset is None:
+            return Response([])
+        if not queryset.exists():
+            logger.debug("Query set is empty")
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                return self.get_paginated_response([])
+            return Response([])
         page = self.paginate_queryset(queryset)
         if page is not None:
             logger.debug(f"Paginating results, page size: {len(page)}")
@@ -228,13 +243,44 @@ class CaseCreateAPIView(APIView):
     serializer_class = CaseSerializerCreate
 
     def post(self, request, format=None):
-        serializer = CaseSerializerCreate(
+        logger.info(f"ENTERING post with  request :{request} , data : {request.data}")
+        #check if user is authenticated
+        if request.user.is_anonymous:
+            return Response(
+                {"detail": "You must be logged in to create a case."}, status=403
+            )
+        ctype = request.data.get("type")
+        if ctype is None:
+            return Response({"type": ["This field is required."]}, status=400)
+        #create basic case entity
+        case = CaseSerializerCreate(
             data=request.data, context={"request": request}
         )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+
+        logger.info(f" case data validity test :{case}")
+        if case.is_valid():
+            logger.info(f" case data valid")
+            from django.db import transaction
+            try:
+                with transaction.atomic():
+                    case_instance = case.save()
+                    if not case_instance:
+                        logger.info(f"Exiting post with case creation failed")
+                        return Response(
+                        {"detail": "Case creation failed."}, status=400
+                    )
+                logger.info(f"Exiting. Case created successfully: {case_instance.cid}")
+                return Response(case.data, status=201)
+            except Exception as e:
+                logger.error(f"Case creation failed with exception: {str(e)}")
+                return Response(
+                    {"detail": f"Case creation failed: {str(e)}"}, status=400
+                )
+        else:
+            logger.info(f" case data validation failed: {str(case.errors)}")
+
+        logger.info(f"Exiting post with case creation failed")
+        return Response(case.errors, status=400)
 
 
 class CaseUpdaateAPIView(UpdateAPIView):
@@ -313,6 +359,7 @@ class LikeViewSet(ModelViewSet):
         return LikeListSerializer  # Use LikeListSerializer for other actions
 
     def get_queryset(self):
+        logger.info("Entering queryset")
         # Fetch the case_id from the URL
         case_id = self.kwargs["case_id"]
         # Filter the queryset to get likes for the specific case_id
@@ -320,6 +367,7 @@ class LikeViewSet(ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
+        logger.info("Entering create")
         # Fetch the case_id from the URL
         case_id = self.kwargs.get("case_id")
         # Add the case_id to the request data
@@ -330,11 +378,13 @@ class LikeViewSet(ModelViewSet):
         return Response(serializer.data, status=201)
 
     def retrieve(self, request, *args, **kwargs):
+        logger.info("Entering retrieve")
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
     def delete(self, request, *args, **kwargs):
+        logger.info("Entering delete")
         case_id = self.kwargs.get("case_id")
         user_id = request.data.get(
             "user"

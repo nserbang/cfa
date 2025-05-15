@@ -34,6 +34,7 @@ SECRET_KEY = "django-insecure-0mfz%)780(7i=w)p8w^n$s7j#(u!bq$1zd(m!@19sa5$9wb^gw
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = ENVIRONMENT == "DEVELOPMENT"
+DEVENV = True
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 TIME_ZONE = "Asia/Kolkata"
@@ -115,14 +116,13 @@ WSGI_APPLICATION = "cfa_server.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-"""
-DATABASES = {
+"""DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": os.environ.get("DB_NAME", "cfa"),
-        "USER": os.environ.get("DB_USER", "hello"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "NAME": os.environ.get("DB_NAME", "cDb"),
+        "USER": os.environ.get("DB_USER", "cuser"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "password"),
+        "HOST": os.environ.get("DB_HOST", "10.0.105.8"),
         "PORT": os.environ.get("DB_PORT", 5432),
     }
 }
@@ -137,6 +137,7 @@ DATABASES = {
         "PORT": 5432,
     }
 }
+
 # STATIC_ROOT = 'portal/static/'
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -385,25 +386,13 @@ SPECTACULAR_SETTINGS = {
     "SERVE_PERMISSIONS": [],
 }
 
-ALLOWED_VIDEO_TYPES = [
-    "video/mp4",
-    "video/webm",
-]
-ALLOWED_AUDIO_TYPES = [
-    "audio/mp3",
-    "audio/webm",
-    "audio/aac",
-]
-ALLOWED_IMAGE_TYPES = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/heic",
-]
+ALLOWED_VIDEO_TYPES = ["video/mp4", "video/mpeg"]
+ALLOWED_AUDIO_TYPES = ["video/mp3", "video/WebM", "audio/aac"]
+ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/heic"]
 ALLOWED_DOC_TYPES = [
-    "application/pdf",  # PDF files
-    "application/msword",  # Microsoft Word (doc)
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # Microsoft Word (docx)
+    "application/pdf",
+    "application/msword",  # doc
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # docx
 ]
 
 ALLOWED_FILE_TYPES = (
@@ -429,10 +418,10 @@ SESSION_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
 SESSION_COOKIE_SAMESITE = "Strict"  # or 'Lax'
 # SESSION_COOKIE_DOMAIN="printing.merrygold.xyz"
 
-SESSION_COOKIE_AGE = 1800
-SESSION_EXPIRE_SECONDS = 1200  # 10 mins
+SESSION_COOKIE_AGE = 18000
+SESSION_EXPIRE_SECONDS = 12000  # 10 mins
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
-SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = 10  # 10 mins
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = 100  # 10 mins
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 AXES_FAILURE_LIMIT = 5
@@ -472,8 +461,8 @@ OTP_VALIDITY_TIME: int = 5 * 60
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=50),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=300),
     "TOKEN_OBTAIN_SERIALIZER": "api.serializers.CustomTokenObtainSerializer",
     "ROTATE_REFRESH_TOKENS": True,
 }

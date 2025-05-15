@@ -457,7 +457,7 @@ class GetCaseHistory(View):
         case_id = kwargs["case_id"]
         case_histories = (
             CaseHistory.objects.filter(case_id=case_id)
-            .prefetch_related("medias")
+            #.prefetch_related("medias") # Need to add the result of medias if any 
             .order_by("created")
         )
         from itertools import pairwise

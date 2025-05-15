@@ -42,7 +42,7 @@ def detectVehicleNumber(img=None, numbers=None, is_police=False, user=None):
             like_count=Count("likes", distinct=True),
         )
         .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
-        .prefetch_related("medias")
+        #.prefetch_related("medias")
     )
     if user.is_authenticated:
         liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)

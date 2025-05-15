@@ -481,10 +481,10 @@ class MediaAdmin(admin.ModelAdmin):
 
     form = MediaForm
 
-    list_display = ["mtype", "path", "description"]
+    list_display = ["mtype", "path"]
     search_fields = ["mtype"]
 
-
+#@admin.register(LostVehicle)
 class LostVehicleAdmin(admin.ModelAdmin):
     def __init__(self, *args, **kwargs):
         logger.info("Entering __init__")
@@ -521,15 +521,20 @@ class LostVehicleAdmin(admin.ModelAdmin):
         return case_id
 
     Id.short_description = "Case ID"
+
+    def vehicle_lost_type(self,obj):
+        return obj.vehicle_lost_type
+
+    vehicle_lost_type.short_description = "Lost Type"
     # PoliceStation.short_description ="Police Station"
     list_display = [
-        Id,
+        "Id",
         "regNumber",
         "chasisNumber",
         "engineNumber",
         "make",
         "model",
-        "type",
+        "vehicle_lost_type",
     ]
 
 

@@ -28,12 +28,6 @@ from django.core.validators import RegexValidator
 # Initialize logger
 logger = logging.getLogger(__name__)
 
-Mtype = (
-        ("video", "Video"),
-        ("photo", "Photo"),
-        ("audio", "Audio"),
-        ("document", "Document"),
-    )
 
 def mobile_validator(value):
     logger.info("Entering mobile_validator")
@@ -239,7 +233,7 @@ class Case(models.Model):
     )
     description = models.TextField(null=True)
     follow = models.BooleanField(default=False)
-    medias = models.ManyToManyField("Media", related_name="cases", blank=True)
+    #medias = models.ManyToManyField("Media", related_name="cases", blank=True)
     drug_issue_type = models.CharField(
         max_length=20, choices=DRUG_ISSUE_TYPE, blank=True, default=""
     )
@@ -261,18 +255,34 @@ class Case(models.Model):
 
             if medias:
                 for media in medias:
-                    if detect_malicious_patterns_in_media(media.path.path):
+                    if detect_malicious_patterns_in_media(media['uri']):
                         logger.critical(
-                            f"SECURITY ALERT: Malicious media detected in case {self.cid}, file: {media.path.path}"
+                            f"SECURITY ALERT: Malicious media detected in case {self.cid}, file: {media['uri']}"
                         )
                         raise ValidationError("Malicious media file detected.")
+                    mtype = media.type
+                    if 'image' in mtype.split('/'):
+                        mtype="photo"
+                    #if mtype == "video":
+                    if 'video' in mtype.split('/'):
+                        mtype="video"
+                    #if mtype == "document":
+                    if 'application' in mtype.split('/'):
+                        mtype="document"
+
+                    md=Media.objects.create(
+                            source="history",
+                            parentId=history.id,
+                            mtype=mtype,
+                            path=media['uri'],
+                        )
                 try:
-                    history.medias.add(*medias)
+                    #history.medias.add(*medias)
                     flag = True
                 except Exception as e:
                     logger.error(f"Failed to add medias to case history {history.id}: {str(e)}")
                     # Delete all medias added to the history so far
-                    history.medias.clear()
+                   # history.medias.clear()
                     raise
                 logger.info(
                     f"Added {len(medias)} media files to case history {history.id}"
@@ -471,20 +481,32 @@ class Case(models.Model):
 
 #This model stores the media files uploaded by the user. It can be a video, photo, audio or document.
 class Media(models.Model):
+    Mtype = (
+        ("video", "Video"),
+        ("photo", "Photo"),
+        ("audio", "Audio"),
+        ("document", "Document"),
+    )
+    sourceType = (
+            ("case","case"),
+            ("history","history")
+            )
     #mid = models.BigAutoField(primary_key=True)
+    source = models.CharField(max_length=10, choices=sourceType, default="case")
+    parentId = models.CharField(max_length=10,blank=True,null=True)
     mtype = models.CharField(max_length=10, choices=Mtype, default="photo")
     path = models.FileField(upload_to=get_upload_path, validators=[file_type_validator])
     created = models.DateTimeField(auto_now_add=True)
-    description = models.TextField(null=True)
+    #description = models.TextField(null=True)
     def save(self, **kwargs):
         try:
             super().save(**kwargs)
-            logger.info(f"Saved media file {self.mid} of type {self.mtype}")
-            return self.mid  # Return the media ID after saving
+            logger.info(f"Saved media file of type {self.mtype}")
+            return self.id  # Return the media ID after saving
         except Exception as e:
             logger.error(f"Error saving media file: {str(e)}", exc_info=True)
             raise   
-        #return None  # Return None if an error occurs 
+        return None  # Return None if an error occurs 
 
 
 
@@ -498,7 +520,7 @@ class CaseHistory(models.Model):
     lat = models.CharField(max_length=10, blank=True, null=True)
     long = models.CharField(max_length=10, blank=True, null=True)
     geo_location = models.PointField(blank=True, null=True, srid=4326)
-    medias = models.ManyToManyField(Media, related_name="case_histories", blank=True)
+    ##medias = models.ManyToManyField(Media, related_name="case_histories", blank=True)
 
     def distance(self):
         if self.case.geo_location and self.geo_location:

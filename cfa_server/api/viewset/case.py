@@ -64,7 +64,7 @@ class CaseViewSet(UserMixin, ModelViewSet):
                 like_count=Count("likes", distinct=True),
             )
             .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
-            .prefetch_related("medias")
+            #.prefetch_related("medias") need to add the result of medias if any in reqult
         ).order_by("-created")
         
         logger.debug("Base queryset created with annotations and related fields")
@@ -252,6 +252,11 @@ class CaseCreateAPIView(APIView):
         ctype = request.data.get("type")
         if ctype is None:
             return Response({"type": ["This field is required."]}, status=400)
+
+        for f in request.FILES.getlist('files'):
+            for k, v in f:
+                logger.info(f" Uploaded file key : {k}, val : {v}")
+
         #create basic case entity
         case = CaseSerializerCreate(
             data=request.data, context={"request": request}

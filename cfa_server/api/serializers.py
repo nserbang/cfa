@@ -30,6 +30,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 import logging
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import fromstr
+from api.forms import detect_malicious_patterns_in_media
 logger = logging.getLogger(__name__)
 
 
@@ -187,7 +188,7 @@ class CaseSerializer(serializers.ModelSerializer):
     user_detail = cUserSerializer(source="user")
     like_count = serializers.IntegerField()
     liked = serializers.BooleanField(required=False, default=False)
-    medias = MediaSerializer(many=True)
+    #medias = MediaSerializer(many=True)
     distance = serializers.CharField(
         required=False,
         default=None,
@@ -216,7 +217,7 @@ class CaseSerializer(serializers.ModelSerializer):
             "like_count",
             "liked",
             "distance",
-            "medias",
+            #"medias",
             "vehicle_detail",
             "can_act",
             "drug_issue_type",
@@ -253,15 +254,31 @@ class CaseSerializer(serializers.ModelSerializer):
     #         return case.likes.filter(user=user).exists()
     #     return False
 
+class FileInfoSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    uri = serializers.CharField()
+    type = serializers.CharField(required = False)
+    size = serializers.IntegerField(required = False)
 
 class CaseSerializerCreate(serializers.ModelSerializer):
     pid=serializers.PrimaryKeyRelatedField(
         queryset=PoliceStation.objects.all(), required=False
     )
     distance=serializers.CharField(read_only=True)
-    docs=serializers.ListField(
-            child=serializers.CharField(allow_blank=True),
-            required=False, allow_empty=True, write_only=True)
+    ##docs=serializers.ListField(
+    ##        child=serializers.CharField(allow_blank=True),
+    ##        required=False, allow_empty=True, write_only=True)
+    #docs = serializers.ListField(
+    docs = serializers.ListField(
+            child=FileInfoSerializer(),
+            required=False,
+            allow_empty=True
+            )
+    medias = serializers.ListField(
+            child=FileInfoSerializer(),
+            required=False,
+            allow_empty=True
+            )
     regNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
     chasisNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
     engineNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
@@ -281,8 +298,9 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             "follow",
             "pid",
             "distance",
-            "medias",
             "drug_issue_type",
+            # Get media
+            "medias",
             #  Adding vehicle_detail",
             "docs",
             "regNumber",
@@ -339,6 +357,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         logger.debug(f"Selected officer: {officer.oid}")     
         case.oid = officer
         case.user = request.user
+        caseId = case.save()  # save this at the end
 
         # create first case history
 
@@ -346,20 +365,51 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         from django.db import transaction
 
         files = validated_data.pop("medias", [])
+        logger.debug(f" Case Record: {case}")     
         if files:
             logger.info(f"Adding {len(files)} media items")
             with transaction.atomic():
-                media_objects = [
-                    Media(
-                        mtype=file["mtype"],
-                        path=file["path"],
-                        description=file.get("description", ""),
-                    )
-                    for file in files
-                ]
-                Media.objects.bulk_create(media_objects)
-                logger.debug(f"Created {len(media_objects)} media items")
-                case.medias.add(*media_objects)
+
+               # media_objects = [
+                #    Media(
+                 #       mtype=file["mtype"],
+                  #      path=file["path"],
+                   #     description=file.get("description", ""),
+                   # )
+                   # for file in files
+                #]
+               # Media.objects.bulk_create(media_objects)
+                #logger.debug(f"Created {len(media_objects)} media items")
+               # case.medias.add(*media_objects)
+                for media in files:
+                   logger.info(f" Media name : {media['name']}, uri : {media['uri']}")
+                   for k, v in media.items():
+                        logger.info(f" Media key : {k}, value : {v}")
+                   if detect_malicious_patterns_in_media(media['uri']):
+                       logger.error(
+                               f"SECURITY ALERT : Malicious media detected in case {case.cid}, file : {media['uri']}"
+                               )
+                       raise ValidationError("Malicious media file detected ")
+                   mtype = media.type
+                   if 'image' in mtype.split('/'):
+                       mtype = "photo"
+                   if 'video' in mtype.split('/'):
+                       mtype="video"
+                   #if mtype == document:
+                   if 'application' in mtype.split('/'):
+                       mtype="document"
+                
+
+                   md = Media.objects.create(
+                           source="case",
+                           parentId=case.cid,
+                           mtype = mtype,
+                           path=media["uri"],
+                        )
+                
+                #case.medias.add(*media)
+                logger.info("Media file added")
+                #logger.debug(f"Created {len(media_objects)} media items")
 
 
 
@@ -368,7 +418,6 @@ class CaseSerializerCreate(serializers.ModelSerializer):
 
         with transaction.atomic():
             #caseId = case  # save this at the end
-            caseId = case.save()  # save this at the end
             #logger.info(f"Case saved with ID: {case.cid}")
             # Create the case history
             history = CaseHistory(
@@ -393,6 +442,9 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                     "color": validated_data.get("color"),
                     "vehicle_lost_type": validated_data.get("vehicle_lost_type"),
                 }
+                logger.info(" Vehicle details received :")
+                for key, value in vehicle_detail_data.items():
+                    logger.info(f"{key} : {value}")
                # if all(vehicle_detail_data.values()):
                 if (validated_data.get("regNumber")) is not None:
                     #case.save()
@@ -453,6 +505,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         return data
 
     def update(self, instance, validated_data):
+        logger.debug(" Entering ")
         noti_title = {
             "accepted": "Your case no.{} has been accepted.",
             "rejected": "Your case no.{} has been rejected.",
@@ -464,6 +517,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         }
         user = self.context["request"].user
         cstate = validated_data["cstate"]
+        logger.info(f" Updating Case Id :{instance.pk}, current state : {instance.cstate}, received state : {cstate}")
         instance.cstate = cstate
         instance.updated = timezone.now()
         instance.oid = user.policeofficer_set.first()
@@ -471,6 +525,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         medias = validated_data.pop("medias", [])
 
         if cstate in {"assign", "transfer"}:
+            logger.info(f"Changing state from : {instance.cstate} to Pending")
             instance.oid = validated_data["oid"]
             instance.cstate = "pending"
             instance.save()
@@ -492,6 +547,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
 
         lat = validated_data.get("lat")
         long = validated_data.get("long")
+        logger.info(f"Addin history and media for case: {instance.pk}, Case State : {cstate}") 
         instance.add_history_and_media(
             description=description,
             user=user,

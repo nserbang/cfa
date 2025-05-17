@@ -205,9 +205,9 @@ class HomePageView(View):
                 ),
             )
             .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
-            .prefetch_related(
-                "casehistory_set", "comment_set", "comment_set__user", "medias"
-            )
+            #.prefetch_related(
+            #    "casehistory_set", "comment_set", "comment_set__user", "medias"
+            #)
             .order_by("-created")
         )
         lat = self.request.GET.get("lat")

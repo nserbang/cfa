@@ -1,5 +1,10 @@
 import re
 import magic
+import logging
+
+# Configure logger
+logger = logging.getLogger(__name__)
+#logging.basicConfig(level=logging.INFO)
 
 def detect_malicious_patterns(pdf_path):
     malicious_patterns = [
@@ -110,3 +115,37 @@ def detect_malicious_patterns_in_media(file_path):
                     return True
 
     return False
+
+from collections import OrderedDict
+
+def format_record(record, indent=0):
+    """Recursively format an OrderedDict record with proper indentation"""
+    output = []
+    indent_str = ' ' * indent
+    for key, value in record.items():
+        if isinstance(value, OrderedDict):
+            output.append(f"{indent_str}{key}:")
+            output.append(format_record(value, indent + 4))
+        elif isinstance(value, list):
+            output.append(f"{indent_str}{key}: [")
+            for item in value:
+                if isinstance(item, OrderedDict):
+                    output.append(format_record(item, indent + 8))
+                else:
+                    output.append(f"{' ' * (indent + 4)}{item}")
+            output.append(f"{indent_str}]")
+        elif isinstance(value, dict):
+            output.append(f"{indent_str}{key}: {{")
+            for k, v in value.items():
+                output.append(f"{' ' * (indent + 4)}{k}: {v}")
+            output.append(f"{indent_str}}}")
+        else:
+            output.append(f"{indent_str}{key}: {value}")
+    return '\n'.join(output)
+
+def print_formatted_records(records):
+    """Print a list of records in a formatted way"""
+    for i, record in enumerate(records, 1):
+        logger.info(f"\n=== Record {i} ===")
+        logger.info(format_record(record))
+        logger.info("-" * 50)

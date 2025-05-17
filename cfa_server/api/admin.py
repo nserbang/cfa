@@ -481,8 +481,8 @@ class MediaAdmin(admin.ModelAdmin):
 
     form = MediaForm
 
-    list_display = ["mtype", "path"]
-    search_fields = ["mtype"]
+    list_display = ["parentId","source","mtype", "path"]
+    search_fields = ["mtype","source","parentId"]
 
 #@admin.register(LostVehicle)
 class LostVehicleAdmin(admin.ModelAdmin):

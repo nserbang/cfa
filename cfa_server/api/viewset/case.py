@@ -13,7 +13,9 @@ from api.models import Case, CaseHistory, LostVehicle, Comment, Media, Like
 from django.db.models import Q
 from api.viewset.permission import IsPoliceOfficer
 import logging
-
+from django.db import transaction
+from api.forms import print_formatted_records
+from django.forms.models import model_to_dict
 logger = logging.getLogger(__name__)
 
 from api.serializers import (
@@ -141,14 +143,54 @@ class CaseViewSet(UserMixin, ModelViewSet):
             logger.debug(f"Paginating results, page size: {len(page)}")
             self.add_distances(page)
             serializer = self.get_serializer(page, many=True)
-            logger.info("Exiting list with paginated response")
-            return self.get_paginated_response(serializer.data)
+            response_data = serializer.data
+            #logger.debug(f"Response data before append: {response_data}")
+            #print_formatted_records(response_data)        
+            self.append_media(response_data)
+            #logger.debug(f"Response data after append: {response_data}")
+            print_formatted_records(response_data)
+            logger.info(f"Exiting list with paginated response with response data")
+            #return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response(response_data)
 
         logger.debug("No pagination, processing full queryset")
         self.add_distances(queryset)
         serializer = self.get_serializer(queryset, many=True)
-        logger.info("Exiting list with full response")
-        return Response(serializer.data)
+        response_data = serializer.data
+        #logger.debug(f"Response data before append: {response_data}")
+        #print_formatted_records(response_data)        
+        self.append_media(response_data)
+        #logger.debug(f"Response data after append: {response_data}")
+        print_formatted_records(response_data)  
+        logger.info(f"Exiting list with full response with response data")
+        #return Response(serializer.data)
+        return Response(response_data)
+
+    def append_media(self, data):
+        logger.info(" Appending medias to response ")
+        case_ids = [item["cid"] for item in data]
+        logger.info(f"Case IDs: {case_ids}")
+        medias = Media.objects.filter(source="case", parentId__in=case_ids)
+        #for media in medias:
+            #logger.info(f"Media details - ID: {media.id}, Source: {media.source}, Parent ID: {media.parentId}, Type: {media.mtype}, Path: {media.path}")
+        media_dict = {}
+        for media in medias:
+            #logger.debug(f" ParentID type : {type(media.parentId)}")
+            #logger.info(f" Apppeinding file : {media.path}, type : {media.mtype}, type : {media.source}, parentId : {media.parentId}")
+            if media.parentId not in media_dict:
+                media_dict[media.parentId] = []
+            media_dict[media.parentId].append({
+                "mtype":media.mtype,
+                "path":media.path.url if media.path else None,
+            }
+            )
+        for item in data:
+            item["medias"] = media_dict.get(item["cid"], [])
+            #logger.debug(f" CID type type : {type(item['cid'])}")
+            #for media in item["medias"]:
+                #logger.info(f"Media details - Type: {media['mtype']}, Path: {media['path']}")
+            #logger.info("Media appended succcefully")
+
 
     def add_distances(self, data):
         logger.info("Entering add_distances")
@@ -201,10 +243,32 @@ class CaseHistoryViewSet(UserMixin, ReadOnlyModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
+        logger.info(f"Entering CaseHistoryViewSet case id:")
         case_id = int(self.kwargs["case_id"])
-        qs = CaseHistory.objects.filter(case_id=case_id)
+        qs = CaseHistory.objects.filter(case_id=case_id).order_by("-created")
         return qs
+        """
+        # Append medias to each case history
+        history_ids = qs.values_list("id", flat=True)
+        medias = Media.objects.filter(source="history", parentId__in=history_ids)
+        media_dict = {}
+        for media in medias:
+            if media.parentId not in media_dict:
+                media_dict[media.parentId] = []
+            media_dict[media.parentId].append({
+                "mtype": media.mtype,
+                "path": media.path.url if media.path else None,
+            })
 
+        for history in qs:
+            setattr(history, "medias", media_dict.get(history.id,[]))
+            #history.medias = media_dict.get(history.id, [])
+
+        records = [model_to_dict(history) for history in qs]
+        print_formatted_records(records)
+        logger.info(f"Exiting CaseHistoryViewSet case result: {qs}")
+        return qs
+        """
 
 class MediaViewSet(ModelViewSet):
     serializer_class = MediaSerializer
@@ -230,62 +294,144 @@ class CommentViewSet(ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        logger.info(f" Entering. request : {self.request}, data : {self.request.data}, files : {self.request.FILES} ")
+        comment = serializer.save(user=self.request.user)
+        medias = self.request.FILES.getlist('medias')
+        logger.info(f"Media Received: {medias}")
+        for media in medias:
+            ct = media.content_type
+            if 'image' in ct:
+                mtyper = "photo"
+            elif 'video' in ct:
+                mtyper = "video"
+            elif 'application' in ct:
+                mtyper = "document"
+            else:
+                logger.warning(f" Unknown medi type: {ct}")
+
+            Media.objects.create(
+                    source="comment",
+                    parentId = comment.cmtid,
+                    mtype = mtyper,
+                    path = media,
+                )
+        logger.info(" Exiting ")
 
     def get_queryset(self):
+        logger.info("Entering comment")
         case_id = self.kwargs["case_id"]
-        qs = Comment.objects.filter(cid=case_id)
+        qs = Comment.objects.filter(cid=case_id).order_by("-created")
         return qs
 
+        """
+        # Append medias to each comment
+        comment_ids = qs.values_list("cmtid", flat=True)
+        medias = Media.objects.filter(source="comment", parentId__in=comment_ids)
+        media_dict = {}
+        for media in medias:
+            if media.parentId not in media_dict:
+                media_dict[media.parentId] = []
+            media_dict[media.parentId].append({
+                "mtype": media.mtype,
+                "path": media.path.url if media.path else None,
+            })
+
+        for comment in qs:
+            setattr(comment, "medias", media_dict.get(comment.cmtid,[]))
+            #comment.medias = media_dict.get(comment.cmtid, [])
+
+        records = [model_to_dict(comment) for comment in qs]
+        print_formatted_records(records)
+        #print_formatted_records(qs)
+        logger.info("Exiting comment")
+        return qs """
+
+
+import os
+from django.conf import settings
+from rest_framework.exceptions import ValidationError
 
 class CaseCreateAPIView(APIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = CaseSerializerCreate
 
     def post(self, request, format=None):
-        logger.info(f"ENTERING post with  request :{request} , data : {request.data}")
-        #check if user is authenticated
+        logger.info(f"ENTERING post with request: {request}, data: {request.data}")
+
+        # Check if user is authenticated
         if request.user.is_anonymous:
             return Response(
                 {"detail": "You must be logged in to create a case."}, status=403
             )
+
         ctype = request.data.get("type")
         if ctype is None:
             return Response({"type": ["This field is required."]}, status=400)
 
-        for f in request.FILES.getlist('files'):
-            for k, v in f:
-                logger.info(f" Uploaded file key : {k}, val : {v}")
+        logger.info(f"UPLOADED FILES: {request.FILES}")
 
-        #create basic case entity
-        case = CaseSerializerCreate(
+        # Create basic case entity
+        case_serializer = CaseSerializerCreate(
             data=request.data, context={"request": request}
         )
 
-        logger.info(f" case data validity test :{case}")
-        if case.is_valid():
-            logger.info(f" case data valid")
-            from django.db import transaction
+        if case_serializer.is_valid():
+            logger.info("Case data is valid")
             try:
                 with transaction.atomic():
-                    case_instance = case.save()
+                    case_instance = case_serializer.save()
                     if not case_instance:
-                        logger.info(f"Exiting post with case creation failed")
+                        logger.error("Case creation failed")
                         return Response(
-                        {"detail": "Case creation failed."}, status=400
-                    )
-                logger.info(f"Exiting. Case created successfully: {case_instance.cid}")
-                return Response(case.data, status=201)
+                            {"detail": "Case creation failed."}, status=400
+                        )
+
+                    # Handle media files
+                    medias = request.FILES.getlist('medias')
+                    logger.info(f"Medias Received: {medias}")
+
+                    #media_dir = os.path.join(settings.MEDIA_ROOT, "case_media")
+                    #media_dir = os.path.join(settings.MEDIA_ROOT, "case_media")
+                    #os.makedirs(media_dir, exist_ok=True)
+
+                    for media in medias:
+                        # Save the file to the media directory
+                        #file_path = os.path.join(media_dir, media.name)
+                        #with open(file_path, "wb") as f:
+                            #for chunk in media.chunks():
+                                #f.write(chunk)
+                        #logger.info(f"File saved to: {file_path}")
+
+                        # Determine media type
+                        if 'image' in media.content_type:
+                            mtyper = "photo"
+                        elif 'video' in media.content_type:
+                            mtyper = "video"
+                        elif 'application' in media.content_type:
+                            mtyper = "document"
+                        else:
+                            logger.warning(f"Unknown media type: {media.content_type}")
+                            continue
+
+                        # Create Media object
+                        Media.objects.create(
+                            source="case",
+                            parentId=case_instance.cid,
+                            mtype=mtyper,
+                            path=media,
+                           # name=media.name,
+                        )
+
+                    logger.info(f"Case created successfully: {case_instance.cid}")
+                    return Response(case_serializer.data, status=201)
             except Exception as e:
                 logger.error(f"Case creation failed with exception: {str(e)}")
                 return Response(
                     {"detail": f"Case creation failed: {str(e)}"}, status=400
                 )
         else:
-            logger.info(f" case data validation failed: {str(case.errors)}")
-
-        logger.info(f"Exiting post with case creation failed")
-        return Response(case.errors, status=400)
+            logger.error(f"Case data validation failed: {case_serializer.errors}")
+            return Response(case_serializer.errors, status=400)
 
 
 class CaseUpdaateAPIView(UpdateAPIView):
@@ -294,12 +440,43 @@ class CaseUpdaateAPIView(UpdateAPIView):
     queryset = Case.objects.all()
 
     def put(self, request, *args, **kwargs):
+        logger.info(f" Entering. request : {request}, data : {request.data}, files : {request.FILES} ")
         instance = self.get_object()
         serializer = CaseUpdateSerializer(
             data=request.data, instance=instance, context={"request": request}
         )
         if serializer.is_valid():
-            serializer.save()
+            updated_case = serializer.save()
+            case_history = CaseHistory.objects.create(
+                    case = updated_case,
+                    user = request.user,
+                    cstate = updated_case.cstate,
+                    lat = request.data.get("lat",None),
+                    long = request.data.get("long",None)
+                )
+
+            medias = request.FILES.getlist('medias')
+            logger.info(f"Media Received: {medias}")
+            for media in medias:
+                ct = media.content_type
+                if 'image' in ct:
+                    mtyper = "photo"
+                elif 'video' in ct:
+                    mtyper = "video"
+                elif 'application' in ct:
+                    mtyper = "document"
+                else:
+                    logger.warning(f" Unknown medi type: {ct}")
+
+                Media.objects.create(
+                        source="history",
+                        parentId = case_history.id,
+                        mtype = mtyper,
+                        path = media,
+                    )
+            logger.info(f"Case updated succefuly for cid : {updated_case.cid}") 
+
+
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
 
@@ -310,6 +487,7 @@ class CaseUpdaateByReporterAPIView(UpdateAPIView):
     queryset = Case.objects.filter(cstate="info")
 
     def put(self, request, *args, **kwargs):
+        logger.info(f" Entering. request : {request}, data : {request.data}, files : {reqiest.FILES} ")
         instance = self.get_object()
         if instance.user != request.user:
             return Response({"detail": "Permission Denied."}, status=403)
@@ -317,7 +495,37 @@ class CaseUpdaateByReporterAPIView(UpdateAPIView):
             data=request.data, instance=instance, context={"request": request}
         )
         if serializer.is_valid():
-            serializer.save()
+            #serializer.save()
+            updated_case = serializer.save()
+            case_history = CaseHistory.objects.create(
+                    case = updated_case,
+                    user = request.user,
+                    cstate = updated_case.cstate,
+                    lat = request.data.get("lat",None),
+                    long = request.data.get("long",None)
+                )
+
+            logger.info(f" Case history saved: {updated_case.cid}")
+            medias = request.FILES.getlist('medias')
+            logger.info(f"Media Received: {medias}")
+            for media in medias:
+                ct = media.content_type
+                if 'image' in ct:
+                    mtyper = "photo"
+                elif 'video' in ct:
+                    mtyper = "video"
+                elif 'application' in ct:
+                    mtyper = "document"
+                else:
+                    logger.warning(f" Unknown medi type: {ct}")
+
+                Media.objects.create(
+                        source="history",
+                        parentId = case_history.id,
+                        mtype = mtyper,
+                        path = media,
+                    )
+            logger.info(f"Case updated succefuly for cid : {updated_case.cid}") 
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
 
@@ -327,6 +535,7 @@ class CaseAcceptAPIView(UpdateAPIView):
     permission_classes = (IsPoliceOfficer,)
 
     def put(self, request, *args, **kwargs):
+        logger.info(f" Entering. request : {request}, data : {request.data}, files : {reqiest.FILES} ")
         case = self.get_object()
         case.oid = request.user.policeofficer_set.first()
         case.save()
@@ -340,9 +549,33 @@ class CommentCUDViewSet(ModelViewSet):
 
     def get_queryset(self):
         qs = Comment.objects.all()
+
+        # Append medias to each comment
+        comment_ids = qs.values_list("cmtid", flat=True)
+        medias = Media.objects.filter(source="comment", parentId__in=comment_ids)
+        media_dict = {}
+        for media in medias:
+            if media.parentId not in media_dict:
+                media_dict[media.parentId] = []
+            media_dict[media.parentId].append({
+                "mtype": media.mtype,
+                "path": media.path.url if media.path else None,
+            })
+
+        for comment in qs:
+            setattr(comment, "medias", media_dict.get(comment.cmtid,[]))
+            #comment.medias = media_dict.get(comment.cmtid, [])
+        
+        records = [model_to_dict(comment) for comment in qs]
+        print_formatted_records(records)
+        #print_formatted_records(qs)
+        logger.info("Exiting comment")
+        #logger.info(f"Exiting Comment queryset: {qs}")
+
         return qs
 
     def create(self, request, *args, **kwargs):
+        logger.info(f" Entering. request : {request}, data : {request.data}, files : {reqiest.FILES} ")
         serializer = CommentCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

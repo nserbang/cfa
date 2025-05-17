@@ -489,11 +489,13 @@ class Media(models.Model):
     )
     sourceType = (
             ("case","case"),
-            ("history","history")
+            ("history","history"),
+            ("comment","comment"),
             )
     #mid = models.BigAutoField(primary_key=True)
     source = models.CharField(max_length=10, choices=sourceType, default="case")
-    parentId = models.CharField(max_length=10,blank=True,null=True)
+    #parentId = models.CharField(max_length=10,blank=True,null=True)
+    parentId = models.BigIntegerField(blank=True,null=True)
     mtype = models.CharField(max_length=10, choices=Mtype, default="photo")
     path = models.FileField(upload_to=get_upload_path, validators=[file_type_validator])
     created = models.DateTimeField(auto_now_add=True)

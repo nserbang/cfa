@@ -124,14 +124,54 @@ class PoliceOfficerSerializer(serializers.Serializer):
 
 
 class MediaSerializer(serializers.ModelSerializer):
+   # path=serializers.FileField();
     class Meta:
         model = Media
         fields = [
-            "id",
-            "mtype",
-            "path",
-            "description",
+            #"id",
+            #'mtype',
+            'path',
+            #"description",
         ]
+        def to_internal_value(self, data):
+            if isinstance(data, dict) and 'path' in data:
+                return super().to_internal_value(data)
+            if hasattr(data, 'read'):
+                return {'path':data}
+            raise serializers.ValidationError(" Invalid Media data format ")
+
+        def create(self, validated_data):
+            request = self.context.get('request')
+            cntx = self.context.get('cntx')
+            source =""
+            parentId =""
+            if cntx is Case:
+                source ="case"
+                parentId = cntx.cid
+            elif cntx is CaseHistory:
+                source ="history"
+                parentId = cntx.id
+            elif cntx is Comment:
+                source = "comment"
+                parentId = cntx.cmtid
+            mtype = magic.from_buffer(data.read(1024), mime=True)
+            if 'image' in mtype.split('/'):
+                mtype = "photo"
+            elif 'video' in mtype.split('/'):
+                mtype="video"
+                #if mtype == document:
+            elif 'application' in mtype.split('/'):
+                mtype="document"
+            else:
+                logger.warning(f" Unrecognized file :{mtype}")
+                raise serializers.ValidationError("Invalid file")
+            media = Media.objects.create(
+                    path = path,
+                    mtype = mtype,
+                    parentId = parentId,
+                    source = source
+                )
+            return media
 
     def validate_path(self, data):
         logger.info("Entering validate_path")
@@ -151,8 +191,10 @@ class MediaSerializer(serializers.ModelSerializer):
 
 class CaseHistorySerializer(serializers.ModelSerializer):
     user_details = cUserSerializer(source="user")
-    medias = MediaSerializer(many=True)
+    #medias = MediaSerializer(many=True)
     distance = serializers.CharField()
+
+    medias = MediaSerializer(many = True, required = False)
 
     class Meta:
         model = CaseHistory
@@ -169,6 +211,34 @@ class CaseHistorySerializer(serializers.ModelSerializer):
             "distance",
         ]
 
+    def to_representation(self, instance):
+        logger.info(f" Entering ") 
+        data = super().to_representation(instance)
+        request = self.context["request"]
+        medias = Media.objects.filter(source="history", parentId=instance.id)
+        data["medias"] = [
+                {
+                    "mtype": media.mtype,
+                    "path": request.build_absolute_uri(media.path.url) if media.path else None,
+                }
+                for media in medias
+            ]
+        logger.info(f" Executing: {data}") 
+        return data
+
+
+    """
+    def get_medias(self, obj):
+        medias = Media.objects.filter(source="history", parentId = obj.id)
+        return [
+                {
+                    "mtype": media.mtype,
+                    "path": media.path.url if media.path else None,
+                }
+                for media in medias
+            ]
+
+    """
 
 class LostVehicleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -255,10 +325,12 @@ class CaseSerializer(serializers.ModelSerializer):
     #     return False
 
 class FileInfoSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    uri = serializers.CharField()
-    type = serializers.CharField(required = False)
-    size = serializers.IntegerField(required = False)
+    #id = serializers.CharField()
+    #name = serializers.CharField()
+    #uri = serializers.CharField()
+    #type = serializers.CharField(required=False)
+    #size = serializers.IntegerField(required=False)
+    file = serializers.FileField(required=False, write_only=True)
 
 class CaseSerializerCreate(serializers.ModelSerializer):
     pid=serializers.PrimaryKeyRelatedField(
@@ -274,11 +346,21 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             required=False,
             allow_empty=True
             )
-    medias = serializers.ListField(
-            child=FileInfoSerializer(),
-            required=False,
-            allow_empty=True
-            )
+    """medias = serializers.ListField(
+            #child=FileInfoSerializer(),
+            child = MediaSerializer(),
+            #child=serializers.FileField(),
+            required=False
+            #allow_empty=True
+            )"""
+    medias = MediaSerializer(many = True, required = False)
+    #medias = FileInforSerializer(many=True)'
+    """medias = serializers.ListSerializer(
+            child = MediaSerializer(many=True, required=False),
+            required=False
+            )"""
+
+
     regNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
     chasisNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
     engineNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
@@ -362,12 +444,15 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         # create first case history
 
 
+        """
         from django.db import transaction
-
         files = validated_data.pop("medias", [])
         logger.debug(f" Case Record: {case}")     
         if files:
             logger.info(f"Adding {len(files)} media items")
+            from urllib.parse import urlparse
+            import os
+            from django.core.files.uploadedfile import InMemoryUploadedFile
             with transaction.atomic():
 
                # media_objects = [
@@ -382,10 +467,34 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                 #logger.debug(f"Created {len(media_objects)} media items")
                # case.medias.add(*media_objects)
                 for media in files:
-                   logger.info(f" Media name : {media['name']}, uri : {media['uri']}")
+                    logger.info(f" Iterating Media File ")
+                    try:
+                        media_serializer = MediaSerializer(data = media,
+                                context={
+                                    'request': request, 
+                                    'cntx': case
+                                    }
+                                )
+                        if media_serializer.is_valid():
+                            logger.info(f" Media file is valid ")
+                            media = media_serializer.save()
+                            logger.info(f" Media saved : {media.path}")
+                        else:
+                            case.delete()
+                            logger.info(f" Media file is invalid : {media_serializer.errors}")
+                            raise serializers.ValidationError(
+                                {"Media file error"}
+                            )
+                    except Exception as e:
+                        logger.info(f" Validity error : {str(e)}")
+
+                   logger.info(f" Media name : {media['file']}, uri : {media[file]}")
+                   parsed_uri = urlparse(media['file'])
+                   file_path = parsed_uri.path
+                   logger.info(f" FILE PATH : {file_path}")
                    for k, v in media.items():
                         logger.info(f" Media key : {k}, value : {v}")
-                   if detect_malicious_patterns_in_media(media['uri']):
+                   if detect_malicious_patterns_in_media(file_path):
                        logger.error(
                                f"SECURITY ALERT : Malicious media detected in case {case.cid}, file : {media['uri']}"
                                )
@@ -399,19 +508,36 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                    if 'application' in mtype.split('/'):
                        mtype="document"
                 
+                   logger.info(f" ADDING FILE : {file_path}")
+                   if 'file' in media and isinstance(media['file'], InMemoryUploadFile):
+                        logger.info(f" ADDING FILE with file : {file_path}")
+                        Media.objects.create(
+                                source="case",
+                                parentId=case.cid,
+                                mtype=mtype,
+                                path=file_path
+                            )
+                   elif 'uri' in media:
+                        logger.info(f" ADDING FILE with uri : {file_path}")
+                        try:
+                            response = request.get(media['uri'])
+                            if response.status_code == 200:
+                                file_name = os.path.basename(media['uri'])
+                                file_content = ContentFIle(response.content, name=file_name)
+                                Media.objects.create(
+                                        source="case",
+                                        parentId=case.cid,
+                                        mtype=mtype,
+                                        path=file_content
+                                    )
+                        except Exception as e:
+                            logger.error(f" Failed to download media from uri : {media['uri']}, error : {str(e)}")
 
-                   md = Media.objects.create(
-                           source="case",
-                           parentId=case.cid,
-                           mtype = mtype,
-                           path=media["uri"],
-                        )
                 
                 #case.medias.add(*media)
                 logger.info("Media file added")
                 #logger.debug(f"Created {len(media_objects)} media items")
-
-
+                """
 
 
         from django.db import transaction
@@ -471,20 +597,23 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
         #queryset=PoliceStation.objects.all(), required=False)
     lat = serializers.CharField(max_length=10, required=False)
     long = serializers.CharField(max_length=10, required=False)
+    medias = MediaSerializer(many=True, required=False)
 
     class Meta:
         model = Case
         fields = [
-            "cstate",
-            "oid",
-            # "pid",
-            "description",
-            "medias",
-            "lat",
-            "long",
-        ]
+                "cid",
+                "cstate",
+                "oid",
+                # "pid",
+                "description",
+                "medias",
+                "lat",
+                "long",
+            ]
 
     def validate(self, data):
+        logger.info(f" Entering ") 
         state = data["cstate"]
         if state in {"assign", "transfer"} and not data.get("oid"):
             raise serializers.ValidationError(
@@ -547,6 +676,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
 
         lat = validated_data.get("lat")
         long = validated_data.get("long")
+        """
         logger.info(f"Addin history and media for case: {instance.pk}, Case State : {cstate}") 
         instance.add_history_and_media(
             description=description,
@@ -555,11 +685,12 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             cstate=cstate,
             lat=lat,
             long=long,
-        )
+        ) """
         return instance
 
 
 class CaseUpdateByReporterSerializer(serializers.ModelSerializer):
+    medias = MediaSerializer(many=True, required=False)
     class Meta:
         model = Case
         fields = [
@@ -568,6 +699,7 @@ class CaseUpdateByReporterSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
+        logger.info(f" Entering ") 
         medias = validated_data.pop("medias", [])
         user = self.context["request"].user
         instance.updated = timezone.now()
@@ -582,18 +714,39 @@ class CaseUpdateByReporterSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     user_detail = cUserSerializer(source="user", read_only=True)
+    medias = MediaSerializer(many = True, required = False)
 
     class Meta:
         model = Comment
         fields = ["cmtid", "content", "cid", "user_detail", "created", "medias"]
 
     def to_representation(self, instance):
+        logger.info(f" Entering ") 
         data = super().to_representation(instance)
         request = self.context["request"]
-        data["medias"] = MediaSerializer(
+        """data["medias"] = MediaSerializer(
             instance.medias.all(), context={"request": request}, many=True
-        ).data
+        ).data"""
+        medias = Media.objects.filter(source="comment", parentId=instance.cmtid)
+        data["medias"] = [
+                {
+                    "mtype": media.mtype,
+                    "path": request.build_absolute_uri(media.path.url) if media.path else None,
+                }
+                for media in medias
+            ]
+        logger.info(f" Executing: {data}") 
         return data
+    """def get_medias(self, obj):
+        medias = Media.objects.filters(source="comment", parentId =obj.cmtid)
+        return [
+                {
+                    "mtype": media.mtype,
+                    "path": media.path.url if media.path else None,
+                }
+                for media in medias
+            ]"""
+
 
 
 class EmergencyTypeSerializer(serializers.ModelSerializer):
@@ -875,6 +1028,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
         queryset=cUser.objects.all(), write_only=True
     )
+    medias = MediaSerializer(many=True, required= False)
 
     class Meta:
         model = Comment

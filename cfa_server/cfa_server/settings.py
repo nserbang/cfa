@@ -38,7 +38,8 @@ DEVENV = True
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 TIME_ZONE = "Asia/Kolkata"
-
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
 # Application definition
 
 INSTALLED_APPS = [
@@ -116,7 +117,7 @@ WSGI_APPLICATION = "cfa_server.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-"""DATABASES = {
+DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": os.environ.get("DB_NAME", "cDb"),
@@ -137,7 +138,7 @@ DATABASES = {
         "PORT": 5432,
     }
 }
-
+"""
 # STATIC_ROOT = 'portal/static/'
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -461,8 +462,8 @@ OTP_VALIDITY_TIME: int = 5 * 60
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=50),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=300),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=500),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=3000),
     "TOKEN_OBTAIN_SERIALIZER": "api.serializers.CustomTokenObtainSerializer",
     "ROTATE_REFRESH_TOKENS": True,
 }

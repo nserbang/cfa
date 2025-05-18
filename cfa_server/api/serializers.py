@@ -441,104 +441,6 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         case.user = request.user
         caseId = case.save()  # save this at the end
 
-        # create first case history
-
-
-        """
-        from django.db import transaction
-        files = validated_data.pop("medias", [])
-        logger.debug(f" Case Record: {case}")     
-        if files:
-            logger.info(f"Adding {len(files)} media items")
-            from urllib.parse import urlparse
-            import os
-            from django.core.files.uploadedfile import InMemoryUploadedFile
-            with transaction.atomic():
-
-               # media_objects = [
-                #    Media(
-                 #       mtype=file["mtype"],
-                  #      path=file["path"],
-                   #     description=file.get("description", ""),
-                   # )
-                   # for file in files
-                #]
-               # Media.objects.bulk_create(media_objects)
-                #logger.debug(f"Created {len(media_objects)} media items")
-               # case.medias.add(*media_objects)
-                for media in files:
-                    logger.info(f" Iterating Media File ")
-                    try:
-                        media_serializer = MediaSerializer(data = media,
-                                context={
-                                    'request': request, 
-                                    'cntx': case
-                                    }
-                                )
-                        if media_serializer.is_valid():
-                            logger.info(f" Media file is valid ")
-                            media = media_serializer.save()
-                            logger.info(f" Media saved : {media.path}")
-                        else:
-                            case.delete()
-                            logger.info(f" Media file is invalid : {media_serializer.errors}")
-                            raise serializers.ValidationError(
-                                {"Media file error"}
-                            )
-                    except Exception as e:
-                        logger.info(f" Validity error : {str(e)}")
-
-                   logger.info(f" Media name : {media['file']}, uri : {media[file]}")
-                   parsed_uri = urlparse(media['file'])
-                   file_path = parsed_uri.path
-                   logger.info(f" FILE PATH : {file_path}")
-                   for k, v in media.items():
-                        logger.info(f" Media key : {k}, value : {v}")
-                   if detect_malicious_patterns_in_media(file_path):
-                       logger.error(
-                               f"SECURITY ALERT : Malicious media detected in case {case.cid}, file : {media['uri']}"
-                               )
-                       raise ValidationError("Malicious media file detected ")
-                   mtype = media.type
-                   if 'image' in mtype.split('/'):
-                       mtype = "photo"
-                   if 'video' in mtype.split('/'):
-                       mtype="video"
-                   #if mtype == document:
-                   if 'application' in mtype.split('/'):
-                       mtype="document"
-                
-                   logger.info(f" ADDING FILE : {file_path}")
-                   if 'file' in media and isinstance(media['file'], InMemoryUploadFile):
-                        logger.info(f" ADDING FILE with file : {file_path}")
-                        Media.objects.create(
-                                source="case",
-                                parentId=case.cid,
-                                mtype=mtype,
-                                path=file_path
-                            )
-                   elif 'uri' in media:
-                        logger.info(f" ADDING FILE with uri : {file_path}")
-                        try:
-                            response = request.get(media['uri'])
-                            if response.status_code == 200:
-                                file_name = os.path.basename(media['uri'])
-                                file_content = ContentFIle(response.content, name=file_name)
-                                Media.objects.create(
-                                        source="case",
-                                        parentId=case.cid,
-                                        mtype=mtype,
-                                        path=file_content
-                                    )
-                        except Exception as e:
-                            logger.error(f" Failed to download media from uri : {media['uri']}, error : {str(e)}")
-
-                
-                #case.medias.add(*media)
-                logger.info("Media file added")
-                #logger.debug(f"Created {len(media_objects)} media items")
-                """
-
 
         from django.db import transaction
 
@@ -568,9 +470,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                     "color": validated_data.get("color"),
                     "vehicle_lost_type": validated_data.get("vehicle_lost_type"),
                 }
-                logger.info(" Vehicle details received :")
-                for key, value in vehicle_detail_data.items():
-                    logger.info(f"{key} : {value}")
+
                # if all(vehicle_detail_data.values()):
                 if (validated_data.get("regNumber")) is not None:
                     #case.save()
@@ -581,7 +481,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                     logger.info(f" Lost vehicle case created with ID : {lv.id} ")
                 else:
                     history.delete()
-                    case.delete();
+                    case.delete()
                     raise serializers.ValidationError(
                         {"vehicle_detail": "At lest registration number required."}
                     )       
@@ -673,19 +573,6 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             #instance.send_notitication(message, [o["user_id"] for o in supervisors])
             for supervisor in supervisors:
                 send_sms(message, supervisor["user__mobile"])
-
-        lat = validated_data.get("lat")
-        long = validated_data.get("long")
-        """
-        logger.info(f"Addin history and media for case: {instance.pk}, Case State : {cstate}") 
-        instance.add_history_and_media(
-            description=description,
-            user=user,
-            medias=medias,
-            cstate=cstate,
-            lat=lat,
-            long=long,
-        ) """
         return instance
 
 
@@ -724,9 +611,7 @@ class CommentSerializer(serializers.ModelSerializer):
         logger.info(f" Entering ") 
         data = super().to_representation(instance)
         request = self.context["request"]
-        """data["medias"] = MediaSerializer(
-            instance.medias.all(), context={"request": request}, many=True
-        ).data"""
+
         medias = Media.objects.filter(source="comment", parentId=instance.cmtid)
         data["medias"] = [
                 {
@@ -737,16 +622,6 @@ class CommentSerializer(serializers.ModelSerializer):
             ]
         logger.info(f" Executing: {data}") 
         return data
-    """def get_medias(self, obj):
-        medias = Media.objects.filters(source="comment", parentId =obj.cmtid)
-        return [
-                {
-                    "mtype": media.mtype,
-                    "path": media.path.url if media.path else None,
-                }
-                for media in medias
-            ]"""
-
 
 
 class EmergencyTypeSerializer(serializers.ModelSerializer):

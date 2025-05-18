@@ -226,20 +226,6 @@ class CaseHistorySerializer(serializers.ModelSerializer):
         logger.info(f" Executing: {data}") 
         return data
 
-
-    """
-    def get_medias(self, obj):
-        medias = Media.objects.filter(source="history", parentId = obj.id)
-        return [
-                {
-                    "mtype": media.mtype,
-                    "path": media.path.url if media.path else None,
-                }
-                for media in medias
-            ]
-
-    """
-
 class LostVehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = LostVehicle
@@ -325,11 +311,6 @@ class CaseSerializer(serializers.ModelSerializer):
     #     return False
 
 class FileInfoSerializer(serializers.Serializer):
-    #id = serializers.CharField()
-    #name = serializers.CharField()
-    #uri = serializers.CharField()
-    #type = serializers.CharField(required=False)
-    #size = serializers.IntegerField(required=False)
     file = serializers.FileField(required=False, write_only=True)
 
 class CaseSerializerCreate(serializers.ModelSerializer):
@@ -337,29 +318,14 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         queryset=PoliceStation.objects.all(), required=False
     )
     distance=serializers.CharField(read_only=True)
-    ##docs=serializers.ListField(
-    ##        child=serializers.CharField(allow_blank=True),
-    ##        required=False, allow_empty=True, write_only=True)
-    #docs = serializers.ListField(
+
     docs = serializers.ListField(
             child=FileInfoSerializer(),
             required=False,
             allow_empty=True
             )
-    """medias = serializers.ListField(
-            #child=FileInfoSerializer(),
-            child = MediaSerializer(),
-            #child=serializers.FileField(),
-            required=False
-            #allow_empty=True
-            )"""
-    medias = MediaSerializer(many = True, required = False)
-    #medias = FileInforSerializer(many=True)'
-    """medias = serializers.ListSerializer(
-            child = MediaSerializer(many=True, required=False),
-            required=False
-            )"""
 
+    medias = MediaSerializer(many = True, required = False)
 
     regNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
     chasisNumber=serializers.CharField(required=False, allow_blank=True, write_only=True)
@@ -395,11 +361,8 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        logger.info("Entering create")
-        logger.debug(f"Creating case with data: {validated_data}")
-        isDev = settings.DEVENV
-     
-        logger.info(" DEV ENVIROMENT: {}".format(settings.DEVENV))
+        logger.debug(f"Entering Creating case with data: {validated_data}")
+
         request = self.context["request"]
         case = Case(
             type=validated_data["type"],

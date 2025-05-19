@@ -83,3 +83,18 @@ function openVenobox(e){
     });
     vobx.open()
 }
+
+function toggleDescription(button) {
+	const hiddenText = button.nextElementSibling;
+	if(hiddenText.style.display === "none") {
+		hiddenText.style.display = "inline";
+		button.textContent = "Less";
+	}else{
+		hiddenText.style.display = "none";
+		button.textContent = "More"
+	}
+}
+
+
+
+

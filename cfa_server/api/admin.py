@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.html import format_html
+from django.urls import reverse
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 import logging
@@ -347,16 +348,16 @@ class CaseAdmin(admin.ModelAdmin):
         logger.info("Exiting get_search_results")
         return results
 
-    def PoliceStation(self, obj):
+    def police_station_name(self, obj):
         logger.info("Entering PoliceStation")
-        try:
-            police_station_name = obj.pid.name
-            logger.info(f"Police station name: {police_station_name}")
-        except Exception as e:
-            logger.exception(f"Error getting police station name: {e}")
-            police_station_name = "Error getting police station name"
-        logger.info("Exiting PoliceStation")
-        return police_station_name
+        if obj.pid:
+            try:
+                #police_station_name = obj.pid.name
+                logger.debug(f"Police station name: {obj.pid.name}")
+                return obj.pid.name + ",\n "+obj.pid.address
+            except Exception as e:
+                logger.info("Exiting PoliceStation")
+        return "Not Assigned"
 
     PoliceStation.short_description = "Police Station"
 
@@ -377,47 +378,118 @@ class CaseAdmin(admin.ModelAdmin):
     list_display = ["contactName", PoliceStation, "number"]
     # ps_cid.short_descrption = 'Contact Id'
     list_select_related = ("pid",)
-    PoliceStation.admin_order_field = "pid__pid"
+    #police_station_name.admin_order_field = "pid__pid"
 
     def officer_name(self, obj):
-        logger.info("Entering officer_name")
-        try:
-            ranks = PoliceOfficer.RANKS
-            dic = {}
-            for x in ranks:
-                d1 = {k: v for k, v in zip(x[0:], x[1:])}
-                dic = {**dic, **d1}
-            officer_name_html = format_html(
-                "<span> <b> {} </b> <p> {} </p> </span>",
-                obj.oid.user.first_name,
-                dic[obj.oid.rank],
-            )
-            logger.info("Officer name formatted successfully")
-        except Exception as e:
-            logger.exception(f"Error formatting officer name: {e}")
-            officer_name_html = "Error formatting officer name"
-        logger.info("Exiting officer_name")
-        return officer_name_html
+        if obj.oid:
+            return obj.oid.user.first_name + " "+ obj.oid.user.last_name + ", Mob:"+obj.oid.user.mobile
+        return "Not Assigned"
 
-    officer_name.short_description = "Officer Name"
+
+    officer_name.short_description = "Officer"
     officer_name.admin_order_field = "oid__oid"
     list_select_related = ("pid", "oid")
+    
+    def history_button(self, obj):
+        url = reverse("admin:api_casehistory_changelist")+f"?case__cid__exact={obj.cid}"
+        return format_html('<a class="button" href="{}">History</a>',url)
+    
+    def media_button(self, obj):
+        url = reverse("admin:api_media_changelist")+f"?parentId__exact={obj.cid}&source__exact=case"
+        return format_html('<a class="button" href="{}">Media</a>',url)
+
+    def description_preview(self, obj):
+        if obj.description:
+            return format_html(
+                    '<span title="{}">{}</span>',
+                    obj.description,
+                    obj.description[:40] + "..." if len(obj.description) > 40 else obj.description,
+                )
+            return format_html('<span style="color:gray;"> No Description </span>')
+
+    def created_date(self, obj):
+            return format_html('<span style="font-weight:bold;">{} </span>', obj.created.strftime("%b %d, %Y, %I:%M %p"))
+
+    """
+                    f"<b>Reg.No.: </b>{vehicle.regNumber or 'N/A'} </br>"
+                    f"<b>Chasiss: </b> {vehicle.chasisNumber or 'N/A'} <br>"
+                    f"<b>Enginer: </b> {vehicle.engineNumber or 'N/A'} <br> "
+                    f"<b>Make: </b> {vehicle.make or 'N/A'} <br> "
+                    f"<b>Model: </b> {vehicle.model or 'N/A'} <br> "
+                    f"<b>Color: </b> {vehicle.color or 'N/A'} <br>"
+                    f"<b>Type </b> : {vehicle.vehicle_lost_type or 'N/A' }"
+    """
+    def type_details(self, obj):
+        logger.info(f"Entering to display type details :{obj.cstate}")
+        if obj.type == "vehicle" and hasattr(obj, "lostvehicle"):
+            logger.debug(f"Entering to display type vehicle details :{obj.cstate}")
+            vehicle = obj.lostvehicle
+            tooltip = (
+                    f"Reg.No.: {vehicle.regNumber or 'N/A'} \n"
+                    f"Chasiss: {vehicle.chasisNumber or 'N/A'} \n"
+                    f"Enginer: {vehicle.engineNumber or 'N/A'} \n"
+                    f"Make: {vehicle.make or 'N/A'} \n"
+                    f"Model: {vehicle.model or 'N/A'} \n"
+                    f"Color:{vehicle.color or 'N/A'} \n"
+                    f"Lost Type  : {vehicle.vehicle_lost_type or 'N/A' }"
+                )
+            return format_html(
+                    '<span style="color: blue; font-weight: bold;" title="{}">{}</span>',
+                    tooltip,
+                    obj.get_type_display(),
+                )
+
+        return format_html('<span style="color:green;">{} </span>',obj.get_type_display())
+
+
+    def status_display(self, obj):
+        return obj.get_cstate_display()
+
+    def display_case_id(self, obj):
+        return format_html(
+                '<span style ="cursor: pointer;" title="{}">{} </span>',
+                obj.user.mobile if obj.user else "No User Assigned",
+                obj.cid,
+            )
+
+    def display_coordinate(self, obj):
+        return str(obj.lat) +",\n"+str(obj.long)
+
+
+    police_station_name.short_description = "Police Station"
+    created_date.short_description = "Reported On"
+    type_details.short_description = "Type"
+    description_preview.short_description = "Description"
+    history_button.short_description = "History"
+    media_button.short_description = "Medias"
+    status_display.short_description = "Status"
+    status_display.admin_order_field ="cstate"
+    display_case_id.short_description = "ID"
+    display_coordinate.short_description = "Reported at"
+
+    class Media:
+        js = ("js/custom.js",)
+
     # search_fields = ['number__icontains','contactName__icontains','pid__pid__icontains']
     list_display = [
-        "cid",
-        # PoliceStation,
-        "user",
-        # officer_name,
-        "type",
-        #"title",
-        "cstate",
-        "created",
-        "lat",
-        "long",
-        "description",
-        "follow",
+        #"cid",
+        #"user",
+        #"type",
+        "display_case_id",
+        "type_details",
+        "description_preview",
+        "police_station_name",
+        "officer_name",
+        "status_display",
+        "created_date",
+        "display_coordinate",
+        #"lat",
+        #"long",
+        "media_button",
+        "history_button",
     ]
-    search_fields = ["type__icontains", "^cstate", "created__icontains"]
+    list_editable=[]
+    search_fields = ["cid","type__icontains", "^cstate", "created__icontains"]
 
 
 admin.site.register(Case, CaseAdmin)
@@ -447,9 +519,41 @@ class CaseHistoryAdmin(admin.ModelAdmin):
         logger.info("Exiting get_search_results")
         return results
 
-    list_display = ["id", "case", "user", "cstate", "created", "description"]
-    list_editable = ["cstate"]
-    search_fields = ["cid__icontains"]
+    def display_case_id(self, obj):
+        logger.info(f"Entering display_case_id :{obj.case.cid}")
+        return str(obj.case.cid)
+
+    def display_status(self, obj):
+        logger.info(f" Entering display_status : {obj.case.cid}")
+        return obj.get_cstate_display()
+
+    def display_location(self, obj):
+        return str(obj.lat) +",\n" + str(obj.long)
+    
+    def media_button(self, obj):
+        url = reverse("admin:api_media_changelist")+f"?parentId__exact={obj.id}&source__exact=history"
+        return format_html('<a class="button" href="{}">Media</a>',url)
+
+    
+    display_case_id.short_description="CID"
+    display_status.short_description = "Status"
+    display_location.short_description = "Changed at"
+    media_button.short_description = "Media"
+
+    list_display = [
+            "id", 
+            #"case",
+            "display_case_id",
+            "user", 
+            #"cstate",
+            "display_status",
+            "created", 
+            "description",
+            "display_location",
+            "media_button",
+            ]
+    #list_editable = ["cstate"]
+    search_fields = ["case.cid"]
 
 
 admin.site.register(CaseHistory, CaseHistoryAdmin)

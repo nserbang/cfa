@@ -11,8 +11,32 @@
     <link nonce="{{CSP_NONCE}}" href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
     <link nonce="{{CSP_NONCE}}" href="{% static 'css/venobox.min.css' %}" rel="stylesheet">
     <style nonce="{{CSP_NONCE}}">
+      body {
+        overflow-x: hidden;
+      }
       .side-menu a {
         font-size: .80rem !important;
+      }
+      .nav-link {
+        transition: all 0.3s ease-in-out;
+        border-radius: 5px;
+        white-space: nowrap;
+      }
+      .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #ffc107 !important;
+        text-decoration: none;
+      }
+      .hover-effect {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .alert {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
       }
     </style>
 
@@ -21,92 +45,74 @@
   </head>
 <body>
 
-<main>
+<main class="overflow-hidden">
   <header class="p-2 bg-primary">
-    <div class="container">
-      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-<a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"></a>
-  <img src="{% static 'favicon.ico' %}" alt="CFA Logo" width="30" height="30" class="me-2">
-  
-</a>
-
-<ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-  <li class="nav-item">
-    <a href="{% url 'home' %}" class="nav-link px-3 text-white fw-bold hover-effect">Home</a>
-  </li>
-  <li class="nav-item">
-    <a href="{% url 'dashboard' %}" class="nav-link px-3 text-white fw-bold hover-effect">Dashboard</a>
-  </li>
-  <li class="nav-item">
-    <a href="{% url 'home' %}" class="nav-link px-3 text-white fw-bold hover-effect">Search Lost Vehicle</a>
-  </li>
-  <li class="nav-item">
-    <a href="{% url 'emergency' %}" class="nav-link px-3 text-white fw-bold hover-effect">Emergency Services</a>
-  </li>
-  <li class="nav-item">
-    <a href="{% url 'information' %}" class="nav-link px-3 text-white fw-bold hover-effect">Educational Information</a>
-  </li>
-  <li class="nav-item">
-    <a href="{% url 'about' %}" class="nav-link px-3 text-white fw-bold hover-effect">About</a>
-  </li>
-  <li class="nav-item">
-    <a href="{% url 'about' %}" class="nav-link px-3 text-white fw-bold hover-effect">Help</a>
-  </li>
-</ul>
-
-<style nonce="{{CSP_NONCE}}">
-  .nav-link {
-    transition: all 0.3s ease-in-out;
-    border-radius: 5px;
-  }
-  .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #ffc107 !important;
-    text-decoration: none;
-  }
-  .hover-effect {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-</style>
-
-<div class="text-end">
-  {% if user.is_authenticated %}
-    <button type="button" class="btn btn-outline-light btn-sm me-2"> {{ user.get_full_name|default:request.user }}</button>
-  {% endif %}
-  {% if user.is_authenticated %}
-    <a type="button" class="btn btn-outline-light btn-sm me-2" href="{% url 'logout' %}">Logout</a>
-  {% else %}
-    <a type="button" class="btn btn-outline-light btn-sm me-2" href="{% url 'login' %}">Login</a>
-    <a type="button" class="btn btn-warning btn-sm" href="{% url 'signup' %}">Sign-up</a>
-  {% endif %}
-</div>
-</div>
-</div>
-</header>
-<div class="container mb-2">
-  <div class="row pb-2 mb-2">
-    <div class="col-lg-2 col-sm-0 col-xs-0"></div>
-    <div class="col-lg-8 col-sm-12 col-md-12 col-xs-12 pt-2">
-      {% if messages %}
-        {% for message in messages %}
-        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          {{ message|safe }}
+    <div class="container-fluid px-3">
+      <div class="d-flex flex-wrap align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <a href="/" class="d-flex align-items-center text-white text-decoration-none">
+            <img src="{% static 'favicon.ico' %}" alt="CFA Logo" class="me-2" style="width: 30px; height: 30px;">
+          </a>
+          
+          <ul class="nav mb-2 mb-lg-0 justify-content-start">
+            <li class="nav-item">
+              <a href="{% url 'home' %}" class="nav-link px-3 text-white fw-bold hover-effect">Home</a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'dashboard' %}" class="nav-link px-3 text-white fw-bold hover-effect">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'home' %}" class="nav-link px-3 text-white fw-bold hover-effect">Search Lost Vehicle</a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'emergency' %}" class="nav-link px-3 text-white fw-bold hover-effect">Emergency Services</a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'information' %}" class="nav-link px-3 text-white fw-bold hover-effect">Educational Information</a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'about' %}" class="nav-link px-3 text-white fw-bold hover-effect">About</a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'about' %}" class="nav-link px-3 text-white fw-bold hover-effect">Help</a>
+            </li>
+          </ul>
         </div>
-        {% endfor %}
-      {% endif %}
+
+        <div class="text-end">
+          {% if user.is_authenticated %}
+            <button type="button" class="btn btn-outline-light btn-sm me-2">{{ user.get_full_name|default:request.user }}</button>
+            <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">Logout</a>
+          {% else %}
+            <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm me-2">Login</a>
+            <a href="{% url 'signup' %}" class="btn btn-warning btn-sm">Sign-up</a>
+          {% endif %}
+        </div>
+      </div>
     </div>
-    <div class="col-lg-2 col-sm-0 col-xs-0"></div>
+  </header>
+
+  <div class="container-fluid px-3 mb-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-md-10 col-12">
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show mt-3" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {{ message|safe }}
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock content %}
+      </div>
+    </div>
   </div>
+</main>
 
-  {% block content %}
-
-  {% endblock content %}
-</div>
-
-<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous" nonce="{{ request.csp_nonce }}"></script>
-<script nonce="{{CSP_NONCE}}" type="text/javascript" src="{% static 'js/venobox.min.js' %}" ></script>
-<script nonce="{{ request.csp_nonce }}" type="text/javascript" src="{% static 'js/custom.js' %}"></script>
+<script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+<script nonce="{{CSP_NONCE}}" src="{% static 'js/venobox.min.js' %}"></script>
+<script nonce="{{ request.csp_nonce }}" src="{% static 'js/custom.js' %}"></script>
 <script nonce="{{CSP_NONCE}}">
   new VenoBox({
     selector: '.image',
@@ -117,8 +123,7 @@
   });
 </script>
 
-{% block javascript %}
-{% endblock javascript %}
+{% block javascript %}{% endblock javascript %}
 
 </body>
 </html>

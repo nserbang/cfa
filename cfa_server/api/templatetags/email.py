@@ -16,3 +16,9 @@ def format_email(value):
             rep = rep.replace(".", "[dot]")
             value = value.replace(email, rep)
     return value
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
+
+

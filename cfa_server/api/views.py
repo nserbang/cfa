@@ -167,6 +167,7 @@ def logout_view(request):
 
 class HomePageView(View):
     def get_header(self):
+        logger.info("Entering get_header")
         header_map = {
             "my-complaints": "My complaints",
             "stolen_vechicle": "Stollen Vehicle",
@@ -176,6 +177,7 @@ class HomePageView(View):
         return header_map.get(self.kwargs.get("title"), "Case Listings")
 
     def get_case_type(self):
+        logger.info("Entering get_case_type")
         case_type = {
             "stolen-vehicle": "vehicle",
             "drug-case": "drug",
@@ -184,12 +186,16 @@ class HomePageView(View):
         return case_type.get(self.kwargs.get("case_type"))
 
     def get_template_name(self):
+        logger.info("Entering get_template_name")
         template = self.get_case_type()
         if template:
+            logger.info("Exiting get_template_name with template: {template}")
             return f"case/{template}.html"
+        logger.info("Exiting get_template_name with default home.html")
         return "home.html"
 
     def get_queryset(self):
+        logger.info("Entering get_queryset in HomePageView")
         user = self.request.user
         cases = (
             Case.objects.annotate(
@@ -285,20 +291,24 @@ class HomePageView(View):
         return cases
 
     def get(self, request, *args, **kwargs):
+        logger.info(f"Entering get with request: {request}")
         cases = self.get_queryset()
         header = self.get_header()
         template_name = self.get_template_name()
+        logger.info(f"Exiting get case :{cases}, headers: {header}, temmplate :{template_name}")
         return render(request, template_name, {"cases": cases, "header": header})
 
 
 class UserRegistrationView(View):
     def get(self, request, *args, **kwargs):
+        logger.info(f"Entering get with request: {request}")
         form = UserRegistrationForm
         # with open("/cfa_server/api.log","a") as file:
         #   file.write(" Entering user sign up ")
         return render(request, "api/signup.html", {"form": form})
 
     def post(self, request, *args, **kwargs):
+        logger.info(f"Entering post with request: {request}")
         form = UserRegistrationForm(request.POST)
         #import ipdb
 
@@ -427,6 +437,7 @@ class AddCommentView(LoginRequiredMixin, View):
 
 class AddLikeView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
+        logger.info("Entering get with request: {request}")
         case_id = kwargs["case_id"]
         Like.objects.get_or_create(case_id=case_id, user=request.user)
         messages.success(request, "Your like is added.")
@@ -440,6 +451,7 @@ class ChangeCaseStateUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("home")
 
     def get_queryset(self):
+        logger.info("Entering get_queryset")
         queryset = self.queryset.filter(
             (Q(cstate="pending") & Q(pid__policeofficer__user=self.request.user))
             | Q(oid__user=self.request.user)
@@ -472,6 +484,7 @@ class GetCaseHistory(View):
 
 class CrimeListView(ListView):
     def get_queryset(self):
+        logger.info("Entering get_queryset")
         model = self.get_model()
         qs = model.objects.all()
         crime_type = self.get_crime_type()
@@ -493,6 +506,7 @@ class CrimeListView(ListView):
         return crime_type.get(self.kwargs["crime_type"])
 
     def get_model(self):
+        logger.info("Entering get_model")
         crime_type = self.get_crime_type()
         victims = [
             "missing_children",
@@ -507,6 +521,7 @@ class CrimeListView(ListView):
             return Criminal
 
     def get_template_names(self):
+        logger.info("Entering get_template_names")
         crime_type = self.get_crime_type() or "missing_children"
         return [f"case/{crime_type}.html"]
 
@@ -546,6 +561,7 @@ class ResetPasswordView(FormView):
 
 class NearestPoliceStationsView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
+        logger.info("Entering get nearest police staiton view")
         lat = request.GET.get("lat")
         long = request.GET.get("long")
         if lat and long:
@@ -566,6 +582,7 @@ class ExportCrime(View):
         return self.get_pdf(cases)
 
     def get_pdf(self, cases):
+        logger.info("Entering get_pdg")
         font_config = FontConfiguration()
         template_name = "export/pdf.html"
         user = self.request.user
@@ -606,6 +623,7 @@ class PoliceStationListView(AdminRequiredMixin, ListView):
     queryset = PoliceStation.objects.all()
 
     def get_queryset(self):
+        logger.info("Entering get_queryset in police station list view")
         qs = super().get_queryset()
         if q := self.request.GET.get("q"):
             qs = qs.filter(Q(name__icontains=q) | Q(address__icontains=q))
@@ -637,6 +655,7 @@ class PoliceOfficerListView(AdminRequiredMixin, ListView):
     model = PoliceOfficer
 
     def get_queryset(self):
+        logger.info("Entering get_queryset police officer list view ")
         qs = super().get_queryset()
         qs = qs.filter(pid_id=self.kwargs["station_id"])
         if q := self.request.GET.get("q"):
@@ -654,6 +673,7 @@ class PoliceOfficerListView(AdminRequiredMixin, ListView):
 
 class AddOfficerView(View):
     def post(self, request, *args, **kwargs):
+        logger.info("Entering post in addOfficerView")
         user_id = int(request.POST.get("user"))
         user = cUser.objects.get(pk=user_id)
         user.role = "police"
@@ -674,6 +694,7 @@ class AddOfficerView(View):
 
 class RemoveOfficerView(View):
     def post(self, request, *args, **kwargs):
+        logger.info("Entering post in RemoveOfficerView")
         user_id = int(request.POST.get("user"))
         user = cUser.objects.get(pk=user_id)
         user.role = "user"
@@ -688,6 +709,7 @@ class RemovePoliceOfficerListView(AdminRequiredMixin, ListView):
     model = PoliceOfficer
 
     def get_queryset(self):
+        logger.info("Entering get_queryset RemovePoliceOfficerListView")
         qs = super().get_queryset()
         qs = qs.filter(pid_id=self.kwargs["station_id"])
         if q := self.request.GET.get("q"):
@@ -695,6 +717,7 @@ class RemovePoliceOfficerListView(AdminRequiredMixin, ListView):
         return qs.select_related("user")
 
     def get_context_data(self, **kwargs):
+        logger.info("Entering get_context_data RemovePoliceOfficerListView")
         context = super().get_context_data(**kwargs)
         context["station"] = get_object_or_404(
             PoliceStation, pk=self.kwargs["station_id"]
@@ -777,38 +800,87 @@ from django.contrib.auth.decorators import login_required
 from .models import Case
 from django.db.models import Count
 
-#@login_required
-def dashboard_view(request):
-    logger.info("Entering dashboard_view function")
+class dboardView(View):
+    def get(self, request, *arg, **kwargs):
+        logger.debug(f"DASHBOARDH GET ENTERING : {request}")
+        return(request, "dashboard.html")
+
+@login_required
+def dashboard(request):
+    logger.info(f"Entering dashboard function with request: {request}")
+    if not request.user.is_authenticated:
+        return render(request, "admin/login.html")
     # Ensure only users with the "Police" role can access this view
     if not request.user.is_police:
         logger.warning("Unauthorized access attempt to dashboard_view")
-        return render(request, '403.html', status=403)  # Render a 403 Forbidden page
+        #return render(request, '403.html', status=403)  # Render a 403 Forbidden page
 
     # Get filter parameter from the request
-    ctype_filter = request.GET.get('ctype', None)
+    ctype = request.GET.get('ctype', None)
 
     # Filter cases based on the selected `Ctype`
-    cases = Case.objects.all()
-    if ctype_filter:
-        cases = cases.filter(type=ctype_filter)
+    cases = Case.objects.all().order_by('-created')
 
+    if ctype:
+        cases = cases.filter(type=ctype)
+
+    case_summary = Case.objects.values('type').annotate(count=Count('cid')).order_by('type')
+
+    drug_status_summary = Case.objects.filter(type='drug').values('cstate').annotate(
+            count= Count('cid')).order_by('cstate')
+
+    extortion_status_summary = Case.objects.filter(type='extortion').values('cstate').annotate(
+            count= Count('cid')).order_by('cstate')
+
+    vehicle_status_summary = Case.objects.filter(type='vehicle').values('cstate').annotate(
+            count= Count('cid')).order_by('cstate')
+
+
+    """
     # Group cases by `Ctype` for the pie chart
     case_summary = (
         cases.values('type')
         .annotate(count=Count('type'))
         .order_by('type')
     )
+    """
 
     # Paginate the cases (10 cases per page)
-    paginator = Paginator(cases, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
+    #paginator = Paginator(cases, 10)
+    #page_number = request.GET.get('page')
+    #cases = paginator.get_page(page_number)
+    """
     context = {
         'cases': page_obj,  # Paginated cases
         'case_summary': case_summary,  # Data for the pie chart
         'ctype_filter': ctype_filter,  # Current filter
     }
-    logger.info("Exiting dashboard_view function")
+    """
+
+    colors ={
+            'pending':'#FF9800',
+            'accepted':'#4CAF50',
+            'found':'#2196F3',
+            'assign':'#9C27B0',
+            'visited':'#FF5722',
+            'inprogress':'#03A9F4',
+            'transfer':'#795548',
+            'resolved':'#8BC34A',
+            'info':'#607D8B',
+            'rejected':'#F44336'
+        }
+
+
+    context = {
+        #'cases': cases,
+        'case_summary': case_summary,
+        'ctype_filter': ctype,
+        'drug_status_summary':drug_status_summary,
+        'extortion_status_summary':extortion_status_summary,
+        'vehicle_status_summary':vehicle_status_summary,
+        'colors': colors,
+    }
+
+    logger.info("Exiting dashboard function")
     return render(request, 'dashboard.html', context)
+    #return render(request, 'dash.html', context)

@@ -247,6 +247,28 @@ class CaseHistoryViewSet(UserMixin, ReadOnlyModelViewSet):
         case_id = int(self.kwargs["case_id"])
         qs = CaseHistory.objects.filter(case_id=case_id).order_by("-created")
         return qs
+        """
+        # Append medias to each case history
+        history_ids = qs.values_list("id", flat=True)
+        medias = Media.objects.filter(source="history", parentId__in=history_ids)
+        media_dict = {}
+        for media in medias:
+            if media.parentId not in media_dict:
+                media_dict[media.parentId] = []
+            media_dict[media.parentId].append({
+                "mtype": media.mtype,
+                "path": media.path.url if media.path else None,
+            })
+
+        for history in qs:
+            setattr(history, "medias", media_dict.get(history.id,[]))
+            #history.medias = media_dict.get(history.id, [])
+
+        records = [model_to_dict(history) for history in qs]
+        print_formatted_records(records)
+        logger.info(f"Exiting CaseHistoryViewSet case result: {qs}")
+        return qs
+        """
 
 class MediaViewSet(ModelViewSet):
     serializer_class = MediaSerializer
@@ -301,6 +323,29 @@ class CommentViewSet(ModelViewSet):
         qs = Comment.objects.filter(cid=case_id).order_by("-created")
         return qs
 
+        """
+        # Append medias to each comment
+        comment_ids = qs.values_list("cmtid", flat=True)
+        medias = Media.objects.filter(source="comment", parentId__in=comment_ids)
+        media_dict = {}
+        for media in medias:
+            if media.parentId not in media_dict:
+                media_dict[media.parentId] = []
+            media_dict[media.parentId].append({
+                "mtype": media.mtype,
+                "path": media.path.url if media.path else None,
+            })
+
+        for comment in qs:
+            setattr(comment, "medias", media_dict.get(comment.cmtid,[]))
+            #comment.medias = media_dict.get(comment.cmtid, [])
+
+        records = [model_to_dict(comment) for comment in qs]
+        print_formatted_records(records)
+        #print_formatted_records(qs)
+        logger.info("Exiting comment")
+        return qs """
+
 
 import os
 from django.conf import settings
@@ -345,9 +390,17 @@ class CaseCreateAPIView(APIView):
                     medias = request.FILES.getlist('medias')
                     logger.info(f"Medias Received: {medias}")
 
+                    #media_dir = os.path.join(settings.MEDIA_ROOT, "case_media")
+                    #media_dir = os.path.join(settings.MEDIA_ROOT, "case_media")
+                    #os.makedirs(media_dir, exist_ok=True)
 
                     for media in medias:
-
+                        # Save the file to the media directory
+                        #file_path = os.path.join(media_dir, media.name)
+                        #with open(file_path, "wb") as f:
+                            #for chunk in media.chunks():
+                                #f.write(chunk)
+                        #logger.info(f"File saved to: {file_path}")
 
                         # Determine media type
                         if 'image' in media.content_type:
@@ -368,9 +421,6 @@ class CaseCreateAPIView(APIView):
                             path=media,
                            # name=media.name,
                         )
-
-
-                        
 
                     logger.info(f"Case created successfully: {case_instance.cid}")
                     return Response(case_serializer.data, status=201)

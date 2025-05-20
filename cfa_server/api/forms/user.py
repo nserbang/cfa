@@ -6,7 +6,9 @@ from django.contrib.auth.forms import (
 )
 from api.models import cUser, District, PoliceStation, PoliceOfficer
 from captcha.fields import CaptchaField
+import logging
 
+logger = logging.getLogger(__name__)
 
 class cUserCreationForm(UserCreationForm):
     class Meta:
@@ -72,6 +74,8 @@ class ChangeDesignationForm(forms.Form):
         super().__init__(*args, **kwargs)
 
     def save(self, **kwargs):
+        logger.debug(f" Save in change designation : {kwargs}")
+
         officer = self.user.policeofficer_set.first()
         if officer:
             officer.rank = self.cleaned_data["rank"]

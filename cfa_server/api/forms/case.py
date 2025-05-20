@@ -30,6 +30,7 @@ class MultipleFileField(forms.FileField):
         super().__init__(*args, **kwargs)
 
     def clean(self, data, initial=None):
+        logger.debug(" Entering with data : {data}")
         single_file_clean = super().clean
         if isinstance(data, (list, tuple)):
             result = [single_file_clean(d, initial) for d in data]
@@ -212,6 +213,7 @@ class CaseUpdateForm(forms.ModelForm):
         fields = ["cstate", "oid"]
 
     def __init__(self, *args, **kwargs):
+        logger.debug(" Entering ")
         self.request = kwargs.pop("request")
         super().__init__(*args, **kwargs)
         if status := self.request.GET.get("status"):
@@ -221,6 +223,8 @@ class CaseUpdateForm(forms.ModelForm):
         ).exclude(user=self.request.user)
 
     def clean(self):
+        logger.debug(" Entering ")
+        self.request = kwargs.pop("request")
         cd = super().clean()
         files = cd.get("files")
         for f in files:
@@ -238,6 +242,8 @@ class CaseUpdateForm(forms.ModelForm):
         return cd
 
     def save(self, commit=True):
+        logger.debug(" Entering ")
+        self.request = kwargs.pop("request")
         files = self.cleaned_data.get("files")
         medias = []
         for f in files:

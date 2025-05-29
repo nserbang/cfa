@@ -22,3 +22,4 @@ credentials.json
 cfa_server/api/migrations/
 pyrightconfig.json
 .zed
+sms_credentials.json

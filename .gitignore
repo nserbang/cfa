@@ -11,6 +11,8 @@ api.log
 hello/
 db.sqlite3
 static/
+!static/js/
+!static/css/
 cfa_server/db.sqlite3
 files/
 media/

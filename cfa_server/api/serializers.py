@@ -24,13 +24,14 @@ from api.models import (
     CaseHistory,
 )
 from api.npr import detectVehicleNumber
-from api.otp import send_sms
+from api.otp import *
 from api.mixins import PasswordDecriptionMixin
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 import logging
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import fromstr
 from api.forms import detect_malicious_patterns_in_media
+from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
@@ -219,7 +220,8 @@ class CaseHistorySerializer(serializers.ModelSerializer):
         data["medias"] = [
                 {
                     "mtype": media.mtype,
-                    "path": request.build_absolute_uri(media.path.url) if media.path else None,
+                    "path": str(media.path) if media.path else None,
+                    "url": request.build_absolute_uri(media.path.url) if media.path else None,
                 }
                 for media in medias
             ]
@@ -401,8 +403,10 @@ class CaseSerializerCreate(serializers.ModelSerializer):
      
         logger.info(" DEV ENVIROMENT: {}".format(settings.DEVENV))
         request = self.context["request"]
+        drug_issue_type=validated_data.get("drug_issue_type","N/A")
         case = Case(
             type=validated_data["type"],
+            drug_issue_type=drug_issue_type,
             lat=validated_data["lat"],
             long=validated_data["long"],
             description=validated_data["description"],
@@ -431,10 +435,11 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         
         case.pid = police_station
         case.geo_location = geo_location
-        officer = police_station.policeofficer_set.order_by("-rank").first()
+        #officer = police_station.policeofficer_set.order_by("-rank").first()
+        officer = PoliceOfficer.objects.filter(pid = police_station, report_on_this = True).order_by("-rank").first()
         if not officer:
             raise serializers.ValidationError(
-                {"officer": "No officer found for this police station."}
+                {"Error": f"No officer configured to receive complain in {police_station.name}  police station."}
             )
         logger.debug(f"Selected officer: {officer.oid}")     
         case.oid = officer
@@ -549,7 +554,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             history = CaseHistory(
                 case=case,
                 cstate=case.cstate,
-                description="Initial case History",
+                description="New Case created",
                 user=request.user,
                 lat=validated_data["lat"],
                 long=validated_data["long"],
@@ -568,7 +573,9 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                     "color": validated_data.get("color"),
                     "vehicle_lost_type": validated_data.get("vehicle_lost_type"),
                 }
-
+                logger.info(" Vehicle details received :")
+                #for key, value in vehicle_detail_data.items():
+                    #logger.info(f"{key} : {value}")
                # if all(vehicle_detail_data.values()):
                 if (validated_data.get("regNumber")) is not None:
                     #case.save()
@@ -579,23 +586,67 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                     logger.info(f" Lost vehicle case created with ID : {lv.id} ")
                 else:
                     history.delete()
-                    case.delete()
+                    case.delete();
                     raise serializers.ValidationError(
                         {"vehicle_detail": "At lest registration number required."}
                     )       
    
-        logger.info(f"Created case {case.cid}")
-        logger.info("Exiting create")
+        noti_title = f"New case No. {case.cid} of type {case.type} reported at {case.pid}"
+        case.send_notification(noti_title, [case.oid.user_id])
+        logger.debug(f"Sent app notification to officer :{case.oid.user.mobile}")
+        #case.send_notification2(noti_title, [case.oid.user_id])
+        #case.send_case_notifications()
+        tm = datetime.now()
+        d = tm.strftime("%d/%m/%Y")
+        t = tm.strftime("%I:%M %p")
+        send_new_case_sms(case.oid.user.mobile, case.cid, case.type, case.pid.name,d,t) 
+        logger.debug(f"Sent sms notification to officer :{case.oid.user.mobile}")
+        #send_sms(case.oid.user.mobile,noti_title)
+
+        supervisor_officers = SuperintendingOfficer.objects.filter(did = case.oid.pid.did)
+        supervisors = PoliceOfficer.objects.filter(oid__in=supervisor_officers.values_list("officer_id", flat=True)).values("user_id","user__mobile")
+        supervisor_user_ids = [o["user_id"] for o in supervisors]
+        if supervisor_user_ids:
+            try:
+                case.send_notification(noti_title,supervisor_user_ids)
+                logger.debug(f"Sent app notification to supervisors : {supervisor_user_ids}")
+            except Exception as e:
+                logger.debug(f" Error for supervisor : {str(e)}")
+        msg = f"Your case No {case.cid} status is changed to {case.cstate}. For details, please visit Arunachal Crime Report app. From AP Crime Team"
+        for supervisor in supervisors:
+            send_new_case_sms(supervisor["user__mobile"], case.cid, case.type, case.pid.name,d,t) 
+            logger.debug(f" Sent sms notification to supervisor : {supervisor.user.mobile}")
+        
+        sno_users = cUser.objects.filter(role="SNO")
+        if case.type == "drug" and sno_users is not None:
+            msg = f"Your case No {case.cid} status is changed to {case.cstate}. For details, please visit Arunachal Crime Report app. From AP Crime Team"
+            # TO DO: find correct user id for sending app notification
+            #user_sno = cUser.objects.filter(id__in = sno_users.values_list("id", flat = True)).values("id","mobile")
+            #logger.info(f" USER SNO found :{user_sno}")
+            #user_ids = [o["id"] for o in user_sno]
+            user_ids = sno_users.values_list("id",flat=True)
+            if user_ids is not None:
+                case.send_notification(noti_title, list(user_ids))
+                logger.info(f" SENT APP NOTIFICATION to user ids : {user_ids}")
+            for sno_user in sno_users:
+                try:
+                #send_update_sms(sno_user.mobile,msg)
+                    logger.debug(f"Sent sms to SNO : {sno_user.mobile}")
+                    send_new_case_sms(sno_user.mobile, case.cid, case.type, case.pid.name,d,t) 
+                except Exeption as e:
+                    logger.debug(f" Error :{str(e)}")
+
+        logger.info(f"Created case id: {case.cid} and exiting")
         return case
 
 
 class CaseUpdateSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
-    #pid = serializers.PrimaryKeyRelatedField(
-        #queryset=PoliceStation.objects.all(), required=False)
     lat = serializers.CharField(max_length=10, required=False)
     long = serializers.CharField(max_length=10, required=False)
     medias = MediaSerializer(many=True, required=False)
+    oid = serializers.CharField(required = False, allow_blank= True)
+    pid = serializers.CharField(required = False, allow_blank= True)
 
     class Meta:
         model = Case
@@ -603,7 +654,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
                 "cid",
                 "cstate",
                 "oid",
-                # "pid",
+                "pid",
                 "description",
                 "medias",
                 "lat",
@@ -613,15 +664,15 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         logger.info(f" Entering ") 
         state = data["cstate"]
-        if state in {"assign", "transfer"} and not data.get("oid"):
+        if state in {"assign",} and not data.get("oid"):
             raise serializers.ValidationError(
                 {"oid": "You need to provide oid to assign this case to new officer."}
             )
 
-        # if state == "transfer" and not data.get("pid"):
-        #     raise serializers.ValidationError(
-        #         {"pid": "You need to provide pid to transfer this case."}
-        #     )
+        if state == "transfer" and not data.get("pid"):
+            raise serializers.ValidationError(
+                 {"pid": "You need to provide pid to transfer this case."}
+            )
 
         lat = data.get("lat")
         long = data.get("long")
@@ -634,7 +685,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         logger.debug(" Entering ")
         noti_title = {
-            "accepted": "Your case no.{} has been accepted.",
+            "accepted": "Your case No.{} has been accepted.",
             "rejected": "Your case no.{} has been rejected.",
             "info": "More info required for your case no.{}.",
             "inprogress": "Your case no.{} is in-progress.",
@@ -642,48 +693,135 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             "visited": "Your case no.{} is visited.",
             "found": "Your case no.{} is found.",
         }
+        
+
         user = self.context["request"].user
         cstate = validated_data["cstate"]
         logger.info(f" Updating Case Id :{instance.pk}, current state : {instance.cstate}, received state : {cstate}")
         instance.cstate = cstate
+        orig_officer = instance.oid
+        lat = validated_data.get("lat")
+        long = validated_data.get("long")
+        if lat is not None and long is not None:
+            try:
+                case_point = Point(float(instance.long), float(instance.lat), srid=4326)
+                user_point = Point(float(long), float(lat), srid=4326)
+                case_point_m = case_point.transform(3857, clone=True)
+                user_point_m = user_point.transform(3857, clone=True)
+                distance = user_point_m.distance(case_point_m)/1000 #in km
+                instance.distance = round(distance,2)
+            except Exception as e:
+                logger.error(f" Error calculation geo distance :{str(e)}")
+
         instance.updated = timezone.now()
         instance.oid = user.policeofficer_set.first()
         description = validated_data.pop("description", "")
         medias = validated_data.pop("medias", [])
+        if instance.type == "vehicle" and cstate == "found":
+            ofr = PoliceOfficer.objects.filter(user = user,report_on_this=True).first()
+            if ofr is not None:
+                instance.oid = ofr
+                instance.pid = ofr.pid
 
-        if cstate in {"assign", "transfer"}:
+        if cstate == "transfer":
+            offcr = PoliceOfficer.objects.get(user = user)
+            if not offcr or offcr.rank not in ("5",):
+                logger.info(f" Transfer error. Only inspector can transfer the case ")
+                raise serializers.ValidationError(
+                        {"Permisson": "Only Police Officer of Inspector Rank can transfer the case"}
+                    )
+            logger.info(f" Case transering ")
+            pid = validated_data.pop("pid",None)
+            if pid:
+                officer = PoliceOfficer.objects.filter(pid=pid, report_on_this=True).first()
+                if not officer:
+                    raise serializers.ValidationError(
+                            {" Unavailable " :"Officers not available in destination police staiton "}
+                        )
+                instance.pid = pid
+                logger.info(f"Case transferred to {pid.name} police station ")
+                instance.oid = officer
+                instance.cstate = "pending"
+                instance.save()
+                noti_title = f"New case No. {instance.cid} of type {instance.type} reported at {instance.pid}"
+                user_ids= cUser.objects.filter(user = instance.oid.user).values_list("id",flat=True)
+                #user_ids = sno_users.values_list("id",flat=True)
+                instance.send_notification(noti_title, user_ids)
+                logger.info(f" Sent app notification to new police officer id: {user_ids}") 
+                #message = "Your case No {instance.cid} status is changed to {instance.cstate}"
+                #send_update_sms(instance.oid.user.mobile,message)
+                tm = datetime.now()
+                d = tm.strftime("%d/%m/%Y")
+                t = tm.strftime("%I:%M %p")
+                send_new_case_sms(instance.oid.user.mobile, instance.cid, instance.type, instance.pid.name,d,t) 
+                #send_case_status_sms(instance.oid.user.mobile, instance.cid, instance.cstate)
+            else:
+                raise serializers.ValidationError(
+                        {" Police station not available "}
+                    )
+
+        elif cstate == "assign":
             logger.info(f"Changing state from : {instance.cstate} to Pending")
-            instance.oid = validated_data["oid"]
+            oi = PoliceOfficer.objects.get(oid = validated_data["oid"])
+            #instance.oid = validated_data["oid"]
+            logger.info(f" Case assigned to new officer : {oi} ")
+            instance.oid = oi
             instance.cstate = "pending"
             instance.save()
-            noti_title = f"You are assigned a new case no.{instance.pk}"
-            instance.send_notitication(noti_title, [instance.oid.user_id])
-            send_sms(noti_title, instance.oid.user.mobile)
-
+            noti_title = f"You are assigned a new case no.{instance.cid}"
+            user_ids= cUser.objects.filter(user = instance.oid.user).values_list("id",flat=True)
+                #user_ids = sno_users.values_list("id",flat=True)
+            instance.send_notification(noti_title, user_ids)
+            logger.info(f" Sent app notification to new police officer id: {user_ids}") 
+            #instance.send_notification(noti_title, [instance.oid.user_id])
+            tm = datetime.now()
+            d = tm.strftime("%d/%m/%Y")
+            t = tm.strftime("%I:%M %p")
+            send_new_case_sms(instance.oid.user.mobile, instance.cid, instance.type, instance.pid.name,d,t) 
+            #Notify case owner
+            noti_title = f"Your case no.{instance.cid} asigned to officer"
+            instance.send_notification(noti_title, [instance.oid.user_id])
+            send_case_status_sms(instance.user.mobile, instance.cid, instance.cstate)
         else:
             instance.save()
-            message = f"Case no. {instance.pk} status changed to {instance.cstate}"
+            message = f"Case no. {instance.cid} status changed to {instance.cstate}"
             supervisors = PoliceOfficer.objects.filter(
                 Q(pid__did=instance.oid.pid.did, rank=9)
-                | Q(oid__in=instance.oid.policestation_supervisor.values("officer_id"))
+                #| Q(oid__in=instance.oid.poiceOfficer.values("officer_id"))
             ).values("user_id", "user__mobile")
             # commenting :serbang
             #instance.send_notitication(message, [o["user_id"] for o in supervisors])
-            for supervisor in supervisors:
-                send_sms(message, supervisor["user__mobile"])
 
-        lat = validated_data.get("lat")
-        long = validated_data.get("long")
-        """
-        logger.info(f"Addin history and media for case: {instance.pk}, Case State : {cstate}") 
-        instance.add_history_and_media(
-            description=description,
-            user=user,
-            medias=medias,
-            cstate=cstate,
-            lat=lat,
-            long=long,
-        ) """
+            logger.info(f" Sending notifications to : {instance.user_id}") 
+            #user_ids= cUser.objects.filter(user = instance.user).values_list("id",flat=True)
+                #user_ids = sno_users.values_list("id",flat=True)
+            #instance.send_notification(noti_title, user_ids)
+            #user_ids = instance.user.values_list("id",flat=True)
+            instance.send_notification(message, [instance.user_id])
+            #instance.send_notification(message, list(user_ids))
+            logger.info(f" Sent app notification to new police officer id: {instance.user_id}") 
+            #message = "Your case No {instance.cid} status is changed to {instance.cstate}"
+            #message = f"Your case No {instance.cid} status is changed to {instance.cstate}. For details, please visit Arunachal Crime Report app. From AP Crime Team"
+            #send_update_sms(instance.user.mobile,message)
+            #send_case_status_sms(instance.oid.user.mobile, instance.cid, instance.cstate)
+            send_case_status_sms(instance.user.mobile, instance.cid, instance.cstate)
+            logger.info(f" Sent sms to case complainant : {instance.user.mobile}") 
+        if instance.type == "vehicle" and instance.cstate == "found":
+            lv = LostVehicle.objects.filter(caseId = instance.cid).first()
+            if lv is not None:
+                send_vehicle_found_sms(instance.user.mobile, lv.regNumber, instance.pid.name)
+                message =f"Vehicle Regd.No.{lv.regNumber} found at {instance.pid.name}"
+                send_vehicle_found_sms(orig_officer.user.mobile, lv.regNumber, instance.pid.name)
+                #user_ids = orig_officer.user.values_list("id",flat=True)
+                #instance.send_notification(message, [instance.user_id])
+                #instance.send_notification(message, list(user_ids))
+                instance.send_notification(message, [orig_officer.user.id])
+            #send_sms(instance.user.mobile,noti_title)
+                logger.info(f"Sent app notifications to original police officer ") 
+        for supervisor in supervisors:
+            send_case_status_sms(supervisor["user__mobile"], instance.cid, instance.cstate)
+                #send_update_sms(supervisor["user__mobile"],message)
+
         return instance
 
 
@@ -697,7 +835,7 @@ class CaseUpdateByReporterSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        logger.info(f" Entering ") 
+        logger.info(f" Entering update of CaseUpdateByReporterSerialzier ") 
         medias = validated_data.pop("medias", [])
         user = self.context["request"].user
         instance.updated = timezone.now()
@@ -707,6 +845,8 @@ class CaseUpdateByReporterSerializer(serializers.ModelSerializer):
         instance.add_history_and_media(description="", user=user, medias=medias)
         noti_title = f"Additional information provided for your case no.{instance.pk}"
         instance.send_notitication(noti_title, [instance.oid.user_id])
+        send_case_status_sms(instance.user.mobile, instance.cid, instance.cstate)
+        #send_case_status_sms(instance.oid.user.mobile, instance.cid, instance.cstate)
         return instance
 
 
@@ -768,8 +908,14 @@ class EmergencySerializer(serializers.ModelSerializer):
             "number",
             "lat",
             "long",
+            "address",
             "distance",
         ]
+
+        def get_distance(self, obj):
+            if hasattr(obj,"distance") and obj.distance is not None:
+                return obj.distance.km
+            return None
 
 
 class InformationSerializer(serializers.ModelSerializer):
@@ -934,6 +1080,7 @@ class CheckLostVehicleSerializer(serializers.Serializer):
     registration_no = serializers.CharField(required=False)
 
     def validate(self, data):
+        logger.info(f" Entering validate with data :{data}")
         image = data.get("image")
         registration_no = data.get("registration_no")
         if not (image or registration_no):
@@ -943,6 +1090,7 @@ class CheckLostVehicleSerializer(serializers.Serializer):
         return data
 
     def check_vehicle(self, request):
+        logger.info(f"Entering check_vehicle with request :{request}")
         image = self.validated_data.get("image", None)
         registration_no = self.validated_data.get("registration_no", None)
         response = []
@@ -951,6 +1099,7 @@ class CheckLostVehicleSerializer(serializers.Serializer):
         found_vechicles = detectVehicleNumber(
             image, registration_no, is_police, request.user
         )
+        logger.info(f" Found_vehicle record : {found_vechicles}")
         if found_vechicles:
             case_serializer = CaseSerializer(found_vechicles, many=True)
             response = case_serializer.data
@@ -958,6 +1107,21 @@ class CheckLostVehicleSerializer(serializers.Serializer):
                 for item in response:
                     item["vehicle_detail"]["chasisNumber"] = "*******"
                     item["vehicle_detail"]["engineNumber"] = "*******"
+        for item in response:
+            cid = item.get("cid")
+            if cid:
+                medias = Media.objects.filter(source = "case", parentId=cid)
+                logger.info(f" Appending medias for check_vehicle with response :{medias}")
+                request = self.context.get("request")
+                item["medias"] = [
+                        {
+                            "mtype":media.mtype,
+                            "path": str(media.path) if media.path else None,
+                            "url": request.build_absolute_uri(media.path.url) if media.path and request else None,
+                        }
+                        for media in medias
+                    ]
+        logger.info(f"Exiting check_vehicle with response :{response}")
         return response
 
 

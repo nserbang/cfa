@@ -14,8 +14,9 @@ from api.models import (
     CaseHistory,
     PoliceOfficer,
 )
-from api.otp import send_sms
+from api.otp import *
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -187,18 +188,23 @@ class CaseForm(forms.ModelForm):
             description="Case created.",
         )
         logger.info(f"Created case history entry: {history.id}")
-
+        tm = datetime.now()
         desc = f"New case no.{case.cid} of type {case.type} reported at {case.pid}."
         if case.oid_id:
             logger.info(f"Sending SMS to officer: {case.oid.mobile}")
-            send_sms(case.oid.mobile, desc)
+            #send_sms(case.oid.mobile, desc)
+            d =  tm.strftime("%d/%m/%Y")
+            t = tm.strftime("%I:M %p")
+            send_new_case_sms(case.oid.mobile, case.cid, case.type, case.pid.name,d,t)
         else:
             officers = case.pid.policeofficer_set.filter(
                 Q(report_on_this=True) | Q(rank="5")
             ).values("user_id", "user__mobile")
             logger.info(f"Sending SMS to {len(officers)} officers")
             for officer in officers:
-                send_sms(officer["user__mobile"], desc)
+                d =  tm.strftime("%d/%m/%Y")
+                t = tm.strftime("%I:M %p")
+                send_new_case_sms(officer["user__mobile"], case.cid, case.type, case.pid.name,d,t)
 
         logger.info("Exiting CaseForm.save")
         return case
@@ -282,7 +288,8 @@ class CaseUpdateForm(forms.ModelForm):
             case.save()
             noti_title = f"You are assigned a new case no.{case.pk}"
             case.send_notitication(noti_title, [case.oid.user_id])
-            send_sms(noti_title, case.oid.user.mobile)
+            send_case_status_sms(case.user.mobile, case.cid, case.cstate)
+            #send_sms(noti_title, case.oid.user.mobile)
         else:
             case.save()
             message = f"Case no. {case.pk} status changed to {case.cstate}"
@@ -292,7 +299,8 @@ class CaseUpdateForm(forms.ModelForm):
             ).values("user_id", "user__mobile")
             case.send_notitication(message, [o["user_id"] for o in supervisors])
             for supervisor in supervisors:
-                send_sms(message, supervisor["user__mobile"])
+                send_case_status_sms(supervisor["user__mobile"], case.cid, case.cstate)
+                #send_sms(message, supervisor["user__mobile"])
         description = self.cleaned_data["description"]
         case.add_history_and_media(
             description=description, medias=medias, user=self.request.user

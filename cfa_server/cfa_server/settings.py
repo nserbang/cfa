@@ -18,7 +18,7 @@ from datetime import timedelta
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import initialize_app
-
+import json
 ENVIRONMENT = os.environ.get("mode", "PRODUCTION")
 
 
@@ -34,13 +34,23 @@ SECRET_KEY = "django-insecure-0mfz%)780(7i=w)p8w^n$s7j#(u!bq$1zd(m!@19sa5$9wb^gw
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = ENVIRONMENT == "DEVELOPMENT"
-DEVENV = True
-DEBUG = True
+DEVENV = False
+DEBUG = False
 ALLOWED_HOSTS = ["*"]
 TIME_ZONE = "Asia/Kolkata"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
 FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
 # Application definition
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.1/howto/static-files/
+
+#STATIC_URL = "static/"
+STATIC_URL = "/static/"
+#STATICFILES_DIRS = (str(BASE_DIR / "static"),)
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+#STATIC_ROOT = "staticfiles/"
+STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -211,12 +221,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
-
-STATIC_URL = "static/"
-STATIC_ROOT = "staticfiles/"
-STATICFILES_DIRS = (str(BASE_DIR / "static"),)
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
@@ -426,28 +430,66 @@ SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = 100  # 10 mins
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = 2
+AXES_COOLOFF_TIME = 1
 AXES_RESET_ON_SUCCESS = True
 AXES_DISABLE_ACCESS_LOG = True  # new added
 AXES_NEVER_LOCKOUT_WHITELIST = True  # new added
+#AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
+#AXES_ONLY_USER_FAILURES = True
+AXES_LOCKOUT_PARAMETERS = ['username','ip_address']
+#AXES_USERNAME_FORM_FIELD ='mobile'
+#AXES_USERNAME_CALLABLE = lambda request: request.POST.get('mobile')
 
 CSRF_COOKIE_SECURE = ENVIRONMENT != "DEVELOPMENT"
 
-CSP_DEFAULT_SRC = "'self'"
+# Content Security Policy (CSP) settings - UPDATED SECTION
+CSP_DEFAULT_SRC = ("'self'",)
+
 CSP_SCRIPT_SRC = (
     "'self'",
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js",
-    "'unsafe-inline'",
 )
-CSP_IMG_SRC = ("'self'",)
-CSP_SCRIPT_HASHES = (
-    "'sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3'",
+
+CSP_SCRIPT_SRC_ELEM = (
+    "'self'",
+    "https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js",
 )
-CSP_FONT_SRC = ("'self'",)
-CSP_STYLE_SRC = ("'self'", "'nonce'", "www.google.com")
-CSP_OBJECT_SRC = "'none'"
-CSP_STYLE_SRC_ELEM = ("'self'", "www.google.com")
-CSP_INCLUDE_NONCE_IN = ("script-src", "style-src-elem", "img-src data", "style-src")
+
+CSP_SCRIPT_SRC_ATTR = ("'unsafe-inline'",)
+
+CSP_IMG_SRC = (
+    "'self'",
+    "data:",
+)
+
+CSP_FONT_SRC = (
+    "'self'",
+    "data:",
+)
+
+CSP_STYLE_SRC = (
+    "'self'", 
+    "www.google.com",
+)
+
+CSP_STYLE_SRC_ELEM = (
+    "'self'",
+    "www.google.com",
+)
+
+CSP_STYLE_SRC_ATTR = ("'unsafe-inline'",)
+
+CSP_OBJECT_SRC = ("'none'",)
+
+CSP_CONNECT_SRC = ("'self'",)
+
+# Include nonce in appropriate directives
+CSP_INCLUDE_NONCE_IN = (
+    "script-src", 
+    "script-src-elem", 
+    "style-src", 
+    "style-src-elem"
+)
 
 CACHES = {
     "default": {
@@ -467,3 +509,18 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "api.serializers.CustomTokenObtainSerializer",
     "ROTATE_REFRESH_TOKENS": True,
 }
+
+SMS_CREDENTIALS = os.path.join(str(BASE_DIR),"sms_credentials.json")
+with open(SMS_CREDENTIALS,"r") as f:
+    sms_config = json.load(f)
+
+SMS_USER_ID = sms_config.get("UserID")
+SMS_PASSWORD = sms_config.get("Password")
+SMS_SENDER_ID = sms_config.get("SenderID")
+SMS_ENTITY_ID = sms_config.get("EntityID")
+SMS_URL = sms_config.get("url")
+
+TEMPLATE_VEHICLE = sms_config.get("vehicle")
+TEMPLATE_NEW_CASE = sms_config.get("newcase")
+TEMPLATE_CASE_STATUS = sms_config.get("casestatus")
+TEMPLATE_OTP = sms_config.get("otp")

@@ -1,34 +1,35 @@
 {% extends 'case/case_base.html' %}
 {% block title %}Extortion Cases{% endblock title %}
 
-{% block content %}
-
-<div class='row'>
-    <div class="col-lg-3 col-md-3 col-sm-12">
-        {% include 'case/side_menu.html' %}
-    </div>
-    <div class="col-lg-9 col-md-9 col-sm-12">
-        <div class="d-flex flex-row pb-2">
-            <div class="col-4">
-                <h4 class="flex-fill">Extortion Cases</h4>
-            </div>
-            <div class="col-4">
-                <form action="">
-                    <input class="form-control form-control-sm" id="search" placeholder="Search..." type="search" name="q" value="{{ request.GET.q }}">
-                </form>
-            </div>
-            <div class="col-4 d-flex flex-row-reverse">
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'add_case' %}">Report new case</a>
-                {% endif %}
-            </div>
+{% block case_content %}
+    <div class="d-flex flex-row pb-2">
+        <div class="col-4">
+            <h4 class="flex-fill">Extortion Cases</h4>
         </div>
-        {% for case in cases %}
-        {% include 'case/case_card.html' %}
-        {% endfor %}
+        <div class="col-4">
+            <form action="">
+                <input class="form-control form-control-sm" id="search" placeholder="Search..." type="search" name="q" value="{{ request.GET.q }}">
+            </form>
+        </div>
+        <div class="col-4 d-flex flex-row-reverse">
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'add_case' %}">Report new case</a>
+            {% endif %}
+        </div>
     </div>
-</div>
-
-{% endblock content %}
+    
+    {% if cases %}
+        {% for case in cases %}
+            {% include 'case/case_card.html' with case=case %}
+        {% empty %}
+            <div class="alert alert-info">No extortion cases found.</div>
+        {% endfor %}
+        
+        <!-- Pagination -->
+        {% include "pagination.html" %}
+    {% else %}
+        <div class="alert alert-info">No extortion cases available.</div>
+    {% endif %}
+{% endblock case_content %}
 
 

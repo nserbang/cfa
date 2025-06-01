@@ -1,57 +1,26 @@
 {% extends '_base.html' %}
-{% load email %}
+{% load static %}
 {% block title %}Dashboard{% endblock title %}
-
-{% block css %}
-<style nonce="{{CSP_NONCE}}">
-    .chart-container {
-        position: relative;
-        height: 300px;
-        width: 100%;
-        margin-bottom: 20px;
-    }
-    
-    .overall-chart {
-        max-width: 500px;
-        margin: 0 auto;
-        height: 400px;
-    }
-    
-    body {
-        min-height: 100vh;
-    }
-    
-    .table {
-        table-layout: fixed;
-        width: 100%;
-    }
-    
-    html {
-        scroll-behavior: smooth;
-    }
-</style>
-{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <h1 class="text-center mb-4"> Dashboard</h1>
+    <h1 class="text-center mb-4">Case Dashboard</h1>
 
     <!-- Overall Pie Chart -->
     <div class="row mb-4">
         <div class="col-12 text-center">
-            <h3>Overall Case Distribution</h3>
+            <h3 class="chart-title">Overall Case Distribution</h3>
             <div class="chart-container overall-chart">
                 <canvas id="casePieChart"></canvas>
             </div>
         </div>
     </div>
 
-    </hr>
-
     <!-- Detailed Charts Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <h3 class="text-center mb-4">Detailed Case Status Distribution</h3>
+            <h3 class="text-center mb-4 chart-title">Detailed Case Status Distribution</h3>
+            
             <div class="row">
                 <div class="col-md-4 text-center">
                     <h5>Drug Cases</h5>
@@ -75,91 +44,65 @@
         </div>
     </div>
 
-<!-- Chart.js Script -->
+    <!-- Time-Based Graph -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h3 class="chart-title">Case Records Over Time</h3>
+            <div class="d-flex justify-content-center mb-3">
+                <select id="timeRange" class="form-select w-auto">
+                    <option value="daily">Daily</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+            <div class="time-chart-container">
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
 <script nonce="{{ request.csp_nonce }}" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script nonce="{{ request.csp_nonce }}">
-    // Common chart options
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-            duration: 0
+    // Pass data to initialize charts
+    const caseData = {
+        overall: {
+            labels: [{% for item in case_summary %}"{{ item.type|title }}",{% endfor %}],
+            data: [{% for item in case_summary %}{{ item.count }},{% endfor %}]
         },
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    padding: 20,
-                    boxWidth: 12
-                }
+        drug: {
+            labels: [{% for item in drug_status_summary %}"{{ item.cstate|title }}",{% endfor %}],
+            data: [{% for item in drug_status_summary %}{{ item.count }},{% endfor %}]
+        },
+        extortion: {
+            labels: [{% for item in extortion_status_summary %}"{{ item.cstate|title }}",{% endfor %}],
+            data: [{% for item in extortion_status_summary %}{{ item.count }},{% endfor %}]
+        },
+        vehicle: {
+            labels: [{% for item in vehicle_status_summary %}"{{ item.cstate|title }}",{% endfor %}],
+            data: [{% for item in vehicle_status_summary %}{{ item.count }},{% endfor %}]
+        },
+        timeData: {
+            daily: {
+                labels: [{% for record in time_data.daily %}"{{ record.date }}",{% endfor %}],
+                data: [{% for record in time_data.daily %}{{ record.count }},{% endfor %}]
+            },
+            monthly: {
+                labels: [{% for record in time_data.monthly %}"{{ record.date }}",{% endfor %}],
+                data: [{% for record in time_data.monthly %}{{ record.count }},{% endfor %}]
+            },
+            yearly: {
+                labels: [{% for record in time_data.yearly %}"{{ record.date }}",{% endfor %}],
+                data: [{% for record in time_data.yearly %}{{ record.count }},{% endfor %}]
             }
         }
     };
-
-    // Color scheme
-    const colors = {
-        pending: '#FF9800',    // Orange
-        accepted: '#4CAF50',   // Green
-        found: '#2196F3',      // Blue
-        assign: '#9C27B0',     // Purple
-        visited: '#FF5722',    // Deep Orange
-        inprogress: '#03A9F4', // Light Blue
-        transfer: '#795548',   // Brown
-        resolved: '#8BC34A',   // Light Green
-        info: '#607D8B',       // Blue Grey
-        rejected: '#F44336'    // Red
-    };
-
-    // Overall Case Distribution
-    new Chart(document.getElementById('casePieChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: [{% for item in case_summary %}"{{ item.type|title }}",{% endfor %}],
-            datasets: [{
-                data: [{% for item in case_summary %}{{ item.count }},{% endfor %}],
-                backgroundColor: ['#2196F3', '#4CAF50', '#FFC107'],
-            }]
-        },
-        options: chartOptions
-    });
-
-    // Drug Cases Distribution
-    new Chart(document.getElementById('drugCaseChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: [{% for item in drug_status_summary %}"{{ item.cstate|title }}",{% endfor %}],
-            datasets: [{
-                data: [{% for item in drug_status_summary %}{{ item.count }},{% endfor %}],
-                backgroundColor: [{% for item in drug_status_summary %}"{{ colors|get_item:item.cstate }}",{% endfor %}],
-            }]
-        },
-        options: chartOptions
-    });
-
-    // Extortion Cases Distribution
-    new Chart(document.getElementById('extortionCaseChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: [{% for item in extortion_status_summary %}"{{ item.cstate|title }}",{% endfor %}],
-            datasets: [{
-                data: [{% for item in extortion_status_summary %}{{ item.count }},{% endfor %}],
-                backgroundColor: [{% for item in extortion_status_summary %}"{{ colors|get_item:item.cstate }}",{% endfor %}],
-            }]
-        },
-        options: chartOptions
-    });
-
-    // Vehicle Cases Distribution
-    new Chart(document.getElementById('vehicleCaseChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: [{% for item in vehicle_status_summary %}"{{ item.cstate|title }}",{% endfor %}],
-            datasets: [{
-                data: [{% for item in vehicle_status_summary %}{{ item.count }},{% endfor %}],
-                backgroundColor: [{% for item in vehicle_status_summary %}"{{ colors|get_item:item.cstate }}",{% endfor %}],
-            }]
-        },
-        options: chartOptions
+    
+    // Initialize charts after the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeDashboardCharts(caseData);
     });
 </script>
-{% endblock content %}
+{% endblock javascript %}

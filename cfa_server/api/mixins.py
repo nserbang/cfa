@@ -25,7 +25,7 @@ class AdminRequiredMixin(AccessMixin):
             raise PermissionDenied("Permission Denied")
         logger.info("User is authenticated and is an admin, proceeding.")
         result = super().dispatch(request, *args, **kwargs)
-        logger.info("Exiting AdminRequiredMixin dispatch (success)")
+        logger.info(f"Exiting AdminRequiredMixin dispatch (success): {result}")
         return result
 
 
@@ -39,13 +39,13 @@ class UserMixin:
             logger.info(f"Queryset filtered for user {self.request.user.username}.")
         else:
             logger.info("User is not authenticated, returning unfiltered queryset.")
-        logger.info("Exiting UserMixin get_queryset")
+        logger.info(f"Exiting UserMixin get_queryset with data: {qs}")
         return qs
 
 
 class PasswordDecriptionMixin(serializers.Serializer):
     def validate(self, data):
-        logger.info("Entering PasswordDecriptionMixin validate")
+        logger.info(f"Entering PasswordDecriptionMixin validate with data: {data}")
         password_fields = [
             "password",
             "password1",
@@ -75,5 +75,5 @@ class PasswordDecriptionMixin(serializers.Serializer):
                 data[key] = decrypted_value
                 logger.info(f"Decrypted {key} successfully.")
         validated_data = super().validate(data)
-        logger.info("Exiting PasswordDecriptionMixin validate")
+        logger.info(f"Exiting PasswordDecriptionMixin validate with validated_data: {validated_data}")
         return validated_data

@@ -17,7 +17,7 @@ from django.db import transaction
 from api.forms import print_formatted_records
 from django.forms.models import model_to_dict
 logger = logging.getLogger(__name__)
-
+from django.contrib.gis.geos import Point
 from api.serializers import (
     CaseSerializer,
     CaseHistorySerializer,
@@ -33,7 +33,7 @@ from api.serializers import (
     CaseUpdateByReporterSerializer,
 )
 from api.mixins import UserMixin
-
+from datetime import datetime
 from django.contrib.auth.models import AnonymousUser
 
 class CaseViewSet(UserMixin, ModelViewSet):
@@ -43,6 +43,10 @@ class CaseViewSet(UserMixin, ModelViewSet):
 
     def get_queryset(self):
         logger.info("Entering get_queryset")
+        user = self.request.user
+        if user.is_authenticated is None or user.is_authenticated is False:
+            logger.info("unauthenticated")
+            return "unauthenticated"
         
         search = self.request.query_params.get("search", None)
         my_case = self.request.query_params.get("my_case", None) 
@@ -50,7 +54,6 @@ class CaseViewSet(UserMixin, ModelViewSet):
                 #return None;
         lat = self.request.query_params.get("lat")
         long = self.request.query_params.get("long")
-        user = self.request.user
         
         logger.debug(f"Query params - search: {search}, my_case: {my_case}, lat: {lat}, long: {long}")
         #if user is not None and hasattr(user,'mobile'):dd
@@ -119,8 +122,7 @@ class CaseViewSet(UserMixin, ModelViewSet):
         if search:
             logger.info(f"Applying search filter: {search}")
             data = data.filter(
-                Q(title__contains=search)
-                | Q(cid__contains=search)
+                  Q(cid__contains=search)
                 | Q(description__contains=search)
             )
 
@@ -130,8 +132,11 @@ class CaseViewSet(UserMixin, ModelViewSet):
     def list(self, request, *args, **kwargs):
         logger.info("Entering list")
         queryset = self.filter_queryset(self.get_queryset())
+        logger.info(f"Queryset : {queryset}")
         if queryset is None:
             return Response([])
+        if queryset is "unauthenticated":
+            return Response({"details":" Login required"}, status = 403)
         if not queryset.exists():
             logger.debug("Query set is empty")
             page = self.paginate_queryset(queryset)
@@ -285,6 +290,7 @@ class LostVehicleViewSet(ModelViewSet):
         qs = super().get_queryset()
         if self.request.user.is_authenticated:
             qs = qs.filter(caseId__user=self.request.user)
+        logger.info(f" Returning from LostVehicleViewSet with result :{qs}")
         return qs
 
 
@@ -441,18 +447,97 @@ class CaseUpdaateAPIView(UpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         logger.info(f" Entering. request : {request}, data : {request.data}, files : {request.FILES} ")
+        lat = request.data.get("lat",None)
+        ll = request.data.get("long",None)
+        if lat is None or ll is None:
+            logger.info(f"user location not available")
+            return Response({"details":"Your location is not enabled"}, status=403)
+
+        if hasattr(request, "user") is None:
+            logger.info(f"user is not available in request")
+            return Response({"details":"You are required to log in"}, status=403)
+        
+        if not request.user.is_authenticated:
+            logger.info(f"user not authenticated")
+            return Response({"details":"You are required to authenticated "}, status=403)
+
         instance = self.get_object()
-        serializer = CaseUpdateSerializer(
-            data=request.data, instance=instance, context={"request": request}
-        )
+        if instance is None:
+            logger.info(f"Case not found")
+            return Response({"details":"Record not found"}, status=404)
+        user = request.user
+        cstate = request.data.get("cstate")
+
+        if user.role == "police" and user == instance.user:
+            if instance.type != "vehicle" and cstate not in ["transfer","assign"]:
+                logger.info(f"Complaint and police are same")
+                return Response({"details":"You cannot change your own case"}, status=403)
+
+        try:
+            serializer = CaseUpdateSerializer(data=request.data, instance=instance, context={"request": request})
+        except Exception as e:
+            logger.info(f"Serialization error: {serializer.errors}")
+            return Response({f"details":str(e)}, status=404)
+
+        username = request.user.get_username() if hasattr(request.user, 'get_username') else str(request.user)
+        
+        description = " N/A "
+        if cstate == "pending":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        elif cstate == "accepted":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        elif cstate == "found":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        elif cstate == "assign":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        elif cstate == "visited":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        elif cstate == "inprogress":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        elif cstate == "transfer":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        elif cstate == "resolved":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        elif cstate == "info":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        elif cstate == "rejected":
+            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+        else:
+            description = f"Case status being changed to {cstate} by : {request.user}"
+
+        logger.debug(f"Case update request received for : {cstate} for cid : {instance.cid}")
         if serializer.is_valid():
             updated_case = serializer.save()
+
+            case_point = Point(float(updated_case.long), float(updated_case.lat), srid=4326)
+            user_point = Point(float(ll), float(lat), srid=4326)
+            case_point_m = case_point.transform(3857, clone=True)
+            user_point_m = user_point.transform(3857, clone=True)
+            distance = user_point_m.distance(case_point_m)/1000 #in km
+
+
+            logger.debug(f" Recorded updated for case id :{updated_case.cid}")
+            if cstate == "transfer":
+                # Record transient state Transfer before cstate is set to Pending
+                case_history = CaseHistory.objects.create(
+                        case = updated_case,
+                        user = request.user,
+                        description = description,
+                        cstate = cstate,
+                        lat = request.data.get("lat",None),
+                        long = request.data.get("long",None),
+                        distance = distance,
+                    )
+
+            # Record actual case history now    
             case_history = CaseHistory.objects.create(
                     case = updated_case,
                     user = request.user,
+                    description = request.data.get("description"),
                     cstate = updated_case.cstate,
                     lat = request.data.get("lat",None),
-                    long = request.data.get("long",None)
+                    long = request.data.get("long",None),
+                    distance = distance,
                 )
 
             medias = request.FILES.getlist('medias')
@@ -475,10 +560,10 @@ class CaseUpdaateAPIView(UpdateAPIView):
                         path = media,
                     )
             logger.info(f"Case updated succefuly for cid : {updated_case.cid}") 
-
-
             return Response(serializer.data, status=200)
-        return Response(serializer.errors, status=400)
+        else :
+            logger.debug(f" Case updated failed with : {str(serializer.errors)}")
+        return Response({f"details":serializer.errors}, status=400)
 
 
 class CaseUpdaateByReporterAPIView(UpdateAPIView):
@@ -500,6 +585,7 @@ class CaseUpdaateByReporterAPIView(UpdateAPIView):
             case_history = CaseHistory.objects.create(
                     case = updated_case,
                     user = request.user,
+                    description = request.data.get("description"),
                     cstate = updated_case.cstate,
                     lat = request.data.get("lat",None),
                     long = request.data.get("long",None)
@@ -535,10 +621,18 @@ class CaseAcceptAPIView(UpdateAPIView):
     permission_classes = (IsPoliceOfficer,)
 
     def put(self, request, *args, **kwargs):
-        logger.info(f" Entering. request : {request}, data : {request.data}, files : {reqiest.FILES} ")
+        logger.info(f" Entering CaseAcceAPIView put. request : {request}, data : {request.data}, files : {reqiest.FILES} ")
         case = self.get_object()
         case.oid = request.user.policeofficer_set.first()
         case.save()
+        """case_history = CaseHistory.objects.create(
+                case = case,
+                user = request.user,
+                description = request.data.get("description"),
+                cstate = case.cstate,
+                lat = request.data.get("lat",None),
+                long = request.data.get("long",None)
+            )"""
         return Response({"message": "Succesfull"}, status=200)
 
 

@@ -1,50 +1,46 @@
-{% extends '_base.html' %}
-{% load static email %}
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}{{ header }}{% endblock title %}
 
 {% block content %}
-
-<div class='row pt-1'>
-    <div class="col-lg-3 col-md-3 col-sm-12">
+  <div class="container mt-4">
+    <div class="row">
+      <!-- Side Menu Column -->
+      <div class="col-lg-3 col-md-3 col-sm-12 mb-4">
         {% include 'case/side_menu.html' %}
-    </div>
-    <div class="col-lg-9 col-md-9 col-sm-12">
-        <div class="d-flex flex-row pb-2">
-            <div class="col-sm-12 col-lg-4">
-                <h4 class="flex-fill">{{ header }}</h4>
-            </div>
-            <div class="col-sm-12 col-lg-4 d-flex flex-row">
-                <form action="" class="pr-2">
-                    <input class="form-control form-control-sm" id="search" placeholder="Search..." type="search" name="q" value="{{ request.GET.get.q }}">
-                </form>
-                {% if request.user.is_authenticated %}
-                    <div class="d-none pl-2 ml-2" id="download-link">
-                        <a class="" href="{% url 'case_export' %}?type=pdf">PDF</a>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="col-sm-12 col-lg-4 d-flex flex-row-reverse">
-                {% if request.user.is_authenticated %}
-                    <a href="{% url 'add_case' %}">Report new case</a>
-                {% endif %}
-            </div>
+      </div>
+
+      <!-- Main Content Column -->
+      <div class="col-lg-9 col-md-9 col-sm-12">
+        <h1 class="display-5 mb-4">{{ header }}</h1>
+        
+        <!-- Search form -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <form class="d-flex" method="get">
+              <input class="form-control me-2" type="search" name="q" placeholder="Search by registration, chassis, or engine number" 
+                     aria-label="Search" value="{{ request.GET.q|default:'' }}">
+              <button class="btn btn-outline-primary" type="submit">Search</button>
+            </form>
+          </div>
+	   
         </div>
-        {% for case in cases %}
-        {% include 'case/case_card.html' %}
-        {% endfor %}
+        
+        <!-- Case listing -->
+        {% if cases %}
+          {% for case in cases %}
+            {% include "case/case_card.html" with case=case %}
+          {% empty %}
+            <div class="alert alert-info">No cases found.</div>
+          {% endfor %}
+          
+          <!-- Pagination -->
+          {% include "pagination.html" %}
+        {% else %}
+          <div class="alert alert-info">No cases available.</div>
+        {% endif %}
+      </div>
     </div>
-</div>
-
+  </div>
 {% endblock content %}
-
-{% block javascript %}
-    <script nonce="{{ request.csp_nonce }}">
-        report = document.getElementById('report');
-        if (report) {
-            report.addEventListener("click", function(event) {
-                event.preventDefault();
-                link = document.getElementById('download-link');
-                link.classList.remove('d-none');
-            })
-        }
-    </script>
-{% endblock %}

@@ -6,7 +6,7 @@ from weasyprint import HTML
 from weasyprint.text.fonts import FontConfiguration
 from csp.decorators import csp_exempt
 from django.urls import reverse_lazy
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, TruncDay, TruncMonth, TruncYear
 from django.db.models import Count, Case as MCase, When, Q, OuterRef, Exists
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, reverse, redirect, get_object_or_404, Http404
@@ -21,6 +21,7 @@ from django.contrib import messages
 from django.views import View
 from django.views.generic import CreateView, FormView, ListView, UpdateView
 from django.utils import timezone
+from datetime import timedelta  # Add this import
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 
@@ -163,14 +164,23 @@ def logout_view(request):
     logout(request)
     logger.info("Exiting logout_view function")
     return redirect("/")  # Replace 'home' with the URL name of your home page
+    #return HttpResponseRedirect("/")  # Replace 'home' with the URL name of your home page
 
 
-class HomePageView(View):
+class HomePageView(LoginRequiredMixin, View):
+    """
+    View for displaying case listings with authentication required.
+    Inherits from LoginRequiredMixin to enforce authentication.
+    """
+    login_url = '/login/'  # Redirect URL for unauthenticated users
+    redirect_field_name = 'next'  # GET parameter name for the redirect URL
+    paginate_by = 10  # Number of items per page
+
     def get_header(self):
         logger.info("Entering get_header")
         header_map = {
             "my-complaints": "My complaints",
-            "stolen_vechicle": "Stollen Vehicle",
+            "stolen_vechicle": "Stolen Vehicle",
             "drug_case": "Drug Case Reported",
             "extortion_case": "Extortion Case Reported",
         }
@@ -178,25 +188,42 @@ class HomePageView(View):
 
     def get_case_type(self):
         logger.info("Entering get_case_type")
-        case_type = {
+        case_type_mapping = {
             "stolen-vehicle": "vehicle",
             "drug-case": "drug",
             "extortion-case": "extortion",
+            "vehicle": "vehicle",
+            "case": "drug",
+            "case": "extortion",
         }
-        return case_type.get(self.kwargs.get("case_type"))
+        case_type_from_url = self.kwargs.get("case_type")
+        logger.info(f" Case type from url : {case_type_from_url}")
+        mapped_type = case_type_mapping.get(case_type_from_url)
+        logger.info(f" Exiting get_case_type with mapped_type : {mapped_type}")
+        return mapped_type
 
     def get_template_name(self):
         logger.info("Entering get_template_name")
         template = self.get_case_type()
         if template:
-            logger.info("Exiting get_template_name with template: {template}")
+            logger.info(f"Exiting get_template_name with template: {template}")
             return f"case/{template}.html"
         logger.info("Exiting get_template_name with default home.html")
         return "home.html"
 
     def get_queryset(self):
+        """
+        Return case records based on user role and permissions:
+        1. Regular users: See their own cases plus all vehicle cases
+        2. Police officers: See cases they reported or are assigned to with can_act=True plus all vehicle cases
+        3. District-level officers (rank 6-10): See all cases in their district with can_act=False plus all vehicle cases
+        4. Senior officers (rank>10) or admins: See all cases with can_act=False
+        """
         logger.info("Entering get_queryset in HomePageView")
+
         user = self.request.user
+        
+        # User is guaranteed to be authenticated due to LoginRequiredMixin
         cases = (
             Case.objects.annotate(
                 comment_count=Count("comment", distinct=True),
@@ -211,71 +238,10 @@ class HomePageView(View):
                 ),
             )
             .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
-            #.prefetch_related(
-            #    "casehistory_set", "comment_set", "comment_set__user", "medias"
-            #)
             .order_by("-created")
         )
-        lat = self.request.GET.get("lat")
-        long = self.request.GET.get("long")
-        if lat and long:
-            geo_location = fromstr(f"POINT({long} {lat})", srid=4326)
-            user_distance = Distance("geo_location", geo_location)
-            cases = cases.annotate(radius=user_distance).order_by(
-                "radius", Coalesce("created", "updated").desc()
-            )
-        case_type = self.get_case_type()
-        if case_type:
-            cases = cases.filter(type=case_type)
-        # elif not case_type and user.is_authenticated:
-        #     cases = cases.filter(user=user)
-        if user.is_authenticated:
-            liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)
-            cases = cases.annotate(
-                has_liked=Exists(liked),
-            )  # .filter(user=user)
-            if self.kwargs.get("case_type") == "my-complaints":
-                cases = cases.filter(user=self.request.user)
-            if user.is_police:
-                officer = user.policeofficer_set.first()
-                if officer:
-                    rank = int(officer.rank)
-                    cases = cases.annotate(
-                        can_act=MCase(
-                            When(
-                                (Q(cstate="pending") & Q(oid__rank=5))
-                                | (
-                                    ~Q(cstate="pending")
-                                    & Q(oid__rank=4)
-                                    & Q(oid=officer)
-                                ),
-                                then=True,
-                            ),
-                            default=False,
-                        )
-                    )
-                    rank = int(officer.rank)
-                    if rank > 9:
-                        pass
-                    elif rank == 9:
-                        cases.filter(pid__did_id=officer.pid.did_id)
-                    elif rank == 6:
-                        cases = cases.filter(
-                            pid_id__in=officer.policestation_supervisor.values(
-                                "station"
-                            )
-                        )
-                    elif rank == 5:
-                        cases = cases.filter(pid_id=officer.pid_id)
-                    elif rank == 4:
-                        cases = cases.filter(oid=officer).exclude(cstate="pending")
-                    else:
-                        cases = cases.filter(Q(user=user) | Q(type="vehicle"))
-            elif user.is_user:
-                cases = cases.filter(Q(user=user) | Q(type="vehicle"))
-        else:
-            cases = cases.filter(type="vehicle")
-
+        
+        # Handle search functionality
         if q := self.request.GET.get("q"):
             search_filter = (
                 Q(lostvehicle__regNumber=q)
@@ -288,15 +254,152 @@ class HomePageView(View):
             except ValueError:
                 pass
             cases = cases.filter(search_filter)
+        
+        # Filter based on case type from URL if specified
+        case_type = self.get_case_type()
+        if case_type:
+            cases = cases.filter(type=case_type)
+        
+        # Filter for my-complaints
+        if self.kwargs.get("case_type") == "my-complaints":
+            cases = cases.filter(user=self.request.user)
+        
+        # Add liked annotation
+        liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)
+        cases = cases.annotate(has_liked=Exists(liked))
+        
+        # Apply role-based filtering
+        if user.is_police:
+            officer = user.policeofficer_set.first()
+            if officer:
+                # Add can_act annotation
+                cases = cases.annotate(
+                    can_act=MCase(
+                        When(
+                            (Q(cstate="pending") & Q(oid__rank=5)) |
+                            (~Q(cstate="pending") & Q(oid__rank=4) & Q(oid=officer)),
+                            then=True,
+                        ),
+                        default=False,
+                    )
+                )
+                
+                rank = int(officer.rank)
+                # Senior officers (rank > 9): See all cases
+                if rank > 9:
+                    logger.info(f"Officer rank {rank} is senior level - showing all cases")
+                    return cases
+                
+                # SP level (rank 9)
+                elif rank == 9:
+                    logger.info(f"Officer is SP level, filtering by district: {officer.pid.did_id}")
+                    return cases.filter(
+                        Q(pid__did_id=officer.pid.did_id) | Q(type="vehicle")
+                    )
+                
+                # DySP level (rank 6)
+                elif rank == 6:
+                    stations = officer.policestation_supervisor.values("station")
+                    logger.info(f"Officer is DySP level, filtering by stations: {stations}")
+                    return cases.filter(
+                        Q(pid_id__in=stations) | Q(type="vehicle")
+                    )
+                
+                # Inspector level (rank 5)
+                elif rank == 5:
+                    logger.info(f"Officer is Inspector level, filtering by station: {officer.pid_id}")
+                    return cases.filter(
+                        Q(pid_id=officer.pid_id) | Q(type="vehicle")
+                    )
+                
+                # SI level (rank 4)
+                elif rank == 4:
+                    logger.info(f"Officer is SI level, filtering by SI criteria")
+                    return cases.filter(
+                        (Q(oid=officer) & ~Q(cstate="pending")) | Q(type="vehicle")
+                    )
+                
+                # Junior officers - show user cases and vehicle cases
+                else:
+                    logger.info(f"Officer is junior level (rank {rank}), showing user cases and vehicle cases")
+                    return cases.filter(
+                        Q(user=user) | Q(type="vehicle")
+                    )
+            else:
+                # Police role but no officer record
+                logger.warning(f"User {user.mobile} has police role but no officer record")
+                return cases.filter(
+                    Q(user=user) | Q(type="vehicle")
+                )
+        
+        # Regular users: See their own cases plus all vehicle cases
+        elif user.is_user:
+            logger.info(f"User role is 'user', filtering cases for {user.mobile}")
+            cases = cases.filter(
+                Q(user=user) | Q(type="vehicle")
+            )
+        
+        # Admin users: See all cases
+        elif user.role == "admin" or user.is_superuser:
+            logger.info(f"User is admin or superuser - showing all cases")
+            return cases
+            
         return cases
 
     def get(self, request, *args, **kwargs):
         logger.info(f"Entering get with request: {request}")
+        logger.info(f"Entering get with request: %s",request)
+        if request.GET.get("action") == "logout":
+            logout(request)
+            return redirect(reverse("login"))
         cases = self.get_queryset()
         header = self.get_header()
         template_name = self.get_template_name()
-        logger.info(f"Exiting get case :{cases}, headers: {header}, temmplate :{template_name}")
-        return render(request, template_name, {"cases": cases, "header": header})
+        
+        # Pagination
+        paginator = Paginator(cases, self.paginate_by)
+        page_number = request.GET.get('page', 1)
+        
+        try:
+            page_obj = paginator.get_page(page_number)
+        except Exception as e:
+            logger.error(f"Pagination error: {str(e)}")
+            page_obj = paginator.get_page(1)
+        
+        # Get page range for pagination controls
+        page_range = self.get_page_range(paginator, page_obj)
+            
+        context = {
+            "cases": page_obj,
+            "header": header,
+            "page_obj": page_obj,
+            "page_range": page_range,
+            "is_paginated": page_obj.has_other_pages(),
+        }
+        
+        logger.info(f"Exiting get with template: {template_name}, page {page_number}, total pages: {paginator.num_pages}")
+        return render(request, template_name, context)
+    
+    def get_page_range(self, paginator, page_obj):
+        """Return a range of page numbers to display in pagination controls."""
+        page_number = page_obj.number
+        total_pages = paginator.num_pages
+        
+        # Always show first, last, and 5 pages around current page
+        if total_pages <= 7:
+            # If there are 7 or fewer pages, show all
+            return range(1, total_pages + 1)
+        
+        # Complex case: need to add ellipsis
+        if page_number <= 4:
+            # Near the start
+            return list(range(1, 6)) + ["..."] + [total_pages]
+        elif page_number >= total_pages - 3:
+            # Near the end
+            return [1] + ["..."] + list(range(total_pages - 4, total_pages + 1))
+        else:
+            # In the middle
+            return [1] + ["..."] + list(range(page_number - 2, page_number + 3)) + ["..."] + [total_pages]
 
 
 class UserRegistrationView(View):
@@ -809,78 +912,189 @@ class dboardView(View):
 def dashboard(request):
     logger.info(f"Entering dashboard function with request: {request}")
     if not request.user.is_authenticated:
-        return render(request, "admin/login.html")
-    # Ensure only users with the "Police" role can access this view
-    if not request.user.is_police:
-        logger.warning("Unauthorized access attempt to dashboard_view")
-        #return render(request, '403.html', status=403)  # Render a 403 Forbidden page
-
+        return redirect('login')
+    
+    user = request.user
+    
     # Get filter parameter from the request
     ctype = request.GET.get('ctype', None)
-
-    # Filter cases based on the selected `Ctype`
-    cases = Case.objects.all().order_by('-created')
-
+    
+    # Start with all cases
+    cases = Case.objects.all()
+    
+    # Apply role-based filtering, similar to HomePageView.get_queryset
+    if user.is_police:
+        officer = user.policeofficer_set.first()
+        if officer:
+            rank = int(officer.rank)
+            # Senior officers (rank > 9): See all cases
+            if rank > 9:
+                logger.info(f"Officer rank {rank} is senior level - showing all cases stats")
+                pass  # No filtering needed, show all cases
+            
+            # SP level (rank 9)
+            elif rank == 9:
+                logger.info(f"Officer is SP level, filtering by district: {officer.pid.did_id}")
+                cases = cases.filter(
+                    Q(pid__did_id=officer.pid.did_id) | Q(type="vehicle")
+                )
+            
+            # DySP level (rank 6)
+            elif rank == 6:
+                stations = officer.policestation_supervisor.values_list("station", flat=True)
+                logger.info(f"Officer is DySP level, filtering by stations: {stations}")
+                cases = cases.filter(
+                    Q(pid_id__in=stations) | Q(type="vehicle")
+                )
+            
+            # Inspector level (rank 5)
+            elif rank == 5:
+                logger.info(f"Officer is Inspector level, filtering by station: {officer.pid_id}")
+                cases = cases.filter(
+                    Q(pid_id=officer.pid_id) | Q(type="vehicle")
+                )
+            
+            # SI level (rank 4)
+            elif rank == 4:
+                logger.info(f"Officer is SI level, filtering by SI criteria")
+                cases = cases.filter(
+                    (Q(oid=officer) & ~Q(cstate="pending")) | Q(type="vehicle")
+                )
+            
+            # Junior officers - show user cases and vehicle cases
+            else:
+                logger.info(f"Officer is junior level (rank {rank}), showing user cases and vehicle cases stats")
+                cases = cases.filter(
+                    Q(user=user) | Q(type="vehicle")
+                )
+        else:
+            # Police role but no officer record
+            logger.warning(f"User {user.mobile} has police role but no officer record")
+            cases = cases.filter(
+                Q(user=user) | Q(type="vehicle")
+            )
+    
+    # Regular users: See their own cases plus all vehicle cases
+    elif user.is_user:
+        logger.info(f"User role is 'user', filtering cases for {user.mobile}")
+        cases = cases.filter(
+            Q(user=user) | Q(type="vehicle")
+        )
+    
+    # Admin users: See all cases (no filtering needed)
+    elif user.role == "admin" or user.is_superuser:
+        logger.info(f"User is admin or superuser - showing all case statistics")
+        pass  # No filtering needed
+    
+    # Additional type filter if provided
     if ctype:
         cases = cases.filter(type=ctype)
-
-    case_summary = Case.objects.values('type').annotate(count=Count('cid')).order_by('type')
-
-    drug_status_summary = Case.objects.filter(type='drug').values('cstate').annotate(
-            count= Count('cid')).order_by('cstate')
-
-    extortion_status_summary = Case.objects.filter(type='extortion').values('cstate').annotate(
-            count= Count('cid')).order_by('cstate')
-
-    vehicle_status_summary = Case.objects.filter(type='vehicle').values('cstate').annotate(
-            count= Count('cid')).order_by('cstate')
-
-
-    """
-    # Group cases by `Ctype` for the pie chart
-    case_summary = (
-        cases.values('type')
-        .annotate(count=Count('type'))
-        .order_by('type')
+    
+    # Overall case summary by type
+    case_summary = cases.values('type').annotate(
+        count=Count('cid')
+    ).order_by('type')
+    
+    # Status summaries by case type (filtered by user's permissions)
+    drug_status_summary = cases.filter(type='drug').values('cstate').annotate(
+        count=Count('cid')
+    ).order_by('cstate')
+    
+    extortion_status_summary = cases.filter(type='extortion').values('cstate').annotate(
+        count=Count('cid')
+    ).order_by('cstate')
+    
+    vehicle_status_summary = cases.filter(type='vehicle').values('cstate').annotate(
+        count=Count('cid')
+    ).order_by('cstate')
+    
+    # Generate time-based data using Trunc functions without time restrictions
+    
+    # Daily data (all available days)
+    daily_data = (
+        cases
+        .annotate(date=TruncDay('created'))
+        .values('date')
+        .annotate(count=Count('cid'))
+        .order_by('date')
     )
-    """
-
-    # Paginate the cases (10 cases per page)
-    #paginator = Paginator(cases, 10)
-    #page_number = request.GET.get('page')
-    #cases = paginator.get_page(page_number)
-    """
-    context = {
-        'cases': page_obj,  # Paginated cases
-        'case_summary': case_summary,  # Data for the pie chart
-        'ctype_filter': ctype_filter,  # Current filter
+    
+    # Convert to format expected by the template
+    daily_data_list = []
+    for entry in daily_data:
+        if entry['date']:  # Make sure date is not None
+            daily_data_list.append({
+                'date': entry['date'].strftime('%Y-%m-%d'),
+                'count': entry['count']
+            })
+    
+    # Monthly data (all available months)
+    monthly_data = (
+        cases
+        .annotate(date=TruncMonth('created'))
+        .values('date')
+        .annotate(count=Count('cid'))
+        .order_by('date')
+    )
+    
+    # Convert to format expected by the template
+    monthly_data_list = []
+    for entry in monthly_data:
+        if entry['date']:  # Make sure date is not None
+            monthly_data_list.append({
+                'date': entry['date'].strftime('%b %Y'),
+                'count': entry['count']
+            })
+    
+    # Yearly data (all available years)
+    yearly_data = (
+        cases
+        .annotate(date=TruncYear('created'))
+        .values('date')
+        .annotate(count=Count('cid'))
+        .order_by('date')
+    )
+    
+    # Convert to format expected by the template
+    yearly_data_list = []
+    for entry in yearly_data:
+        if entry['date']:  # Make sure date is not None
+            yearly_data_list.append({
+                'date': entry['date'].strftime('%Y'),
+                'count': entry['count']
+            })
+    
+    # Collect time-based data
+    time_data = {
+        'daily': daily_data_list,
+        'monthly': monthly_data_list,
+        'yearly': yearly_data_list
     }
-    """
-
-    colors ={
-            'pending':'#FF9800',
-            'accepted':'#4CAF50',
-            'found':'#2196F3',
-            'assign':'#9C27B0',
-            'visited':'#FF5722',
-            'inprogress':'#03A9F4',
-            'transfer':'#795548',
-            'resolved':'#8BC34A',
-            'info':'#607D8B',
-            'rejected':'#F44336'
-        }
-
-
+    
+    # Status colors for charts
+    colors = {
+        'pending': '#FF9800',
+        'accepted': '#4CAF50',
+        'found': '#2196F3',
+        'assign': '#9C27B0',
+        'visited': '#FF5722',
+        'inprogress': '#03A9F4',
+        'transfer': '#795548',
+        'resolved': '#8BC34A',
+        'info': '#607D8B',
+        'rejected': '#F44336'
+    }
+    
     context = {
-        #'cases': cases,
         'case_summary': case_summary,
         'ctype_filter': ctype,
-        'drug_status_summary':drug_status_summary,
-        'extortion_status_summary':extortion_status_summary,
-        'vehicle_status_summary':vehicle_status_summary,
+        'drug_status_summary': drug_status_summary,
+        'extortion_status_summary': extortion_status_summary,
+        'vehicle_status_summary': vehicle_status_summary,
         'colors': colors,
+        'time_data': time_data,
     }
-
+    
     logger.info("Exiting dashboard function")
     return render(request, 'dashboard.html', context)
     #return render(request, 'dash.html', context)

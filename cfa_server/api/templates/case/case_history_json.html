@@ -1,82 +1,11 @@
-{% for old, new in history_pairs %}
-    {% if forloop.first %}
-    <div class="row pt-1">
-        <div class="col-auto text-center flex-column d-none d-sm-flex">
-            <div class="row h-50">
-                <div class="col">&nbsp;</div>
-                <div class="col">&nbsp;</div>
-            </div>
-            <p class="m-1 text-sm">
-                <span class="badge rounded-pill bg-success border">&nbsp;</span>
-            </p>
-            <div class="row h-50">
-                <div class="col border-end order">&nbsp;</div>
-                <div class="col">&nbsp;</div>
-            </div>
-        </div>
-
-        <div class="col py-1">
-            <div class="card">
-                <div class="card-body">
-                    <div class="text-muted"> <span class="fw-bold">Reported </span>: {{ old.created }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-    <div class="row pt-1">
-        <div class="col-auto text-center flex-column d-none d-sm-flex">
-            <div class="row h-50">
-                <div class="col">&nbsp;</div>
-                <div class="col">&nbsp;</div>
-            </div>
-            <p class="m-1 text-sm">
-                <span class="badge rounded-pill bg-success border">&nbsp;</span>
-            </p>
-            <div class="row h-50">
-                <div class="col border-end order">&nbsp;</div>
-                <div class="col">&nbsp;</div>
-            </div>
-        </div>
-
-        <div class="col py-1">
-            <div class="card">
-                <div class="card-body">
-                    <div class="text-muted">{{ old.cstate }} => <span class="fw-bold">{{ new.cstate }}</span></div>
-                    <div class="card-title text-muted">{{ new.created }}</div>
-                    <div class="card-title text-muted">{{ new.user }}</div>
-                    <div class="card-text">{{ new.discription }}</div>
-                    <div class="row">
-                        {% for media in new.medias.all %}
-                            <div class="col-auto">{{ media.mtype }}
-                                {% if media.mtype == 'photo' %}
-                                    <a class="image" href="{{ media.path.url }}">
-                                        <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
-                                    </a>
-                                {% elif media.mtype == 'video' %}
-                                    <video width="320" height="240" controls>
-                                        <source src="{{ media.path.url }}">
-                                    </video>
-                                {% else %}
-                                    <a href="{{ media.path.url }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-files" width="60" height="60" viewBox="0 0 24 24" stroke-width="2" stroke="#9e9e9e" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                            <path d="M15 3v4a1 1 0 0 0 1 1h4" />
-                                            <path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z" />
-                                            <path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2" />
-                                          </svg>
-                                    </a>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-{% empty %}
-<div class="row pt-2">
-    No history found.
+{% for history in case_histories %}
+<div class="card mb-2">
+	<div class="card-body">
+    	<p><strong>Status:</strong> {{ history.cstate }}</p>
+    	<p>{{ history.description }}</p>
+    	<p class="text-muted"><small>Updated by {{ history.user.first_name }} on {{ history.created|date:"F j, Y, g:i a" }}</small></p>
+	</div>
 </div>
+{% empty %}
+<div class="alert alert-warning">No history records found for this case.</div>
 {% endfor %}

@@ -42,6 +42,7 @@ class DistrictModel(admin.ModelAdmin):
         return results
 
     list_display = ["did", "name"]
+    search_fields = ["name",]
 
 
 @admin.register(cUser)
@@ -284,8 +285,23 @@ class PoliceStationContactAdmin(admin.ModelAdmin):
 
 admin.site.register(PoliceStationContact, PoliceStationContactAdmin)
 
+class PoliceOfficerForm(forms.ModelForm):
+    class Meta:
+        model = PoliceOfficer
+        fields = "__all__"
+    
+    def __init__(self, *args, **kwargs):
+        logger.info("Entering __init__")
+        super().__init__(*args, **kwargs)
+        #self.fields["report_on_this"].widget.attrs.update({
+        self.fields["report_on_this"].label = format_html(
+                '<span style":"background-color: #ffffcc; color:#ff0000; font-weight: bold; padding: 2px 5px; border-radius:3px;" title ="New reported case will be notified on this mobile number "> Report on this</span>'
+                )
 
 class PoliceOfficerAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["user","pid"]
+    form = PoliceOfficerForm
+
     def __init__(self, *args, **kwargs):
         logger.info("Entering __init__")
         super().__init__(*args, **kwargs)
@@ -309,15 +325,42 @@ class PoliceOfficerAdmin(admin.ModelAdmin):
         logger.info("Exiting get_search_results")
         return results
 
-    list_display = ["oid", "pid", "rank", "entryDate", "mobile", "status"]
+    def report(self, obj):
+        if obj.report_on_this:
+            return format_html(
+                    '<span style="color:green; font-weight:bold;" title="New case reported will be sent notification to this number"> Yes </span>'
+                    )
+
+        return format_html(
+                '<span style="color:green; font-weight:bold;" title="New case reported will not be sent notification to this number"> No </span>'
+            )
+
+    def display_name(self, obj):
+        return obj.user.first_name +" " + obj.user.last_name
+
+    def display_mobile(self, obj):
+        return obj.user.mobile
+
+    def display_ps(self, obj):
+        return obj.pid.name
+
+
+    report.short_description = "Report to this"
+    display_name.short_description = "Officer Name"
+    display_mobile.short_description = "Mobile"
+    display_ps.short_description = "Police Station"
+
+    list_display = ["oid", "display_name", "display_mobile",  "display_ps", "rank", "entryDate", "status","report"]
+
+    
     # autocomplete_fields =['mobile']
     search_fields = [
-        "name__icontains",
-        "pid__pid__icontains",
-        "rank__icontains",
-        "entryDate__icontains",
+        #3"name__icontains",
+        #"pid__pid__icontains",
+       # "rank__icontains",
+        #"entryDate__icontains",
         "^mobile",
-        "^status",
+        #"^status",
     ]
 
 
@@ -455,6 +498,21 @@ class CaseAdmin(admin.ModelAdmin):
     def display_coordinate(self, obj):
         return str(obj.lat) +",\n"+str(obj.long)
 
+    def req_type(self, obj):
+        if obj.type == "true":
+            return obj.drug_issue_type or "N/A"
+        elif obj.type == "extortion":
+            return "N/A"
+        elif obj.type == "vehicle":
+            try:
+                lv = LostVehicle.objects.get(caseId=obj)
+                return lv.vehicle_lost_type or "N/A"
+            except LostVehicle.DoesNotExist:
+                return "N/A"
+        else:
+            return "N/A"
+
+
 
     police_station_name.short_description = "Police Station"
     created_date.short_description = "Reported On"
@@ -466,6 +524,7 @@ class CaseAdmin(admin.ModelAdmin):
     status_display.admin_order_field ="cstate"
     display_case_id.short_description = "ID"
     display_coordinate.short_description = "Reported at"
+    req_type.short_description = "Request Type"
 
     class Media:
         js = ("js/custom.js",)
@@ -477,6 +536,7 @@ class CaseAdmin(admin.ModelAdmin):
         #"type",
         "display_case_id",
         "type_details",
+        "req_type",
         "description_preview",
         "police_station_name",
         "officer_name",
@@ -534,17 +594,21 @@ class CaseHistoryAdmin(admin.ModelAdmin):
         url = reverse("admin:api_media_changelist")+f"?parentId__exact={obj.id}&source__exact=history"
         return format_html('<a class="button" href="{}">Media</a>',url)
 
+    def display_user(self, obj):
+        return obj.user.first_name +" "+obj.user.last_name+", Mob: "+obj.user.mobile
+
     
     display_case_id.short_description="CID"
     display_status.short_description = "Status"
     display_location.short_description = "Changed at"
     media_button.short_description = "Media"
+    display_user.short_description = "Changed by"
 
     list_display = [
             "id", 
             #"case",
             "display_case_id",
-            "user", 
+            "display_user", 
             #"cstate",
             "display_status",
             "created", 
@@ -553,7 +617,7 @@ class CaseHistoryAdmin(admin.ModelAdmin):
             "media_button",
             ]
     #list_editable = ["cstate"]
-    search_fields = ["case.cid"]
+    search_fields = ["case__cid"]
 
 
 admin.site.register(CaseHistory, CaseHistoryAdmin)
@@ -676,7 +740,7 @@ class CommentAdmin(admin.ModelAdmin):
         logger.info("Exiting get_search_results")
         return results
 
-    def Id(self, obj):
+    def display_Id(self, obj):
         logger.info("Entering Id")
         try:
             case_id = obj.cid.cid
@@ -687,7 +751,7 @@ class CommentAdmin(admin.ModelAdmin):
         logger.info("Exiting Id")
         return case_id
 
-    Id.short_description = "Case ID"
+    display_Id.short_description = "Case ID"
 
     def commentid(self, obj):
         logger.info("Entering commentid")
@@ -700,8 +764,20 @@ class CommentAdmin(admin.ModelAdmin):
         logger.info("Exiting commentid")
         return comment_id
 
+    def display_user(self, obj):
+        return obj.user.first_name+" "+obj.user.last_name+", Mob: "+obj.user.mobile
+
+    def media_button(self, obj):
+        url = reverse("admin:api_media_changelist")+f"?parentId__exact={obj.cmtid}&source__exact=comment"
+        return format_html('<a class="button" href="{}">Media</a>',url)
+        #url = reverse("admin:api_media_changelist")+f"?parentId__exact={obj.cmtid}&sourceType__exact=comment"
+        #return format_html('< a class="button" href="{}">Media </a>',url)
+
     commentid.short_description = "Comment ID"
-    list_display = [commentid, Id, "user", "content"]
+    display_Id.short_description ="CID"
+    display_user.short_description = "Person"
+    media_button.short_description = "Medias"
+    list_display = ["commentid", "display_Id", "display_user", "content","media_button"]
 
 
 admin.site.register(Comment, CommentAdmin)
@@ -768,7 +844,7 @@ class InformationAdmin(admin.ModelAdmin):
     information_id.short_description = "Information ID"
     information_type.short_description = "Type"
     title.short_description = "Title"
-    list_display = [information_id, information_type, title]
+    list_display = ["information_id", "information_type", "title"]
 
 
 # @admin.register(Victim)
@@ -822,6 +898,7 @@ class EmergencyAdminForm(forms.ModelForm):
     class Meta:
         model = Emergency
         fields = "__all__"
+        exclude = ["geo_location"]
 
     def __init__(self, *args, **kwargs):
         logger.info("Entering EmergencyAdminForm __init__")
@@ -979,11 +1056,40 @@ class AboutPageAdmin(admin.ModelAdmin):
 
     pass  # Use default admin interface
 
+class SuperintendingOfficerAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["officer","did"]
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "did":
+            kwargs["queryset"] = District.objects.all()
+            kwargs["label"] = "District name"
+        elif db_field.name == "officer":
+            kwargs["queryset"] = PoliceOfficer.objects.all()
+            kwargs["label"] = "Officer Mobile"
+        return super().formfield_for_foreignkey(db_field,request, **kwargs)
+
+    def display_officer(self, obj):
+        return obj.officer.user.first_name +" " +obj.officer.user.last_name +", "+obj.officer.user.mobile
+
+
+    def display_district(self, obj):
+        return obj.did.name
+
+    display_officer.short_description = "officer"
+    display_district.short_description = "Nistrict"
+
+    list_display = (
+            "id",
+            "display_district",
+            "display_officer",
+        )
+    search_fields = ("officer__user__mobile","did__name")
+
+
 
 """ admin.site.register(Victim)
 admin.site.register(Criminal) """
 admin.site.register(Privacy)
-admin.site.register(PoliceStationSupervisor)
+admin.site.register(SuperintendingOfficer,SuperintendingOfficerAdmin)
 admin.site.register(TermsCondition)
 admin.site.register(Contact)
 admin.site.register(Like)

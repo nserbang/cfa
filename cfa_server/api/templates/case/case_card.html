@@ -1,4 +1,4 @@
-{% load email %}
+{% load email static %}
 <div class="card mb-3 shadow">
     <div class="card-body">
         <table class="table table-bordered table-sm">
@@ -25,14 +25,13 @@
                     <td>{{ case.get_drug_issue_type_display }}</td>
                 {% endif %}
                 <td>{{ case.get_cstate_display }}</td>
-                <td><a class="btn btn-primary btn-xs text-xs"
-                    rel="noreferrer"
-                    href="https://www.google.com/maps/dir/?api=1&destination={{ case.pid.lat }},{{ case.pid.long }}"
-                    nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;"
-                    nonce="{{ request.csp_nonce }}"
-                >
-                    {{ case.pid.name }}
-                </a></td>
+                <td>
+                    <a class="btn btn-primary btn-xs text-xs"
+                       rel="noreferrer"
+                       href="https://www.google.com/maps/dir/?api=1&destination={{ case.pid.lat }},{{ case.pid.long }}">
+                        {{ case.pid.name }}
+                    </a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -46,7 +45,18 @@
             <li class=""><span class="fw-bold">Color</span> : <span>{{ case.lostvehicle.color }}</span></li> <br>
         {% endif %}
         <li class=""><span class="fw-bold">Description</span> :</li>
-        <div><p class="pt-0">{{ case.description|format_email }}</p></div>
+        <div>
+            <p class="pt-0">
+                {% if case.description|length > 200 %}
+                    <span class="short-description">{{ case.description|slice:":200" }}...</span>
+                    <span class="full-description d-none">{{ case.description|format_email }}</span>
+                    <button class="btn btn-link btn-sm toggle-description" type="button">More</button>
+                {% else %}
+                    {{ case.description|format_email }}
+                {% endif %}
+            </p>
+        </div>
+
         <div class="row">
             {% for media in case.medias.all %}
                 <div class="col-auto">
@@ -54,7 +64,7 @@
                         <a class="image" href="{{ media.path.url }}">
                             <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
                         </a>
-                    {% elif media.mtype == 'video' %}>
+                    {% elif media.mtype == 'video' %}
                         <video width="320" height="240" controls>
                             <source src="{{ media.path.url }}">
                         </video>
@@ -76,38 +86,47 @@
     </div>
     <div class="card-footer text-body-secondary">
         <div class="d-flex flex-row justify-content-between">
-            <a href="{% if user.is_authenticated %}{% url 'add_like' case.pk %}{% endif %}" class="btn btn-primary btn-sm {% if not user.is_authenticated or case.has_liked %}disabled{% endif %}" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" nonce="{{ request.csp_nonce }}">Like: {{ case.like_count }}</a>
+            <a href="{% if user.is_authenticated %}{% url 'add_like' case.cid %}{% endif %}" class="btn btn-primary btn-sm {% if not user.is_authenticated or case.has_liked %}disabled{% endif %}">Like: {{ case.like_count }}</a>
 
-            <button data-bs-target="#comment-{{case.pk}}" class="comment-{{ case.pk }} btn btn-primary btn-sm" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">Comment: {{ case.comment_count }}</button>
+            <button type="button" 
+                    class="comment-btn btn btn-primary btn-sm" 
+                    data-bs-target="#comment-{{ case.cid }}">
+                Comment: {{ case.comment_count }}
+            </button>
+
+            <button type="button" 
+                    class="history-btn btn btn-primary btn-sm" 
+                    data-bs-target="#history-{{ case.cid }}">
+                History
+            </button>
 
             {% if user.is_authenticated %}
                 {% if case.cstate == 'pending' and case.is_location_visible %}
-                    <a rel="noreferrer" href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}" class="btn btn-primary btn-sm" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" nonce="{{ request.csp_nonce }}">Location</a>
+                    <a rel="noreferrer" href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}" class="btn btn-primary btn-sm">Location</a>
                 {% elif case.cstate != 'pending' and case.user_id == user.id or case.oid.user_id == user.id %}
-                    <a href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}" class="btn btn-primary btn-sm" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" nonce="{{ request.csp_nonce }}">Location</a>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}" class="btn btn-primary btn-sm">Location</a>
                 {% endif %}
             {% endif %}
 
             {% if case.can_act %}
                 <div class="dropdown">
-                    <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" nonce="{{ request.csp_nonce }}">Action</button>
+                    <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Action</button>
                     <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=pending">Pending</a></li>
-                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=accepted">Accepted</a></li>
-                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=found">Found</a></li>
-                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=assign">Assigned</a></li>
-                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=transfer">Transfer</a></li>
-                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=resolved">Resolved</a></li>
-                    <li><a class="dropdown-item" href="{% url 'change_status' case.pk %}?status=info">Info</a></li>
+                        <li><a class="dropdown-item" href="{% url 'change_status' case.cid %}?status=pending">Pending</a></li>
+                        <li><a class="dropdown-item" href="{% url 'change_status' case.cid %}?status=accepted">Accepted</a></li>
+                        <li><a class="dropdown-item" href="{% url 'change_status' case.cid %}?status=found">Found</a></li>
+                        <li><a class="dropdown-item" href="{% url 'change_status' case.cid %}?status=assign">Assigned</a></li>
+                        <li><a class="dropdown-item" href="{% url 'change_status' case.cid %}?status=transfer">Transfer</a></li>
+                        <li><a class="dropdown-item" href="{% url 'change_status' case.cid %}?status=resolved">Resolved</a></li>
+                        <li><a class="dropdown-item" href="{% url 'change_status' case.cid %}?status=info">Info</a></li>
                     </ul>
                 </div>
             {% endif %}
 
-            <a href="" class="case-history-{{case.pk}} btn btn-primary btn-sm" nonce="{{ request.csp_nonce}}" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" data-bs-target="#history-{{case.pk}}" nonce="{{ request.csp_nonce }}">Case history</a>
         </div>
-        <div id="comment-{{case.pk}}" class="pt-2 d-none">
+        <div id="comment-{{case.cid}}" class="pt-2 d-none">
             {% if user.is_authenticated %}
-            <form action="{% if user.is_authenticated %}{% url 'add_comment' case.pk %}{% endif %}"  method="post">
+            <form action="{% if user.is_authenticated %}{% url 'add_comment' case.cid %}{% endif %}"  method="post">
                 {% csrf_token %}
                 <div class="mb-2">
                     <label for="comment" class="form-label">Add your comment here.</label>
@@ -122,16 +141,19 @@
                 <h4>Comments</h4>
                 {% for comment in case.comment_set.all %}
                     <div class="shadow-sm p-2 rounded">
-                        {{ comment.content }} <span class="fst-italic" nonce="{{ request.csp_nonce}}" style="font-style: italic !important; font-size: .785rem">-by {{ comment.user.first_name }} at {{ comment.created }}</span>
+                        {{ comment.content }} <span class="comment-meta">-by {{ comment.user.first_name }} at {{ comment.created }}</span>
                     </div>
                 {% endfor %}
             </div>
         </div>
-
-
-        <div class="container d-none" id="history-{{case.pk}}">
-
-        </div>
-
+            <div id="history-{{ case.cid }}" class="history-container d-none mt-3">
+                <h4 class="mb-3">Case History</h4>
+                <div class="case-history-list">
+                    <!-- Case histories will be dynamically loaded here -->
+                </div>
+            </div>
     </div>
 </div>
+
+<!-- Include external JavaScript with CSP nonce -->
+<script src="{% static 'js/script.js' %}" nonce="{{ request.csp_nonce }}"></script>

@@ -7,7 +7,8 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 import base64
-
+from django.http import HttpResponse, HttpResponseRedirect
+from urllib.parse import urlparse, parse_qs, urlencode
 from api.models import LoggedInUser
 import logging
 
@@ -67,7 +68,7 @@ class OneSessionPerUserMiddleware:
             )
 
         response = self.get_response(request)
-        logger.info("Exiting OneSessionPerUserMiddleware __call__")
+        logger.info(f"Exiting OneSessionPerUserMiddleware __call__ with response : {response}")
         return response
 
 
@@ -86,8 +87,10 @@ class DisableOptionsMiddleware:
                 "Received OPTIONS request, returning HttpResponseNotAllowed."
             )
             return HttpResponseNotAllowed(["GET", "POST", "HEAD"])
-        logger.info("Exiting DisableOptionsMiddleware __call__")
-        return self.get_response(request)
+        response = self.get_response(request)
+        logger.info(f"Exiting DisableOptionsMiddleware __call__ with response :{response}")
+        #return self.get_response(request)
+        return response
 
 
 class HSTSMiddleware:
@@ -106,7 +109,7 @@ class HSTSMiddleware:
         ] = "max-age=31536000; includeSubDomains; preload"
         response["X-XSS-Protection"] = "1; mode=block"
         logger.info("Added HSTS and X-XSS-Protection headers.")
-        logger.info("Exiting HSTSMiddleware __call__")
+        logger.info(f"Exiting HSTSMiddleware __call__ with response :{response}")
         return response
 
 
@@ -126,30 +129,33 @@ def decrypt_password(request):
             "new_password2",
         ]
         post_data = request.POST
-        private_key_pem_b64 = request.session["private_key"]
-        private_key_pem = base64.b64decode(private_key_pem_b64)
-        private_key = serialization.load_pem_private_key(private_key_pem, password=None)
-        request.POST._mutable = True
-        post_data = request.POST.copy()
-        for key in password_fields:
-            if key in post_data.keys():
-                logger.info(f"Decrypting password field: {key}")
-                b64_encrypted_value = post_data[key]
+        try:
+            private_key_pem_b64 = request.session["private_key"]
+            private_key_pem = base64.b64decode(private_key_pem_b64)
+            private_key = serialization.load_pem_private_key(private_key_pem, password=None)
+            request.POST._mutable = True
+            post_data = request.POST.copy()
+            for key in password_fields:
+                if key in post_data.keys():
+                    logger.info(f"Decrypting password field: {key}")
+                    b64_encrypted_value = post_data[key]
 
-                encrypted_value = base64.b64decode(b64_encrypted_value)
-                try:
-                    decrypted_value = private_key.decrypt(
-                        encrypted_value,
-                        padding.PKCS1v15(),
-                    )
-                    decrypted_value = decrypted_value.decode("utf-8")
-                    post_data[key] = decrypted_value
-                except Exception as e:
-                    logger.error(f"Failed to decrypt {key}: {e}")
-                logger.info(f"Decrypted {key} successfully.")
+                    encrypted_value = base64.b64decode(b64_encrypted_value)
+                    try:
+                        decrypted_value = private_key.decrypt(
+                            encrypted_value,
+                            padding.PKCS1v15(),
+                        )
+                        decrypted_value = decrypted_value.decode("utf-8")
+                        post_data[key] = decrypted_value
+                    except Exception as e:
+                        logger.error(f"Failed to decrypt {key}: {e}")
+                    logger.info(f"Decrypted {key} successfully.")
+        except Exception as ex:
+            logger.info(f"Description error : {str(ex)}")
         request.POST = post_data
         request.POST._mutable = False
-        logger.info("Exiting decrypt_password")
+    logger.info(f"Exiting decrypt_password with request data: {request.POST}")
 
 
 class RSAMiddleware:
@@ -162,6 +168,9 @@ class RSAMiddleware:
 
     def __call__(self, request):
         logger.info("Entering RSAMiddleware __call__")
+        if request.path.startswith("/login") or request.path.startswith("/account/login"):
+            return self.get_response(request)
+        #if "private_key" in request.session and not request.path.startswith("/api/"):
         if "private_key" in request.session and not request.path.startswith("/api/"):
             logger.info(
                 "Private key found in session and not an API request, decrypting password."
@@ -170,6 +179,16 @@ class RSAMiddleware:
         else:
             logger.info(f" RSAMiddleware __call__. private_key {request.session} path : {request.path}")
         response = self.get_response(request)
+        # loop break code starts
+        if(isinstance(response,HttpResponseRedirect) and response.url.startswith("/login")):
+            parsed = urlparse(response.url)
+            qs = parse_qs(parsed.query)
+            next_param = qs.get("next",[""])[0]
+            if next_param.startswith("/login"):
+                logger.warning("detected recursive login redirect. Breaking the loop")
+                response = HttpResponseRedirect("/login/")
+        # loop break code ends
+
         if "private_key" not in request.session:
             logger.info("Private key not found in session, generating new keys.")
             # If private key is not in session, generate keys and store them
@@ -204,7 +223,7 @@ class RSAMiddleware:
                 secure=True,
             )
             logger.info("Set rsa_public_key cookie.")
-        logger.info("Exiting RSAMiddleware __call__")
+        logger.info(f"Exiting RSAMiddleware __call__ with response :{response} and request :{request}")
         return response
 
 class CustomCSPMiddleware(CSPMiddleware):
@@ -215,11 +234,14 @@ class CustomCSPMiddleware(CSPMiddleware):
         logger.info("CustomCSPMiddleware initializing")
 
     def process_response(self, request, response):
-        logger.info("Entering CustomCSPMiddleware process_response")
+        logger.info(f"Entering CustomCSPMiddleware process_response with response: {response}")
+        if isinstance(response, HttpResponseRedirect):
+            if not response.url:
+                return HttpResponse("No redirect needed ",status=200)
         if request.path.startswith("/admin/api"):
             logger.info("Request path starts with /admin/api, skipping CSP processing.")
             return response
         logger.info("Processing CSP headers.")
         response = super().process_response(request, response)
-        logger.info("Exiting CustomCSPMiddleware process_response")
+        logger.info(f"Exiting CustomCSPMiddleware process_response with response :{response}")
         return response

@@ -5,6 +5,7 @@ from django.contrib.gis.db import models
 from django.forms import ValidationError
 from django.utils import timezone
 from django.contrib.gis.geos import Point
+from django.contrib.gis.db import models as gis_models
 from geopy import distance
 from django.db import transaction
 from django.contrib.auth.models import AbstractUser
@@ -13,6 +14,7 @@ from api.utl import get_upload_path
 from api.forms import detect_malicious_patterns_in_media
 from api.otp import send_sms
 from .managers import CustomUserManager
+import firebase_admin
 from firebase_admin import messaging
 from fcm_django.models import FCMDevice
 from django.core.exceptions import ValidationError
@@ -83,6 +85,7 @@ class cUser(AbstractUser):
         ("user", "User"),
         ("police", "Police"),
         ("admin", "Admin"),
+        ("SNO", "SNO"),
     )
     # mobile = models.CharField(max_length=26, unique=True, validators=[MobileValidator])
     mobile = models.CharField(max_length=26, unique=True, validators=[MobileValidator])
@@ -108,6 +111,10 @@ class cUser(AbstractUser):
     @property
     def is_admin(self):
         return self.role == "admin"
+    
+    @property
+    def is_sno(self):
+        return self.role == "SNO"
 
     def __str__(self):
         return self.mobile
@@ -115,7 +122,7 @@ class cUser(AbstractUser):
 
 class PoliceStation(models.Model):
     pid = models.BigAutoField(primary_key=True)
-    did = models.ForeignKey(District, on_delete=models.CASCADE)
+    did = models.ForeignKey(District, on_delete=models.DO_NOTHING)
     name = models.TextField()
     address = models.TextField(null=True)
     lat = models.DecimalField(max_digits=9, decimal_places=6, default=0.0)
@@ -127,7 +134,9 @@ class PoliceStation(models.Model):
 
     def save(self, **kwargs):
         try:
-            self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
+            if self.lat is not None and self.long is not None:
+                self.geo_location = Point(float(self.long), float(self.lat))
+            #self.geo_location = fromstr(f"POINT({self.long} {self.lat})", srid=4326)
             super().save(**kwargs)
             logger.info(
                 f"Saved police station {self.pid} at location {self.lat}, {self.long}"
@@ -141,7 +150,7 @@ class PoliceStation(models.Model):
 
 class PoliceStationContact(models.Model):
     ps_cid = models.BigAutoField(primary_key=True)
-    pid = models.ForeignKey(PoliceStation, on_delete=models.CASCADE)
+    pid = models.ForeignKey(PoliceStation, on_delete=models.DO_NOTHING)
     contactName = models.CharField(max_length=50, null=True)
     number = models.CharField(max_length=15)
 
@@ -175,17 +184,20 @@ class PoliceOfficer(models.Model):
     mobile = models.CharField(max_length=55, null=True)
     report_on_this = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.user.mobile if self.user.mobile else "no mobile number "
 
-class PoliceStationSupervisor(models.Model):
+
+class SuperintendingOfficer(models.Model):
     officer = models.ForeignKey(
-        PoliceOfficer, on_delete=models.CASCADE, related_name="policestation_supervisor"
+        PoliceOfficer, on_delete=models.DO_NOTHING, related_name="officer_district"
     )
-    station = models.ForeignKey(
-        PoliceStation, on_delete=models.CASCADE, related_name="policestation_supervisor"
+    did = models.ForeignKey(
+        District, on_delete=models.DO_NOTHING, related_name="officer_district"
     )
 
     class Meta:
-        unique_together = ["officer", "station"]
+        unique_together = ["officer", "did"]
 
 
 class Case(models.Model):
@@ -340,9 +352,9 @@ class Case(models.Model):
                 exc_info=True,
             )
             #raise # Uncomment this line to raise the error again after logging
-            return None # Return None if an error occurs. This is used for removing case object if antying wrong happens
-
-    def _send_case_notifications(self):
+        return None # Return None if an error occurs. This is used for removing case object if antying wrong happens
+    """
+    def send_case_notifications(self):
         logger.info(f"Beginning notification process for case {self.cid}")
         desc = f"New case no.{self.cid} of type {self.type} reported at {self.pid}."
         data = {
@@ -389,16 +401,12 @@ class Case(models.Model):
                 except Exception as e:
                     logger.error(f"Failed to send to token {token[:10]}...: {str(e)}")
 
-            if self.oid.mobile:
-                send_sms(self.oid.mobile, desc)
-                logger.info(f"SMS sent to officer {self.oid.mobile}")
-
         except Exception as e:
             logger.critical(
                 f"Critical failure in officer notification system: {str(e)}"
             )
             raise
-
+    """
     def _notify_station_officers(self, desc, data):
         logger.info(f"Notify relevant officers at the police station")
         try:
@@ -426,17 +434,15 @@ class Case(models.Model):
                     f"Sent FCM to {len(registration_tokens)} officers. "
                     f"Success: {response.success_count}, Failures: {response.failure_count}"
                 )
-
-            for officer in officers:
-                if officer["user__mobile"]:
-                    send_sms(officer["user__mobile"], desc)
-                    logger.info(f"SMS sent to officer {officer['user__mobile']}")
-
         except Exception as e:
             logger.error(f"Error notifying station officers: {str(e)}", exc_info=True)
 
     def send_notification(self, title, user_ids: list):
-        logger.debug("Send notification to specific users")
+        logger.debug(f"Send notification to users list for user_ids: {user_ids}")
+        if user_ids is None:
+            logger.debug(f" Exiting notification as list is empty")
+            return False
+
         try:
             desc = self.description or "New update on your case"
             data = {
@@ -449,25 +455,86 @@ class Case(models.Model):
             }
 
             devices = FCMDevice.objects.filter(user_id__in=user_ids)
+            logger.info(f"FCM Devices for officer  {self.oid.user.id} : {list(devices)}")
             registration_tokens = list(
                 devices.values_list("registration_id", flat=True)
             )
 
-            if registration_tokens:
-                notification = messaging.Notification(title=title, body=desc)
-                response = messaging.send_multicast(
-                    messaging.MulticastMessage(
-                        notification=notification, data=data, tokens=registration_tokens
-                    )
-                )
-                logger.info(
-                    f"Sent notification to {len(user_ids)} users for case {self.cid}. "
-                    f"Success: {response.success_count}, Failures: {response.failure_count}"
-                )
-                return True
+            if not registration_tokens:
+                logger.info(f" No devices to send notification : self.oid.user_id")
+                return False
 
-            logger.warning(f"No devices found for users {user_ids}")
-            return False
+            for token in registration_tokens:
+                logger.info(f" Sending app notification for token : {token}")
+                try:
+                    messaging.send(
+                            messaging.Message(
+                                notification=messaging.Notification(
+                                    title=title, body=desc
+                                    ),
+                                data=data,
+                                token=token,
+                                )
+                            )
+                    logger.info(f"Successfully sent notification to token : {token[:10]}...")
+                except firebase_admin.exceptions.FirebaseError as ex:
+                    logger.error(f"Failed to send app notification to token :{token[:10]} : {str(ex)}")
+                except Exception as e:
+                    logger.error(f" Failed sending app notification :{str(e)}")
+            
+            return True
+
+        except Exception as e:
+            logger.error(
+                f"Error sending notification for case {self.cid}: {str(e)}",
+                exc_info=True,
+            )
+        return False
+
+
+
+    def send_notification2(self, title, user_ids: list):
+        logger.debug(f"Send notification to specific users for user_ids: {user_ids}")
+        try:
+            desc = self.description or "New update on your case"
+            data = {
+                #"case_id": str(self.cid),
+                "description": desc,
+                "type": "New alert",
+                "click_action": "FLUTTER_NOTIFICATION_CLICK",
+            }
+
+            devices = FCMDevice.objects.filter(user_id__in=user_ids)
+            logger.info(f"FCM Devices for officer  {self.oid.user.id} : {list(devices)}")
+            registration_tokens = list(
+                devices.values_list("registration_id", flat=True)
+            )
+
+            if not registration_tokens:
+                logger.info(f" No devices to send notification : self.oid.user_id")
+                return
+
+            if registration_tokens:
+                for token in registration_tokens:
+                    logger.info(f" Sending app notification for token : {token}")
+                    messaging.send(
+                            messaging.Message(
+                                token=token,
+                                data=data,
+                                android=messaging.AndroidConfig(
+                                    priority="high"
+                                ),
+                                apns = messaging.APNSConfig(
+                                    headers = {"apns-priority":"10"},
+                                    payload =messaging.APNSPayload(
+                                        aps = messaging.Aps(sound="siren")
+                                ),
+                            ),
+                        )
+                    )
+                    #response = messaging.send(message)
+                    logger.info(f"Successfully sent notification to token : {token[:10]}... for case {self.cid}")
+            return True
 
         except Exception as e:
             logger.error(
@@ -475,8 +542,6 @@ class Case(models.Model):
                 exc_info=True,
             )
             return False
-
-
 
 
 #This model stores the media files uploaded by the user. It can be a video, photo, audio or document.
@@ -514,7 +579,7 @@ class Media(models.Model):
 
 
 class CaseHistory(models.Model): 
-    case = models.ForeignKey(Case, on_delete=models.DO_NOTHING)
+    case = models.ForeignKey(Case, on_delete=models.DO_NOTHING, related_name ="histories")
     user = models.ForeignKey(cUser, on_delete=models.DO_NOTHING)
     cstate = models.CharField(max_length=15, choices=Case.cState)
     created = models.DateTimeField(auto_now_add=True)
@@ -522,13 +587,15 @@ class CaseHistory(models.Model):
     lat = models.CharField(max_length=10, blank=True, null=True)
     long = models.CharField(max_length=10, blank=True, null=True)
     geo_location = models.PointField(blank=True, null=True, srid=4326)
+    distance = models.DecimalField(
+        max_digits=9, decimal_places=2, null=True, blank=True)
     ##medias = models.ManyToManyField(Media, related_name="case_histories", blank=True)
-
+    """
     def distance(self):
         if self.case.geo_location and self.geo_location:
             return self.geo_location.distance(self.case.geo_location)
         return None
-
+    """
     def save(self, **kwargs):
         try:
             if self.lat and self.long:
@@ -548,7 +615,7 @@ class LostVehicle(models.Model):
         ("abandoned", "Abandoned"),
     )
     #lvId = models.BigAutoField(primary_key=True)    
-    caseId = models.OneToOneField(Case, on_delete=models.CASCADE, null=True)
+    caseId = models.OneToOneField(Case, on_delete=models.DO_NOTHING, null=True)
     regNumber = models.CharField(max_length=30)
     chasisNumber = models.CharField(max_length=50, null=True, default="N/A")
     engineNumber = models.CharField(max_length=50, null=True, default="N/A")
@@ -570,8 +637,8 @@ class LostVehicle(models.Model):
 
 class Comment(models.Model):
     cmtid = models.BigAutoField(primary_key=True)
-    cid = models.ForeignKey(Case, on_delete=models.CASCADE)
-    user = models.ForeignKey(cUser, on_delete=models.CASCADE)
+    cid = models.ForeignKey(Case, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(cUser, on_delete=models.DO_NOTHING)
     content = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     medias = models.ManyToManyField(Media, related_name="comments", blank=True)
@@ -594,6 +661,7 @@ class Emergency(models.Model):
     name = models.CharField(max_length=50, null=True, default="N/A")
     number = models.CharField(max_length=100, null=True)
     address = models.TextField(null=True, blank=True)  # New field for address
+    geo_location = gis_models.PointField(blank=True, null = True, srid=4326)
     lat = models.DecimalField(
         max_digits=9, decimal_places=6, null=False, blank=False
     )  # Mandatory
@@ -616,6 +684,9 @@ class Emergency(models.Model):
             original_long = self.long
             self.long = float(str(self.long)[:9])
             logger.info(f"Truncated longitude from {original_long} to {self.long}")
+
+        if self.lat is not None and self.long is not None:
+            self.geo_location = Point(float(self.long),float(self.lat))
 
         super().save(*args, **kwargs)
         logger.info("Exiting Emergency.save")
@@ -825,7 +896,6 @@ class UserOTPBaseKey(models.Model):
             logger.info(f"Starting OTP send process for user {user.mobile}")
 
             otp_code = cls.generate_otp(user)
-            print("OTTTTTPPPPPPP", otp_code)
             text = f"User Registration OTP for AP Crime Report is: {otp_code} AP Crime Team"
 
             logger.debug(f"Sending SMS to {user.mobile}: {text[:30]}...")

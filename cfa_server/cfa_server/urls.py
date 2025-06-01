@@ -102,7 +102,7 @@ router.register("lost-vehicle", LostVehicleViewSet, basename="lost-vehicle")
 # router.register('comment', CommentViewSet, basename='comments')
 router.register("emergency", EmergencyViewListSet, basename="emergency")
 router.register("information", InformationViewSet, basename="information")
-#router.register("dashboard", DashboardViewSet, basename="dashboard")
+router.register("dashboard", DashboardViewSet, basename="dashboard")
 router.register("victim", VictimViewSet, basename="victim")
 router.register("privacy", PrivacyViewSet, basename="privacy")
 router.register("terms-condition", TermsConditionViewSet, basename="terms-condition")
@@ -180,6 +180,7 @@ urlpatterns = [
     ),
     path("api/v1/check-vehicle/", CheckLostVehicle.as_view(), name="check_vehicle"),
     #path("", HomePageView.as_view(), name="home"),
+    path("login/",auth_views.LoginView.as_view(template_name="api/login.html"), name = "login"),
     path("", dashboard, name="dashboard"),
     path("home/", HomePageView.as_view(), name="home"),
     path("About/", about, name="about"),
@@ -302,6 +303,7 @@ urlpatterns = [
     path("api/v1/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/v1/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
+    path("<str:case_type>/",HomePageView.as_view(), name= "case"),
     # path('', include('api.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

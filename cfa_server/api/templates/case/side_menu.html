@@ -1,4 +1,7 @@
 <div class="list-group text-sm fs-6 side-menu">
+        <a href="{% url 'add_case' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+        Report New Case
+        </a>
     {% if request.user.is_authenticated %}
         <a href="{% url 'case' 'my-complaints' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
         My Complaints

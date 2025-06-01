@@ -124,7 +124,7 @@ def detectVehicleNumber(img=None, numbers=None, is_police=False, user=None):
                     found_vechicles.append(vehicle)
                 else:
                     log.info(" Vehicle not found ")
-    log.info(" Returning : ", found_vechicles)
+    #logger.info(f" Returning : {found_vechicles}")
     return found_vechicles
 
 

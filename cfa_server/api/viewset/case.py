@@ -35,6 +35,7 @@ from api.serializers import (
 from api.mixins import UserMixin
 from datetime import datetime
 from django.contrib.auth.models import AnonymousUser
+from api.utils import get_cases
 
 class CaseViewSet(UserMixin, ModelViewSet):
     serializer_class = CaseSerializer
@@ -78,7 +79,7 @@ class CaseViewSet(UserMixin, ModelViewSet):
             liked = Like.objects.filter(case_id=OuterRef("cid"), user=self.request.user)
             data = data.annotate(liked=Exists(liked))
             logger.debug("Added liked annotation for authenticated user")
-
+            """ 
             if user.is_police:
                 officer = user.policeofficer_set.first()
                 rank = int(officer.rank)
@@ -117,14 +118,17 @@ class CaseViewSet(UserMixin, ModelViewSet):
 
             elif user.is_user:
                 data = data.filter(Q(user=user) | Q(type="vehicle"))
-                logger.debug("Applied regular user filters")
-
+                logger.debug("Applied regular user filters") """
         if search:
             logger.info(f"Applying search filter: {search}")
             data = data.filter(
                   Q(cid__contains=search)
                 | Q(description__contains=search)
             )
+        
+        #case_type = self.get_case_type()
+        #my_complaints = self.kwargs.get("case_type") == "my-complaints"
+        data = get_cases(user, data, case_type= None, my_complaints=my_case)
 
         logger.info(f"Exiting get_queryset query data: {data.exists()}")
         return data

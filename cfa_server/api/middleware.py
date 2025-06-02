@@ -168,9 +168,11 @@ class RSAMiddleware:
 
     def __call__(self, request):
         logger.info("Entering RSAMiddleware __call__")
-        if request.path.startswith("/login") or request.path.startswith("/account/login"):
-            return self.get_response(request)
+        #if request.path.startswith("/login") or request.path.startswith("/account/login"):
+            #return self.get_response(request)
         #if "private_key" in request.session and not request.path.startswith("/api/"):
+        if request.path.startswith("favicon.ico"):
+            return self.get_response(request)
         if "private_key" in request.session and not request.path.startswith("/api/"):
             logger.info(
                 "Private key found in session and not an API request, decrypting password."

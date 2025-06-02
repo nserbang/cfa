@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "django_password_validators",
     "django_password_validators.password_history",
     "captcha",
+    "csp",
 ]
 
 MIDDLEWARE = [
@@ -93,6 +94,7 @@ MIDDLEWARE = [
     "api.middleware.HSTSMiddleware",
     "api.middleware.RSAMiddleware",
     "api.middleware.CustomCSPMiddleware",
+    "csp.middleware.CSPMiddleware",
     # "debug_toolbar.middlewar.DebugToolbarMiddleware",
 ]
 
@@ -447,13 +449,31 @@ CSP_DEFAULT_SRC = ("'self'",)
 
 CSP_SCRIPT_SRC = (
     "'self'",
+    "https://cdn.jsdelivr.net",
+    "https://ajax.googleapis.com",
+    "https://maps.google.com",
+    "https://cdnjs.cloudfare.com",
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js",
+    "https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js",
+)
+
+CSP_FRAME_SRC = (
+    "'self'",
+    "https://maps.google.com",
+    "https://www.google.com",
+    "https://*.google.com",
 )
 
 CSP_SCRIPT_SRC_ELEM = (
     "'self'",
+    "https://cdn.jsdelivr.net",
+    "https://ajax.googleapis.com",
+    "https://maps.google.com",
+    "https://cdnjs.cloudfare.com",
+    "https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js",
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js",
 )
+CSP_USE_NONCE = True
 
 CSP_SCRIPT_SRC_ATTR = ("'unsafe-inline'",)
 

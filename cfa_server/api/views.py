@@ -56,6 +56,7 @@ from api.view.case_view import *
 from api.view.cuser_views import *
 from api.forms.user import AddOfficerForm, RemoveOfficerForm, ChangeDesignationForm
 from api.forms.case import CaseForm, CaseUpdateForm
+from api.utils import get_cases
 
 logger = logging.getLogger(__name__)
 
@@ -86,11 +87,14 @@ def information(request):
 from django.shortcuts import render
 from .models import Emergency, EmergencyType
 from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
 from django.core.exceptions import ValidationError
+import logging
+
+logger = logging.getLogger(__name__)
 
 def emergency(request):
     logger.info("Entering emergency function")
-    # Get user's latitude and longitude from the request
     user_lat = request.GET.get("lat")
     user_long = request.GET.get("long")
     selected_emergency_type = request.GET.get("emergency_type")
@@ -99,65 +103,38 @@ def emergency(request):
         f"Request parameters - lat: {user_lat}, long: {user_long}, type: {selected_emergency_type}"
     )
 
-    try:
-        emergencies = Emergency.objects.all()
-        logger.info("Retrieved all emergencies")
+    emergencies = Emergency.objects.all()
 
-        if user_lat and user_long:
-            try:
-                # Convert latitude and longitude to a Point object
-                user_location = Point(float(user_long), float(user_lat), srid=4326)
-                logger.info(f"Created Point object at ({user_lat}, {user_long})")
+    # Filter by location if provided
+    if user_lat and user_long:
+        try:
+            user_location = Point(float(user_long), float(user_lat), srid=4326)
+            emergencies = emergencies.annotate(
+                distance=Distance("geo_location", user_location)
+            ).order_by("distance")
+        except (ValueError, TypeError) as e:
+            logger.error(f"Error processing coordinates: {str(e)}")
+            # Optionally: raise ValidationError("Invalid coordinates provided")
 
-                # Annotate emergencies with distance and order by distance
-                emergencies = emergencies.annotate(
-                    distance=Distance("geo_location", user_location)
-                ).order_by("distance")
-                logger.info("Annotated emergencies with distances")
-            except (ValueError, TypeError) as e:
-                logger.error(f"Error processing coordinates: {str(e)}")
-                raise ValidationError("Invalid coordinates provided")
+    # Filter by emergency type if provided
+    if selected_emergency_type:
+        emergencies = emergencies.filter(tid_id=selected_emergency_type)
 
-        # Filter by emergency type if selected
-        if selected_emergency_type:
-            emergencies = emergencies.filter(tid_id=selected_emergency_type)
-            logger.info(f"Filtered emergencies by type: {selected_emergency_type}")
+    emergency_types = EmergencyType.objects.all()
+    logger.info(f" Emergencies :%s",list(emergencies.values())if hasattr(emergencies,"values") else list(emergencies))
 
-        # Get all emergency types for the dropdown
-        emergency_types = EmergencyType.objects.all()
-        logger.info(f"Retrieved {emergency_types.count()} emergency types")
-
-        # Check if it's an AJAX request
-        is_ajax = request.headers.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest"
-        logger.debug(f"Is AJAX request: {is_ajax}")
-
-        if is_ajax:
-            logger.info("Rendering emergency list template for AJAX request")
-            return render(
-                request,
-                "emergency_list.html",
-                {
-                    "items": emergencies,
-                },
-            )
-        else:
-            logger.info("Rendering full emergency template")
-            return render(
-                request,
-                "emergency.html",
-                {
-                    "items": emergencies,
-                    "emergency_types": emergency_types,
-                    "selected_emergency_type": selected_emergency_type,
-                },
-            )
-
-    except Exception as e:
-        logger.exception(f"Unexpected error in emergency function: {str(e)}")
-        raise
-    finally:
-        logger.info("Exiting emergency function")
-
+    logger.info("Rendering full emergency template")
+    return render(
+        request,
+        "emergency.html",
+        {
+            "items": emergencies,
+            "emergency_types": emergency_types,
+            "selected_emergency_type": selected_emergency_type,
+            "user_lat": user_lat,
+            "user_long": user_long,
+        },
+    )
 
 def logout_view(request):
     logger.info("Entering logout_view function")
@@ -212,18 +189,11 @@ class HomePageView(LoginRequiredMixin, View):
         return "home.html"
 
     def get_queryset(self):
-        """
-        Return case records based on user role and permissions:
-        1. Regular users: See their own cases plus all vehicle cases
-        2. Police officers: See cases they reported or are assigned to with can_act=True plus all vehicle cases
-        3. District-level officers (rank 6-10): See all cases in their district with can_act=False plus all vehicle cases
-        4. Senior officers (rank>10) or admins: See all cases with can_act=False
-        """
         logger.info("Entering get_queryset in HomePageView")
 
         user = self.request.user
-        
-        # User is guaranteed to be authenticated due to LoginRequiredMixin
+
+        # Start with base queryset and annotate as needed
         cases = (
             Case.objects.annotate(
                 comment_count=Count("comment", distinct=True),
@@ -240,8 +210,8 @@ class HomePageView(LoginRequiredMixin, View):
             .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
             .order_by("-created")
         )
-        
-        # Handle search functionality
+
+        # Handle search functionality (only this stays in the view)
         if q := self.request.GET.get("q"):
             search_filter = (
                 Q(lostvehicle__regNumber=q)
@@ -254,96 +224,12 @@ class HomePageView(LoginRequiredMixin, View):
             except ValueError:
                 pass
             cases = cases.filter(search_filter)
-        
-        # Filter based on case type from URL if specified
+
+        # Use helper for all other filtering
         case_type = self.get_case_type()
-        if case_type:
-            cases = cases.filter(type=case_type)
-        
-        # Filter for my-complaints
-        if self.kwargs.get("case_type") == "my-complaints":
-            cases = cases.filter(user=self.request.user)
-        
-        # Add liked annotation
-        liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)
-        cases = cases.annotate(has_liked=Exists(liked))
-        
-        # Apply role-based filtering
-        if user.is_police:
-            officer = user.policeofficer_set.first()
-            if officer:
-                # Add can_act annotation
-                cases = cases.annotate(
-                    can_act=MCase(
-                        When(
-                            (Q(cstate="pending") & Q(oid__rank=5)) |
-                            (~Q(cstate="pending") & Q(oid__rank=4) & Q(oid=officer)),
-                            then=True,
-                        ),
-                        default=False,
-                    )
-                )
-                
-                rank = int(officer.rank)
-                # Senior officers (rank > 9): See all cases
-                if rank > 9:
-                    logger.info(f"Officer rank {rank} is senior level - showing all cases")
-                    return cases
-                
-                # SP level (rank 9)
-                elif rank == 9:
-                    logger.info(f"Officer is SP level, filtering by district: {officer.pid.did_id}")
-                    return cases.filter(
-                        Q(pid__did_id=officer.pid.did_id) | Q(type="vehicle")
-                    )
-                
-                # DySP level (rank 6)
-                elif rank == 6:
-                    stations = officer.policestation_supervisor.values("station")
-                    logger.info(f"Officer is DySP level, filtering by stations: {stations}")
-                    return cases.filter(
-                        Q(pid_id__in=stations) | Q(type="vehicle")
-                    )
-                
-                # Inspector level (rank 5)
-                elif rank == 5:
-                    logger.info(f"Officer is Inspector level, filtering by station: {officer.pid_id}")
-                    return cases.filter(
-                        Q(pid_id=officer.pid_id) | Q(type="vehicle")
-                    )
-                
-                # SI level (rank 4)
-                elif rank == 4:
-                    logger.info(f"Officer is SI level, filtering by SI criteria")
-                    return cases.filter(
-                        (Q(oid=officer) & ~Q(cstate="pending")) | Q(type="vehicle")
-                    )
-                
-                # Junior officers - show user cases and vehicle cases
-                else:
-                    logger.info(f"Officer is junior level (rank {rank}), showing user cases and vehicle cases")
-                    return cases.filter(
-                        Q(user=user) | Q(type="vehicle")
-                    )
-            else:
-                # Police role but no officer record
-                logger.warning(f"User {user.mobile} has police role but no officer record")
-                return cases.filter(
-                    Q(user=user) | Q(type="vehicle")
-                )
-        
-        # Regular users: See their own cases plus all vehicle cases
-        elif user.is_user:
-            logger.info(f"User role is 'user', filtering cases for {user.mobile}")
-            cases = cases.filter(
-                Q(user=user) | Q(type="vehicle")
-            )
-        
-        # Admin users: See all cases
-        elif user.role == "admin" or user.is_superuser:
-            logger.info(f"User is admin or superuser - showing all cases")
-            return cases
-            
+        my_complaints = self.kwargs.get("case_type") == "my-complaints"
+        cases = get_cases(user, cases, case_type=case_type, my_complaints=my_complaints)
+
         return cases
 
     def get(self, request, *args, **kwargs):
@@ -676,12 +562,12 @@ class NearestPoliceStationsView(LoginRequiredMixin, View):
         qs = qs.values("pid", "did", "name", "address")
         return JsonResponse(list(qs), safe=False)
 
-
+from api.utils import get_cases
 class ExportCrime(View):
     def get(self, request, *args, **kwargs):
-        cases = Case.objects.select_related("pid", "oid", "oid__user").prefetch_related(
-            "medias", "casehistory_set"
-        )
+        #cases = Case.objects.select_related("pid", "oid", "oid__user")
+        logger.info(f" Exporiting crime for user :{self.request.user}, {request.user}")
+        cases = get_cases(request.user)
         return self.get_pdf(cases)
 
     def get_pdf(self, cases):

@@ -6,16 +6,22 @@
                 <h5 class="card-title font-weight-bold">{{ item.name }}</h5>
                 <p class="card-text"><small class="text-muted">{{ item.tid.service_type }}</small></p>
                 <p class="card-text">
-                    <strong>Contact:</strong> <a href="tel:{{ item.number }}">{{ item.number }}</a>
+                    <strong>Address:</strong> {{ item.address }}
                 </p>
-                {% if item.distance %}
-                <div class="mt-auto">
-                    <span class="badge badge-primary">{{ item.distance.km|floatformat:2 }} KM Away</span>
-                </div>
-                {% endif %}
+                <p class="card-text">
+                    <strong>Contact:</strong> <a href="tel:{{ item.number }}">{{ item.number }}</a>
+                    </span>
+            </div>
+            <div class="mt-2">
+                <!-- Embedded Google Map in satellite view -->
+                <iframe 
+                    src="https://maps.google.com/maps?q={{ item.lat }},{{ item.long }}&t=k&z=15&ie=UTF8&iwloc=&output=embed"
+                    width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy">
+                </iframe>
             </div>
             <div class="card-footer bg-transparent border-top-0">
-                <button class="btn btn-sm btn-outline-primary mt-2 map-button" data-lat="{{ item.lat }}" data-long="{{ item.long }}" data-name="{{ item.name }}">
+                <button class="btn btn-sm btn-outline-primary mt-2"
+                        onclick="openMap('{{ item.lat }}', '{{ item.long }}', '{{ item.name|escapejs }}')">
                     Go to this place
                 </button>
             </div>
@@ -27,18 +33,3 @@
     </div>
     {% endfor %}
 </div>
-
-<script nonce="{{ request.csp_nonce }}">
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log('DOM fully loaded and parsed');
-        document.querySelectorAll('.map-button').forEach(function (button) {
-            button.addEventListener('click', function () {
-                console.log
-                const destLat = this.getAttribute('data-lat');
-                const destLong = this.getAttribute('data-long');
-                const placeName = this.getAttribute('data-name');
-                openMap(destLat, destLong, placeName);
-            });
-        });
-    });
-</script>

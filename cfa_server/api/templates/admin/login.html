@@ -52,85 +52,76 @@
   </div>
 </form>
 <script nonce="{{CSP_NONCE}}">
+function getCookie(cookieName) {
+    const name = cookieName + "=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const cookieArray = decodedCookie.split(';');
+    for (let i = 0; i < cookieArray.length; i++) {
+        let cookie = cookieArray[i].trim();
+        if (cookie.indexOf(name) === 0) {
+            return cookie.substring(name.length, cookie.length).replace(/^"(.*)"$/, '$1');
+        }
+    }
+    return null;
+}
 
-  function getCookie(cookieName) {
-      const name = cookieName + "=";
-      const decodedCookie = decodeURIComponent(document.cookie);
-      const cookieArray = decodedCookie.split(';');
-      for (let i = 0; i < cookieArray.length; i++) {
-          let cookie = cookieArray[i].trim();
-          if (cookie.indexOf(name) === 0) {
-              return cookie.substring(name.length, cookie.length).replace(/^"(.*)"$/, '$1');
-          }
-      }
-      return null;
-  }
-  function encryptDataWithRSA(data, publicKey, padding) {
-      var encrypt = new JSEncrypt();
-      encrypt.setPublicKey(publicKey);
-
-      // You can specify padding here (e.g., JSEncrypt.RSA_PKCS1_PADDING or JSEncrypt.RSA_OAEP_PADDING)
-      encrypt.setPublicKey(publicKey, padding);
-
-      var encryptedData = encrypt.encrypt(data);
-
-      return encryptedData;
-  }
-  // Wait for the DOM to be fully loaded
-  document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     var loginForm = document.getElementById('custom-login-form');
-
-    // Add a submit event listener to the form
+    if (!loginForm) return;
     loginForm.addEventListener('submit', function(event) {
-      // Prevent the default form submission
-      event.preventDefault();
-
-      // Manually encrypt the form data here
-      var usernameField = document.getElementById('id_username');
-      var passwordField = document.getElementById('id_password');
-
-
-
-      var encrypt = new JSEncrypt();
-      // Replace this with your public key
-      var base64PublicKey = getCookie('rsa_public_key');
-      var publicKey = atob(base64PublicKey);
-
-
-      encrypt.setPublicKey(publicKey);
-
-      var encryptedPassword = encrypt.encrypt(passwordField.value);
-      passwordField.value = encryptedPassword;
-
-      loginForm.submit();
+        var passwordField = document.getElementById('id_password');
+        if (!passwordField) {
+            alert("Password field not found. Please refresh the page.");
+            event.preventDefault();
+            return;
+        }
+        var base64PublicKey = getCookie('rsa_public_key');
+        if (!base64PublicKey) {
+            alert("Encryption key missing. Please refresh the page.");
+            event.preventDefault();
+            return;
+        }
+        try {
+            var publicKey = atob(base64PublicKey);
+            var encrypt = new JSEncrypt();
+            encrypt.setPublicKey(publicKey);
+            var encryptedPassword = encrypt.encrypt(passwordField.value);
+            if (!encryptedPassword) {
+                alert("Encryption failed. Please try again.");
+                event.preventDefault();
+                return;
+            }
+            passwordField.value = encryptedPassword;
+        } catch (e) {
+            alert("Encryption error: " + e);
+            event.preventDefault();
+            return;
+        }
     });
-  });
+});
 
-  // Disable copy-paste and keyboard shortcuts
-  window.onload = function() {
-      var passwordField = document.getElementById("id_password");
-
-      passwordField.addEventListener("copy", function(event) {
-          event.preventDefault();
-          return false;
-      });
-
-      passwordField.addEventListener("paste", function(event) {
-          event.preventDefault();
-          return false;
-      });
-
-      passwordField.addEventListener("cut", function(event) {
-          event.preventDefault();
-          return false;
-      });
-
-      passwordField.addEventListener("keydown", function(event) {
-          if (event.ctrlKey || event.metaKey) {
-              event.preventDefault();
-              return false;
-          }
-      });
-  };
+// Disable copy-paste and keyboard shortcuts
+window.onload = function() {
+    var passwordField = document.getElementById("id_password");
+    if (!passwordField) return;
+    passwordField.addEventListener("copy", function(event) {
+        event.preventDefault();
+        return false;
+    });
+    passwordField.addEventListener("paste", function(event) {
+        event.preventDefault();
+        return false;
+    });
+    passwordField.addEventListener("cut", function(event) {
+        event.preventDefault();
+        return false;
+    });
+    passwordField.addEventListener("keydown", function(event) {
+        if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            return false;
+        }
+    });
+};
 </script>
 {% endblock %}

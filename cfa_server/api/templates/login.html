@@ -8,12 +8,9 @@
     <script
       src="https://kit.fontawesome.com/c9e0a28bcb.js"
       crossorigin="anonymous"
+      nonce ="{{ request.csp_nonce }}"
     ></script>
     <link rel="shortcut icon" href="{% static 'favicon.ico' %}" />
-    <script
-      type="text/javascript"
-      src="{% static 'js/jquery-3.6.1.min.js' %}"
-    ></script>
     {% comment %} x
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"

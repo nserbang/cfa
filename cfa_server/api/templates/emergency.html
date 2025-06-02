@@ -2,114 +2,58 @@
 
 {% block title %}Emergency Contacts{% endblock title %}
 
-{% load static %}
-
 {% block content %}
 <div class="container py-4">
     <h2 class="mb-4 text-center">Emergency Contacts Near You</h2>
     <p class="text-center text-muted">Quick access to essential services in your vicinity.</p>
 
-    <div class="row justify-content-center mb-3">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label for="emergency_type">Select Emergency Type:</label>
-                <select class="form-control" id="emergency_type" name="emergency_type">
-                    <option value="">All Emergency Types</option>
-                    {% for type in emergency_types %}
-                        <option value="{{ type.emtid }}" {% if type.emtid|stringformat:'s' == selected_emergency_type %}selected{% endif %}>
-                            {{ type.service_type }}
-                        </option>
-                    {% endfor %}
-                </select>
+    <form method="get" id="emergency-filter-form" class="mb-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="emergency_type">Select Emergency Type:</label>
+                    <select class="form-control" id="emergency_type" name="emergency_type">
+                        <option value="">All Emergency Types</option>
+                        {% for type in emergency_types %}
+                            <option value="{{ type.emtid }}" {% if type.emtid|stringformat:'s' == selected_emergency_type %}selected{% endif %}>
+                                {{ type.service_type }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="hidden" name="lat" id="user_lat_storage" value="{{ user_lat|default:'' }}">
+                <input type="hidden" name="long" id="user_long_storage" value="{{ user_long|default:'' }}">
             </div>
-            <input type="hidden" name="lat" id="user_lat">
-            <input type="hidden" name="long" id="user_long">
         </div>
-    </div>
+    </form>
 
     <div id="emergency-content">
         {% include 'emergency_list.html' %}
     </div>
 </div>
-
-<input type="hidden" id="user_lat" name="lat" value="">
-<input type="hidden" id="user_long" name="long" value="">
+{% endblock content %}
 
 {% block javascript %}
 <script nonce="{{ request.csp_nonce }}">
-    let userLat = null;
-    let userLong = null;
+// Fill location fields if available
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+        document.getElementById('user_lat_storage').value = position.coords.latitude;
+        document.getElementById('user_long_storage').value = position.coords.longitude;
+    });
+}
 
-    // Function to load emergency content dynamically
-    function loadEmergencyContent(emergencyType) {
-        $.ajax({
-            url: '{% url "emergency" %}',
-            type: 'GET',
-            data: {
-                emergency_type: emergencyType,
-                lat: userLat,
-                long: userLong
-            },
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            success: function(data) {
-                $('#emergency-content').html(data);
-            },
-            error: function(error) {
-                console.error("Error fetching emergency content:", error);
-                alert("An error occurred while fetching emergency contacts. Please try again.");
-            }
-        });
-    }
+// Auto-submit form on emergency type change
+document.getElementById('emergency_type').addEventListener('change', function() {
+    document.getElementById('emergency-filter-form').submit();
+});
 
-    // Get user's location
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                userLat = position.coords.latitude;
-                userLong = position.coords.longitude;
-
-                // Store location in hidden inputs
-                document.getElementById('user_lat').value = userLat;
-                document.getElementById('user_long').value = userLong;
-
-                // Load initial content
-                loadEmergencyContent('');
-
-                // Add event listener to the dropdown
-                $('#emergency_type').change(function() {
-                    const selectedType = $(this).val();
-                    loadEmergencyContent(selectedType);
-                });
-
-                console.log(`User location set: (${userLat}, ${userLong})`);
-            },
-            function(error) {
-                // Handle geolocation errors
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        alert("Location access denied by the user.");
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        alert("Location information is unavailable.");
-                        break;
-                    case error.TIMEOUT:
-                        alert("The request to get user location timed out.");
-                        break;
-                    default:
-                        alert("An unknown error occurred while retrieving location.");
-                        break;
-                }
-                console.error("Geolocation error:", error);
-            }
-        );
-    } else {
-        console.log("Geolocation is not supported by this browser.");
-        alert("Geolocation is not supported by your browser.");
-    }
+// Global function to open a map focused at the given coordinates
+function openMap(lat, lng, name) {
+    var url = "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng) + "&t=k";
+    window.open(url, '_blank');
+}
 </script>
 {% endblock javascript %}
-{% endblock content %}
 
 

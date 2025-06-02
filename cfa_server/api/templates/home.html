@@ -23,6 +23,7 @@
                      aria-label="Search" value="{{ request.GET.q|default:'' }}">
               <button class="btn btn-outline-primary" type="submit">Search</button>
             </form>
+	    <a href="{% url 'case_export' %}"> get pdf </a>
           </div>
 	   
         </div>

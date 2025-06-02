@@ -18,3 +18,10 @@ class InformationViewSet(ModelViewSet):
 
     def get_queryset(self):
         return super().get_queryset()
+
+from django.shortcuts import render
+from api.models import Information
+
+def information_list(request):
+    informations = Information.objects.all()
+    return render(request, 'information.html', {'informations': informations})

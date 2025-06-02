@@ -728,7 +728,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             if not offcr or offcr.rank not in ("5",):
                 logger.info(f" Transfer error. Only inspector can transfer the case ")
                 raise serializers.ValidationError(
-                        {"Permisson": "Only Police Officer of Inspector Rank can transfer the case"}
+                        {"details": "Only Police Officer of Inspector Rank can transfer the case"}
                     )
             logger.info(f" Case transering ")
             pid = validated_data.pop("pid",None)
@@ -736,18 +736,34 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
                 officer = PoliceOfficer.objects.filter(pid=pid, report_on_this=True).first()
                 if not officer:
                     raise serializers.ValidationError(
-                            {" Unavailable " :"Officers not available in destination police staiton "}
+                            {"details" :"Officers not available in destination police staiton "}
                         )
+                pid = PoliceStation.objects.filter(pid = pid).first()
+                if pid is None:
+                    logger.info(f"Case transferred to {pid.name} police station ")
+                    raise serializers.ValidationError(
+                            {"details": "Only Police station not found "}
+                        )
+                    #return None
+
+                opid = instance.pid
                 instance.pid = pid
                 logger.info(f"Case transferred to {pid.name} police station ")
                 instance.oid = officer
                 instance.cstate = "pending"
                 instance.save()
-                noti_title = f"New case No. {instance.cid} of type {instance.type} reported at {instance.pid}"
-                user_ids= cUser.objects.filter(user = instance.oid.user).values_list("id",flat=True)
+                #supervisor_officers = SuperintendingOfficer.objects.filter(did = case.oid.pid.did)
+                #supervisors = PoliceOfficer.objects.filter(oid__in=supervisor_officers.values_list("officer_id", flat=True)).values("user_id","user__mobile")
+                #supervisor_user_ids = [o["user_id"] for o in supervisors]
+                noti_title = f"New case No. {instance.cid} of type {instance.type} transferred into {instance.pid.name} from {opid.name}"
+                #user_ids= cUser.objects.filter(id__in = instance.oid.user.id).values_list("id",flat=True)
                 #user_ids = sno_users.values_list("id",flat=True)
-                instance.send_notification(noti_title, user_ids)
-                logger.info(f" Sent app notification to new police officer id: {user_ids}") 
+                instance.send_notification(noti_title, [instance.oid.user.id])
+                logger.info(f" Sent app notification to new police officer id: {instance.oid.user.id}") 
+                
+                noti_title = f"Your case No. {instance.cid} of type {instance.type} staransfered to {instance.pid.name}"
+                instance.send_notification(noti_title, [instance.user_id])
+                logger.info(f" Sent app notification to complainant user: {instance.user}") 
                 #message = "Your case No {instance.cid} status is changed to {instance.cstate}"
                 #send_update_sms(instance.oid.user.mobile,message)
                 tm = datetime.now()
@@ -761,18 +777,37 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
                     )
 
         elif cstate == "assign":
-            logger.info(f"Changing state from : {instance.cstate} to Pending")
-            oi = PoliceOfficer.objects.get(oid = validated_data["oid"])
+            oid = validated_data.get("oid")
+            logger.info(f"OID received is : {oid}")
+            if oid is None:
+                logger.info(f"officer id not received")
+                raise serializers.ValidationError(
+                        {"details":" police officer not found"}
+                    )
+            try:
+                noid = PoliceOfficer.objects.get(oid = oid)
+            except Exception as e:
+                logger.info(f" Assign error :{str(e)}")
+                raise serializers.ValidationError(
+                        {"details":" police officer not found"}
+                    )
+            logger.info(f"Assin to from {instance.oid.user.mobile} to {noid.user.mobile} and Changing state from : {instance.cstate} to Pending")
+            #oi = PoliceOfficer.objects.get(oid = validated_data["oid"])
             #instance.oid = validated_data["oid"]
-            logger.info(f" Case assigned to new officer : {oi} ")
-            instance.oid = oi
+            if instance.oid == noid:
+                raise serializers.ValidationError(
+                        {"details":"You are assigning to yourself"}
+                    )
+
+            logger.info(f" Case assigned to new officer : {noid} ")
+            instance.oid = noid
             instance.cstate = "pending"
             instance.save()
             noti_title = f"You are assigned a new case no.{instance.cid}"
-            user_ids= cUser.objects.filter(user = instance.oid.user).values_list("id",flat=True)
+            #user_ids= cUser.objects.filter(user = instance.oid.user).values_list("id",flat=True)
                 #user_ids = sno_users.values_list("id",flat=True)
-            instance.send_notification(noti_title, user_ids)
-            logger.info(f" Sent app notification to new police officer id: {user_ids}") 
+            instance.send_notification(noti_title, [instance.oid.user_id])
+            logger.info(f" Sent app notification to new police officer id: {instance.oid.user_id}") 
             #instance.send_notification(noti_title, [instance.oid.user_id])
             tm = datetime.now()
             d = tm.strftime("%d/%m/%Y")
@@ -780,7 +815,7 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
             send_new_case_sms(instance.oid.user.mobile, instance.cid, instance.type, instance.pid.name,d,t) 
             #Notify case owner
             noti_title = f"Your case no.{instance.cid} asigned to officer"
-            instance.send_notification(noti_title, [instance.oid.user_id])
+            instance.send_notification(noti_title, [instance.user_id])
             send_case_status_sms(instance.user.mobile, instance.cid, instance.cstate)
         else:
             instance.save()
@@ -818,9 +853,21 @@ class CaseUpdateSerializer(serializers.ModelSerializer):
                 instance.send_notification(message, [orig_officer.user.id])
             #send_sms(instance.user.mobile,noti_title)
                 logger.info(f"Sent app notifications to original police officer ") 
+        
+        supervisor_officers = SuperintendingOfficer.objects.filter(did = instance.oid.pid.did)
+        supervisors = PoliceOfficer.objects.filter(oid__in=supervisor_officers.values_list("officer_id", flat=True)).values("user_id","user__mobile")
+        supervisor_user_ids = [o["user_id"] for o in supervisors]
+        if supervisor_user_ids:
+            try:
+                case.send_notification(noti_title,supervisor_user_ids)
+                logger.debug(f"Sent app notification to supervisors : {supervisor_user_ids}")
+            except Exception as e:
+                logger.debug(f" Error for supervisor : {str(e)}")
+        msg = f"Your case No {instance.cid} status is changed to {instance.cstate}. For details, please visit Arunachal Crime Report app. From AP Crime Team"
         for supervisor in supervisors:
+            #send_new_case_sms(supervisor["user__mobile"], case.cid, case.type, case.pid.name,d,t) 
             send_case_status_sms(supervisor["user__mobile"], instance.cid, instance.cstate)
-                #send_update_sms(supervisor["user__mobile"],message)
+            logger.debug(f" Sent sms notification to supervisor : {supervisor.user.mobile}")
 
         return instance
 

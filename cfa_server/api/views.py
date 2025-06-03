@@ -1,6 +1,8 @@
 import base64
 import logging
+import os
 
+from django.forms import model_to_dict
 from openpyxl import Workbook
 from weasyprint import HTML
 from weasyprint.text.fonts import FontConfiguration
@@ -226,7 +228,10 @@ class HomePageView(LoginRequiredMixin, View):
             cases = cases.filter(search_filter)
 
         # Use helper for all other filtering
-        case_type = self.get_case_type()
+        #case_type = self.get_case_type()
+        case_type = self.request.GET.get("type")
+        logger.info(f" CASE TYPE REQUEST RECEIVED IS :{case_type}")
+
         my_complaints = self.kwargs.get("case_type") == "my-complaints"
         cases = get_cases(user, cases, case_type=case_type, my_complaints=my_complaints)
 
@@ -562,47 +567,38 @@ class NearestPoliceStationsView(LoginRequiredMixin, View):
         qs = qs.values("pid", "did", "name", "address")
         return JsonResponse(list(qs), safe=False)
 
-from api.utils import get_cases
+from api.utils import get_cases, generate_pdf_from_cases,build_case_list_with_details
 class ExportCrime(View):
     def get(self, request, *args, **kwargs):
-        #cases = Case.objects.select_related("pid", "oid", "oid__user")
-        logger.info(f" Exporiting crime for user :{self.request.user}, {request.user}")
+        logger.info(f"Exporting crime for user: {self.request.user}")
         cases = get_cases(request.user)
         return self.get_pdf(cases)
 
     def get_pdf(self, cases):
-        logger.info("Entering get_pdg")
+        logger.info("Entering get_pdf")
         font_config = FontConfiguration()
         template_name = "export/pdf.html"
         user = self.request.user
-        officer = user.policeofficer_set.first()
-        if user.is_superuser:
-            header = "Case Report for police stations in Arunachal Pradesh"
-        elif officer and officer.rank:
-            rank = int(officer.rank)
-            if rank < 5:
-                header = f"Case Report of {user.get_full_name()}"
-                cases = cases.filter(oid=officer)
-            elif rank == 5:
-                header = f"Case Report of {officer.pid.name}"
-                cases = cases.filter(pid=officer.pid)
-            elif rank == 9:
-                header = f"Case records with in {officer.pid.did.name}"
-                cases = cases.filter(pid__did__did=officer.pid.did.did)
-            elif rank > 9:
-                header = header
-        else:
-            header = "Case Reports"
-
-        context = {
-            "header": header,
-            "report_date": timezone.now().date(),
-            "cases": cases,
-        }
-        html_string = render_to_string(template_name, context=context)
-        pdf = HTML(string=html_string).write_pdf(font_config=font_config)
-        response = HttpResponse(pdf, content_type="application/pdf")
-        response["Content-Disposition"] = "attachment; filename=report.pdf"
+        # Generate detailed data for PDF from cases
+        cases = get_cases(user)
+        data = [model_to_dict(case) for case in cases]  # or however you serialize your case objects
+        detailed_data = build_case_list_with_details(data)
+        
+        # Generate PDF file and get the output path.
+        # generate_pdf_from_cases() should write the file and return the output path.
+        from django.utils import timezone
+        output_filename = f"{user.mobile}_{timezone.now().strftime('%Y%m%d_%H%M%S')}_testReport.pdf"
+        output_dir = os.path.join("media", "files")
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = generate_pdf_from_cases(detailed_data, os.path.join(output_dir, output_filename))
+        
+        # Return the PDF file as an attachment for download.
+        absolute_path = os.path.abspath(output_path)
+        logger.info("PDF absolute path: %s", absolute_path)
+        filename = os.path.basename(output_path)
+        with open(absolute_path, "rb") as pdf_file:
+            response = HttpResponse(pdf_file.read(), content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
 
 
@@ -801,81 +797,16 @@ def dashboard(request):
         return redirect('login')
     
     user = request.user
-    
-    # Get filter parameter from the request
     ctype = request.GET.get('ctype', None)
-    
-    # Start with all cases
-    cases = Case.objects.all()
-    
-    # Apply role-based filtering, similar to HomePageView.get_queryset
-    if user.is_police:
-        officer = user.policeofficer_set.first()
-        if officer:
-            rank = int(officer.rank)
-            # Senior officers (rank > 9): See all cases
-            if rank > 9:
-                logger.info(f"Officer rank {rank} is senior level - showing all cases stats")
-                pass  # No filtering needed, show all cases
-            
-            # SP level (rank 9)
-            elif rank == 9:
-                logger.info(f"Officer is SP level, filtering by district: {officer.pid.did_id}")
-                cases = cases.filter(
-                    Q(pid__did_id=officer.pid.did_id) | Q(type="vehicle")
-                )
-            
-            # DySP level (rank 6)
-            elif rank == 6:
-                stations = officer.policestation_supervisor.values_list("station", flat=True)
-                logger.info(f"Officer is DySP level, filtering by stations: {stations}")
-                cases = cases.filter(
-                    Q(pid_id__in=stations) | Q(type="vehicle")
-                )
-            
-            # Inspector level (rank 5)
-            elif rank == 5:
-                logger.info(f"Officer is Inspector level, filtering by station: {officer.pid_id}")
-                cases = cases.filter(
-                    Q(pid_id=officer.pid_id) | Q(type="vehicle")
-                )
-            
-            # SI level (rank 4)
-            elif rank == 4:
-                logger.info(f"Officer is SI level, filtering by SI criteria")
-                cases = cases.filter(
-                    (Q(oid=officer) & ~Q(cstate="pending")) | Q(type="vehicle")
-                )
-            
-            # Junior officers - show user cases and vehicle cases
-            else:
-                logger.info(f"Officer is junior level (rank {rank}), showing user cases and vehicle cases stats")
-                cases = cases.filter(
-                    Q(user=user) | Q(type="vehicle")
-                )
-        else:
-            # Police role but no officer record
-            logger.warning(f"User {user.mobile} has police role but no officer record")
-            cases = cases.filter(
-                Q(user=user) | Q(type="vehicle")
-            )
-    
-    # Regular users: See their own cases plus all vehicle cases
-    elif user.is_user:
-        logger.info(f"User role is 'user', filtering cases for {user.mobile}")
-        cases = cases.filter(
-            Q(user=user) | Q(type="vehicle")
-        )
-    
-    # Admin users: See all cases (no filtering needed)
-    elif user.role == "admin" or user.is_superuser:
-        logger.info(f"User is admin or superuser - showing all case statistics")
-        pass  # No filtering needed
-    
-    # Additional type filter if provided
-    if ctype:
-        cases = cases.filter(type=ctype)
-    
+
+    # Use get_cases utility for all filtering
+    cases = get_cases(user, case_type=ctype)
+
+    case_count = cases.count()
+    drug_count = cases.filter(type="drug").count()
+    extortion_count = cases.filter(type="extortion").count()
+    vehicle_count= cases.filter(type="vehicle").count()
+
     # Overall case summary by type
     case_summary = cases.values('type').annotate(
         count=Count('cid')
@@ -895,8 +826,6 @@ def dashboard(request):
     ).order_by('cstate')
     
     # Generate time-based data using Trunc functions without time restrictions
-    
-    # Daily data (all available days)
     daily_data = (
         cases
         .annotate(date=TruncDay('created'))
@@ -904,17 +833,11 @@ def dashboard(request):
         .annotate(count=Count('cid'))
         .order_by('date')
     )
+    daily_data_list = [
+        {'date': entry['date'].strftime('%Y-%m-%d'), 'count': entry['count']}
+        for entry in daily_data if entry['date']
+    ]
     
-    # Convert to format expected by the template
-    daily_data_list = []
-    for entry in daily_data:
-        if entry['date']:  # Make sure date is not None
-            daily_data_list.append({
-                'date': entry['date'].strftime('%Y-%m-%d'),
-                'count': entry['count']
-            })
-    
-    # Monthly data (all available months)
     monthly_data = (
         cases
         .annotate(date=TruncMonth('created'))
@@ -922,17 +845,11 @@ def dashboard(request):
         .annotate(count=Count('cid'))
         .order_by('date')
     )
+    monthly_data_list = [
+        {'date': entry['date'].strftime('%b %Y'), 'count': entry['count']}
+        for entry in monthly_data if entry['date']
+    ]
     
-    # Convert to format expected by the template
-    monthly_data_list = []
-    for entry in monthly_data:
-        if entry['date']:  # Make sure date is not None
-            monthly_data_list.append({
-                'date': entry['date'].strftime('%b %Y'),
-                'count': entry['count']
-            })
-    
-    # Yearly data (all available years)
     yearly_data = (
         cases
         .annotate(date=TruncYear('created'))
@@ -940,24 +857,17 @@ def dashboard(request):
         .annotate(count=Count('cid'))
         .order_by('date')
     )
+    yearly_data_list = [
+        {'date': entry['date'].strftime('%Y'), 'count': entry['count']}
+        for entry in yearly_data if entry['date']
+    ]
     
-    # Convert to format expected by the template
-    yearly_data_list = []
-    for entry in yearly_data:
-        if entry['date']:  # Make sure date is not None
-            yearly_data_list.append({
-                'date': entry['date'].strftime('%Y'),
-                'count': entry['count']
-            })
-    
-    # Collect time-based data
     time_data = {
         'daily': daily_data_list,
         'monthly': monthly_data_list,
         'yearly': yearly_data_list
     }
     
-    # Status colors for charts
     colors = {
         'pending': '#FF9800',
         'accepted': '#4CAF50',
@@ -973,10 +883,14 @@ def dashboard(request):
     
     context = {
         'case_summary': case_summary,
+        'case_summary_total': case_count,
         'ctype_filter': ctype,
         'drug_status_summary': drug_status_summary,
+        'drug_status_summary_total': drug_count,
         'extortion_status_summary': extortion_status_summary,
+        'extortion_status_summary_total': extortion_count,
         'vehicle_status_summary': vehicle_status_summary,
+        'vehicle_status_summary_total': vehicle_count,
         'colors': colors,
         'time_data': time_data,
     }

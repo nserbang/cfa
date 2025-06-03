@@ -100,3 +100,4 @@ urllib3==2.0.3
 weasyprint==60.1
 webencodings==0.5.1
 zopfli==0.2.3.post1
+reportlab==3.5.0

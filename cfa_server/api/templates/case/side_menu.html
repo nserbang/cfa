@@ -1,22 +1,26 @@
 <div class="list-group text-sm fs-6 side-menu">
+    {% if request.user.is_authenticated %}
+        <a href="{% url 'case' 'my-complaints' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+        All Cases Records
+        </a>
+    <a href="{% url 'home' %}?type=vehicle" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    Stolen Vehicles
+    </a>
+    <a href="{% url 'home' %}?type=drug" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    Drug Case Reported
+    </a>
+    <a href="{% url 'home' %}?type=extortion" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+    Extortion Case Reported
+    </a>
         <a href="{% url 'add_case' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
         Report New Case
         </a>
-    {% if request.user.is_authenticated %}
-        <a href="{% url 'case' 'my-complaints' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-        My Complaints
+        <a href="{% url 'case_export' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+        Get Reords in PDF
         </a>
     {% endif %}
-    <a href="{% url 'case' 'stolen-vehicle' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-    Stolen Vehicles
-    </a>
-    <a href="{% url 'case' 'drug-case' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-    Drug Case Reported
-    </a>
-    <a href="{% url 'case' 'extortion-case' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-    Extortion Case Reported
-    </a>
-    {% comment %} <a href="{% url 'crime_list' 'missing-children' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+   {% comment %}
+    <a href="{% url 'crime_list' 'missing-children' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Missing Children
     </a>
     <a href="{% url 'crime_list' 'children-found' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
@@ -39,22 +43,19 @@
     </a>
     <a href="{% url 'crime_list' 'proclaimed' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
     Proclaimed Offenders
-    </a> {% endcomment %}
+    </a>
+  	{% endcomment %}
 </div>
-
 {% if request.user.is_authenticated %}
 <div class="pt-4 list-group text-sm fs-6 side-menu">
-    <a id="report" href="" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-        Report
-    </a>
     {% if request.user.is_authenticated and request.user.is_admin %}
         <a id="report" href="{% url 'police_station_list' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-            Admin
+            Configure Police Officers
         </a>
     {% endif %}
     {% if request.user.is_authenticated and request.user.is_admin %}
         <a id="report" href="{% url 'assign_designation_list' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
-            Assign Designation
+            Assign Officer Designation
         </a>
     {% endif %}
 </div>

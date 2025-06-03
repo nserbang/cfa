@@ -14,6 +14,9 @@
                 <canvas id="casePieChart"></canvas>
             </div>
         </div>
+	<div class="fw-bold text-center mb-2 fs-4">
+		Total Records : {{ case_summary_total}}
+	</div>
     </div>
 
     <!-- Detailed Charts Section -->
@@ -27,18 +30,21 @@
                     <div class="chart-container">
                         <canvas id="drugCaseChart"></canvas>
                     </div>
+		  Drug Case Records : {{ drug_status_summary_total}}
                 </div>
                 <div class="col-md-4 text-center">
                     <h5>Extortion Cases</h5>
                     <div class="chart-container">
                         <canvas id="extortionCaseChart"></canvas>
                     </div>
+		 Extortion Case Records : {{ extortion_status_summary_total}}
                 </div>
                 <div class="col-md-4 text-center">
                     <h5>Vehicle Cases</h5>
                     <div class="chart-container">
                         <canvas id="vehicleCaseChart"></canvas>
                     </div>
+		 Vehicle Case Records : {{ vehicle_status_summary_total}}
                 </div>
             </div>
         </div>

@@ -36,7 +36,7 @@ from api.mixins import UserMixin
 from datetime import datetime
 from django.contrib.auth.models import AnonymousUser
 from api.utils import get_cases
-
+from api.models import PoliceOfficer
 class CaseViewSet(UserMixin, ModelViewSet):
     serializer_class = CaseSerializer
     # queryset = Case.objects.all()
@@ -472,6 +472,8 @@ class CaseUpdaateAPIView(UpdateAPIView):
         user = request.user
         cstate = request.data.get("cstate")
 
+        opid = instance.pid.name
+
         if user.role == "police" and user == instance.user:
             if instance.type != "vehicle" and cstate not in ["transfer","assign"]:
                 logger.info(f"Complaint and police are same")
@@ -485,29 +487,6 @@ class CaseUpdaateAPIView(UpdateAPIView):
 
         username = request.user.get_username() if hasattr(request.user, 'get_username') else str(request.user)
         
-        description = " N/A "
-        if cstate == "pending":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        elif cstate == "accepted":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        elif cstate == "found":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        elif cstate == "assign":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        elif cstate == "visited":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        elif cstate == "inprogress":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        elif cstate == "transfer":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        elif cstate == "resolved":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        elif cstate == "info":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        elif cstate == "rejected":
-            description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
-        else:
-            description = f"Case status being changed to {cstate} by : {request.user}"
 
         logger.debug(f"Case update request received for : {cstate} for cid : {instance.cid}")
         if serializer.is_valid():
@@ -518,6 +497,29 @@ class CaseUpdaateAPIView(UpdateAPIView):
             case_point_m = case_point.transform(3857, clone=True)
             user_point_m = user_point.transform(3857, clone=True)
             distance = user_point_m.distance(case_point_m)/1000 #in km
+            description = " N/A "
+            if cstate == "pending":
+                description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+            elif cstate == "accepted":
+                description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+            elif cstate == "found":
+                description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+            elif cstate == "assign":
+                description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+            elif cstate == "visited":
+                description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+            elif cstate == "inprogress":
+                description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+            elif cstate == "transfer":
+                description = f"Case transfered from {opid} to {instance.pid.name} by : {request.user}"
+            elif cstate == "resolved":
+                description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+            elif cstate == "info":
+                description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+            elif cstate == "rejected":
+                description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
+            else:
+                description = f"Case status being changed to {cstate} by : {request.user}"
 
 
             logger.debug(f" Recorded updated for case id :{updated_case.cid}")

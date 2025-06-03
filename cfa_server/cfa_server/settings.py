@@ -358,7 +358,7 @@ CKEDITOR_UPLOAD_PATH = "uploads/"
 # CKEDITOR_FILENAME_GENERATOR = 'utils.get_filename'
 
 MEDIA_ROOT = str(BASE_DIR / "media")
-
+DOMAIN_URL ="https://apcrime.arunachal.gov.in"
 MEDIA_URL = "/media/"
 FCM_DJANGO_SETTINGS = {
     # an instance of firebase_admin.App to be used as default for all fcm-django requests

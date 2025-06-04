@@ -1,0 +1,22 @@
+<div class="comment-timeline-heading" style="font-size:1.3em;font-weight:bold;color:#43a047;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#43a047" viewBox="0 0 16 16" style="margin-right:8px;">
+        <path d="M8 15s6-4.686 6-8.5S10.5 1 8 3.5 2 6.314 2 8.5 8 15 8 15z"/>
+    </svg>
+    Case Timeline 
+</div>
+<ul class="timeline">
+    {% for hist in history %}
+        <li class="timeline-item{% if forloop.last %} active{% endif %}">
+            <span class="timeline-dot"></span>
+            <div class="timeline-content">
+                <div class="timeline-cstate">{{ hist.cstate|capfirst }}</div>
+                <div>{{ hist.description }}</div>
+                <div class="timeline-date">{{ hist.created|date:"d M Y H:i" }}</div>
+            </div>
+        </li>
+    {% empty %}
+        <li>
+            <div class="text-muted">No history records yet.</div>
+        </li>
+    {% endfor %}
+</ul>

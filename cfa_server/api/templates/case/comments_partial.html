@@ -1,0 +1,25 @@
+<div class="comment-timeline-heading" style="font-size:1.3em;font-weight:bold;color:#43a047;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#43a047" viewBox="0 0 16 16" style="margin-right:8px;">
+        <path d="M8 15s6-4.686 6-8.5S10.5 1 8 3.5 2 6.314 2 8.5 8 15 8 15z"/>
+    </svg>
+    Discussion Timeline 
+</div>
+<ul class="comment-timeline">
+    {% for comment in comments %}
+        <li class="comment-item">
+            <span class="comment-dot"></span>
+            <div class="comment-content">
+                <div class="comment-date">{{ comment.created|date:"d M Y H:i" }}</div>
+                <div>{{ comment.content }}</div>
+                <div class="comment-date">
+                    By: {{ comment.user.role }}
+                </div>
+
+            </div>
+        </li>
+    {% empty %}
+        <li>
+            <div class="text-muted">No comments yet.</div>
+        </li>
+    {% endfor %}
+</ul>

@@ -235,7 +235,7 @@ class HomePageView(LoginRequiredMixin, View):
         my_complaints = self.kwargs.get("case_type") == "my-complaints"
         cases = get_cases(user, cases, case_type=case_type, my_complaints=my_complaints)
 
-        return cases
+        return cases.distinct()
 
     def get(self, request, *args, **kwargs):
         logger.info(f"Entering get with request: {request}")
@@ -898,3 +898,31 @@ def dashboard(request):
     logger.info("Exiting dashboard function")
     return render(request, 'dashboard.html', context)
     #return render(request, 'dash.html', context)
+    
+    from django.http import JsonResponse
+from django.template.loader import render_to_string
+
+def get_case_comments(request, cid):
+    logger.info(f"Entering get_case_comment fpr cid :{cid}")
+    # Fetch comments for the case
+    case = Case.objects.filter(cid=cid).first()
+    if case is None:
+        logger.info(f" No record found. Exiting get_case_comment")
+        return JsonResponse({'html': ''})
+    comments = Comment.objects.filter(cid=case).order_by('-created')
+    html = render_to_string('case/comments_partial.html', {'comments': comments})
+    logger.info(f" Returning {comments.count} comment records for cid :{cid}")
+    return JsonResponse({'html': html})
+
+def get_case_history(request, cid):
+    logger.info(f" Entering get_case_history for cid :{cid}")
+    # Fetch history for the case
+    case = Case.objects.filter(cid=cid).first()
+    if case is None:
+        logger.info("No record found. Exiting get_case_history ")
+        return JsonResponse({'html': ''})
+    history = CaseHistory.objects.filter(case=case).order_by('-created')
+    html = render_to_string('case/history_partial.html', {'history': history})
+    logger.info(f"Returning {history.count()} history records for cid {cid}")
+    return JsonResponse({'html': html})
+    

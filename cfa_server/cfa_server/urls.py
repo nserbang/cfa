@@ -70,6 +70,8 @@ from api.views import (
     ChangeDesignation,
     about,
     dashboard,
+    get_case_history,
+    get_case_comments,
     #dboardView,
     #dashboard_view
 )
@@ -268,11 +270,9 @@ urlpatterns = [
     path("police/officer-add/", AddOfficerView.as_view(), name="police_officer_list"),
     path("comment/add/<int:case_id>/", AddCommentView.as_view(), name="add_comment"),
     path("like/add/<int:case_id>/", AddLikeView.as_view(), name="add_like"),
-    path(
-        "get/case-history/<int:case_id>/",
-        GetCaseHistory.as_view(),
-        name="get_case_hsitory",
-    ),
+    #path("get/case-history/<int:case_id>/", GetCaseHistory.as_view(), name="get_case_history"),
+    path('get/case-history/<int:cid>/', get_case_history, name='get_case_history'),
+    path('get/case-comments/<int:cid>/', get_case_comments, name='get_case_comments'),
     path(
         "change-status/<pk>/",
         ChangeCaseStateUpdateView.as_view(),

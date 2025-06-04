@@ -46,6 +46,7 @@
     </a>
   	{% endcomment %}
 </div>
+{% comment %}
 {% if request.user.is_authenticated %}
 <div class="pt-4 list-group text-sm fs-6 side-menu">
     {% if request.user.is_authenticated and request.user.is_admin %}
@@ -60,3 +61,4 @@
     {% endif %}
 </div>
 {% endif %}
+{% endcomment %}

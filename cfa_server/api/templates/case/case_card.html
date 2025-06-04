@@ -18,7 +18,11 @@
             {% endif %}
             <tbody>
               <tr>
-                <th scope="row">{{ case.cid }}</th>
+                <th scope="row">
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}">
+                        {{ case.cid }}
+                    </a>
+                </th>
                 <td>{{ case.created }}</td>
                 <td>{{ case.get_type_display }}</td>
                 {% if case.type == 'drug' %}
@@ -26,88 +30,77 @@
                 {% endif %}
                 <td>{{ case.get_cstate_display }}</td>
                 <td>
-                    <a class="btn btn-primary btn-xs text-xs"
-                       rel="noreferrer"
+                    <a rel="noreferrer"
                        href="https://www.google.com/maps/dir/?api=1&destination={{ case.pid.lat }},{{ case.pid.long }}">
                         {{ case.pid.name }}
                     </a>
                 </td>
               </tr>
             </tbody>
-          </table>
-      <ul class="list-unstyled">
-        {% if case.type == 'vehicle' %}
-            <li class=""><span class="fw-bold">Vehicle Lost Type</span> : <span>{{ case.lostvehicle.get_type_display }}</span></li>
-            <li class=""><span class="fw-bold">Registration no.</span> : <span>{{ case.lostvehicle.regNumber }}</span></li>
-            <li class=""><span class="fw-bold">Chasis no.</span> : <span>{{ case.lostvehicle.chasisNumber }}</span></li>
-            <li class=""><span class="fw-bold">Make</span> : <span>{{ case.lostvehicle.make }}</span></li>
-            <li class=""><span class="fw-bold">Model</span> : <span>{{ case.lostvehicle.model }}</span></li>
-            <li class=""><span class="fw-bold">Color</span> : <span>{{ case.lostvehicle.color }}</span></li> <br>
-        {% endif %}
-        <li class=""><span class="fw-bold">Description</span> :</li>
-        <div>
-            <p class="pt-0">
-                {% if case.description|length > 200 %}
-                    <span class="short-description">{{ case.description|slice:":200" }}...</span>
-                    <span class="full-description d-none">{{ case.description|format_email }}</span>
-                    <button class="btn btn-link btn-sm toggle-description" type="button">More</button>
-                {% else %}
-                    {{ case.description|format_email }}
-                {% endif %}
-            </p>
-        </div>
-
-        <div class="row">
-            {% for media in case.medias.all %}
-                <div class="col-auto">
-                    {% if media.mtype == 'photo' %}
-                        <a class="image" href="{{ media.path.url }}">
-                            <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
-                        </a>
-                    {% elif media.mtype == 'video' %}
-                        <video width="320" height="240" controls>
-                            <source src="{{ media.path.url }}">
-                        </video>
-                    {% else %}
-                        <a href="{{ media.path.url }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-files" width="60" height="60" viewBox="0 0 24 24" stroke-width="2" stroke="#9e9e9e" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                <path d="M15 3v4a1 1 0 0 0 1 1h4" />
-                                <path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z" />
-                                <path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2" />
-                              </svg>
-                        </a>
-                    {% endif %}
+        </table>
+        <ul class="list-unstyled">
+            {% if case.type == 'vehicle' %}
+                <li><span class="fw-bold">Vehicle Lost Type</span>: <span>{{ case.lostvehicle.get_type_display }}</span></li>
+                <li><span class="fw-bold">Registration no.</span>: <span>{{ case.lostvehicle.regNumber }}</span></li>
+                <li><span class="fw-bold">Chasis no.</span>: <span>{{ case.lostvehicle.chasisNumber }}</span></li>
+                <li><span class="fw-bold">Make</span>: <span>{{ case.lostvehicle.make }}</span></li>
+                <li><span class="fw-bold">Model</span>: <span>{{ case.lostvehicle.model }}</span></li>
+                <li><span class="fw-bold">Color</span>: <span>{{ case.lostvehicle.color }}</span></li>
+            {% endif %}
+            <li>
+                <span class="fw-bold">Description</span>:
+                <div>
+                    <p class="pt-0">
+                        {% if case.description|length > 200 %}
+                            <span class="short-description">{{ case.description|slice:":200" }}...</span>
+                            <span class="full-description d-none">{{ case.description|format_email }}</span>
+                            <button class="btn btn-link btn-sm toggle-description" type="button">More</button>
+                        {% else %}
+                            {{ case.description|format_email }}
+                        {% endif %}
+                    </p>
                 </div>
-            {% endfor %}
-        </div>
-        </li>
-      </ul>
+            </li>
+            <li>
+                <div class="row">
+                    {% for media in case.medias.all %}
+                        <div class="col-auto">
+                            {% if media.mtype == 'photo' %}
+                                <a class="image" href="{{ media.path.url }}">
+                                    <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
+                                </a>
+                            {% elif media.mtype == 'video' %}
+                                <video width="320" height="240" controls>
+                                    <source src="{{ media.path.url }}">
+                                </video>
+                            {% else %}
+                                <a href="{{ media.path.url }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-files" width="60" height="60" viewBox="0 0 24 24" stroke-width="2" stroke="#9e9e9e" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M15 3v4a1 1 0 0 0 1 1h4" />
+                                        <path d="M18 17h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h4l5 5v7a2 2 0 0 1 -2 2z" />
+                                        <path d="M16 17v2a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2" />
+                                    </svg>
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </li>
+        </ul>
     </div>
     <div class="card-footer text-body-secondary">
         <div class="d-flex flex-row justify-content-between">
-            <a href="{% if user.is_authenticated %}{% url 'add_like' case.cid %}{% endif %}" class="btn btn-primary btn-sm {% if not user.is_authenticated or case.has_liked %}disabled{% endif %}">Like: {{ case.like_count }}</a>
-
-            <button type="button" 
-                    class="comment-btn btn btn-primary btn-sm" 
-                    data-bs-target="#comment-{{ case.cid }}">
-                Comment: {{ case.comment_count }}
+            <button type="button"
+                    class="comment-btn btn btn-primary btn-sm"
+                    data-case-id="{{ case.cid }}">
+                Discussion: {{ case.comment_count }}
             </button>
-
-            <button type="button" 
-                    class="history-btn btn btn-primary btn-sm" 
-                    data-bs-target="#history-{{ case.cid }}">
+            <button type="button"
+                    class="history-btn btn btn-primary btn-sm"
+                    data-case-id="{{ case.cid }}">
                 History
             </button>
-
-            {% if user.is_authenticated %}
-                {% if case.cstate == 'pending' and case.is_location_visible %}
-                    <a rel="noreferrer" href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}" class="btn btn-primary btn-sm">Location</a>
-                {% elif case.cstate != 'pending' and case.user_id == user.id or case.oid.user_id == user.id %}
-                    <a href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}" class="btn btn-primary btn-sm">Location</a>
-                {% endif %}
-            {% endif %}
-
             {% if case.can_act %}
                 <div class="dropdown">
                     <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Action</button>
@@ -122,38 +115,13 @@
                     </ul>
                 </div>
             {% endif %}
-
         </div>
-        <div id="comment-{{case.cid}}" class="pt-2 d-none">
-            {% if user.is_authenticated %}
-            <form action="{% if user.is_authenticated %}{% url 'add_comment' case.cid %}{% endif %}"  method="post">
-                {% csrf_token %}
-                <div class="mb-2">
-                    <label for="comment" class="form-label">Add your comment here.</label>
-                    <textarea name="comment" class="form-control" id="comment" rows="2" required></textarea>
-                </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary btn-sm">Post</button>
-                </div>
-            </form>
-            {% endif %}
-            <div class="py-2">
-                <h4>Comments</h4>
-                {% for comment in case.comment_set.all %}
-                    <div class="shadow-sm p-2 rounded">
-                        {{ comment.content }} <span class="comment-meta">-by {{ comment.user.first_name }} at {{ comment.created }}</span>
-                    </div>
-                {% endfor %}
-            </div>
+        <div id="comment-{{ case.cid }}" class="d-none mt-2">
+            <div class="case-comment-list"></div>
         </div>
-            <div id="history-{{ case.cid }}" class="history-container d-none mt-3">
-                <h4 class="mb-3">Case History</h4>
-                <div class="case-history-list">
-                    <!-- Case histories will be dynamically loaded here -->
-                </div>
-            </div>
+        <div id="history-{{ case.cid }}" class="d-none mt-2">
+            <div class="case-history-list"></div>
+        </div>
     </div>
 </div>
-
-<!-- Include external JavaScript with CSP nonce -->
 <script src="{% static 'js/script.js' %}" nonce="{{ request.csp_nonce }}"></script>

@@ -85,58 +85,58 @@ def get_cases(user, base_queryset=None, case_type=None, my_complaints=False):
             rank = int(officer.rank)
             # Senior officers (rank > 9): See all cases
             if rank > 9:
-                return cases
+                return cases.distinct()
             # SP level (rank 9)
             elif rank == 9:
                 logger.info(f"Exiting SP level logic for officer: {officer}")
                 return cases.filter(
                     Q(pid__did_id=officer.pid.did_id) | Q(type="vehicle") |Q(user= user)
-                )
+                ).distinct()
             # DySP level (rank 6)
             elif rank == 6:
                 logger.info(f"Exiting DySP level logic for officer: {officer}")
                 stations = officer.policestation_supervisor.values("station")
                 return cases.filter(
                     Q(pid_id__in=stations) | Q(type="vehicle") | Q(user=user)
-                )
+                ).distinct()
             # Inspector level (rank 5)
             elif rank == 5:
                 logger.info(f"Exiting Inspector level logic for officer: {officer}")
                 return cases.filter(
                     Q(pid_id=officer.pid_id) | Q(type="vehicle") | Q(user = user)
-                )
+                ).distinct()
             # SI level (rank 4)
             elif rank == 4:
                 logger.info(f"Exiting SI level logic for officer: {officer}")
                 return cases.filter(
                     #(Q(oid=officer) & ~Q(cstate="pending")) | Q(type="vehicle") | Q(user=user)
                     (Q(oid=officer) | Q(type="vehicle") | Q(user=user))
-                )
+                ).distinct()
             # Junior officers
             else:
                 logger.info(f"Exiting Junior officer logic for officer: {officer}")
                 return cases.filter(
                     Q(user=user) | Q(type="vehicle")
-                )
+                ).distinct()
         else:
             # Police role but no officer record
             logger.info(f" Exiting with no officer record for: {user.username}")
             return cases.filter(
                 Q(user=user) | Q(type="vehicle")
-            )
+            ).distinct()
     elif getattr(user, "role", None) == "SNO":
         logger.info(f"Exiting SNO user logic for user: {user.username}")
         return cases.filter(
             Q(type="drug") | Q(type="vehicle") | Q(user=user)
-        )
+        ).distinct()
     elif getattr(user, "is_user", False) or getattr(user, "role", None) == "user":
         logger.info(f"Exiting Regular user logic for user: {user.username}")
         return cases.filter(
             Q(user=user) | Q(type="vehicle")
-        )
+        ).distinct()
     elif getattr(user, "role", None) == "admin" or getattr(user, "is_superuser", False):
         logger.info(f"Exiting Admin user logic for user: {user.username}")
-        return cases
+        return cases.distinct()
     # Default: return nothing
     logger.info(f"Exiting with no matching role for user: {user.username}")
     return cases.none()

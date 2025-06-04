@@ -977,3 +977,14 @@ def get_case_media(request, cid):
     html = render_to_string('case/case_media_partial.html', {'medias': medias})
     logger.info(f"Exiting get_cse_media with: {medias.count()} records")
     return JsonResponse({'html': html})
+
+from django.contrib.auth.decorators import login_required
+from django.http import FileResponse, Http404
+from django.conf import settings
+import os
+@login_required
+def protected_media(request, path):
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'))
+    raise Http404()

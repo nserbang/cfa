@@ -74,6 +74,7 @@ from api.views import (
     get_case_comments,
     get_media,
     get_case_media,
+    protected_media,
     #dboardView,
     #dashboard_view
 )
@@ -308,6 +309,7 @@ urlpatterns = [
     path('get/media/', get_media, name='get_media'),
     path('get/case-media/<int:cid>/', get_case_media, name='get_case_media'),
     path("<str:case_type>/",HomePageView.as_view(), name= "case"),
+    path('protected_media/<path:path>/', protected_media, name='protected_media'),
     # path('', include('api.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

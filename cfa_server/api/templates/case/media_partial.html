@@ -9,19 +9,19 @@
             {% widthratio media_count 1 1 as media_count %}
             <div class="col-auto">
                 {% if media.mtype == 'photo' %}
-                    <a href="{{ media.path.url }}" target="_blank">
+                    <a href="{% url 'protected_media' media.path.name %}" target="_blank">
                         <img class="rounded shadow-sm border img-thumbnail"
-                             src="{{ media.path.url }}"
+                             src="{% url 'protected_media' media.path.name %}"
                              alt="Photo"
                              width="120" height="90"
                              style="object-fit:cover; width:120px; height:90px;">
                     </a>
                 {% elif media.mtype == 'video' %}
-                    <a href="{{ media.path.url }}" target="_blank" style="display:block;">
+                    <a href="{% url 'protected_media' media.path.name %}" target="_blank" style="display:block;">
                         <video width="120" height="90" controls
                                class="rounded shadow-sm border bg-dark"
                                style="object-fit:cover; width:120px; height:90px; display:block;">
-                            <source src="{{ media.path.url }}">
+                            <source src="{% url 'protected_media' media.path.name %}">
                         </video>
                     </a>
                 {% endif %}
@@ -43,7 +43,7 @@
             {% endif %}
             {% widthratio doc_count 1 1 as doc_count %}
             <li class="list-group-item d-flex align-items-center">
-                <a href="{{ media.path.url }}" download class="me-2 text-decoration-none" target="_blank">
+                <a href="{% url 'protected_media' media.path.name %}" download class="me-2 text-decoration-none" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#1976d2" class="me-1" viewBox="0 0 16 16">
                         <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.6A1 1 0 0 0 2 14h12a1 1 0 0 0 1-1v-2.6a.5.5 0 0 1 1 0v2.6A2 2 0 0 1 14 16H2a2 2 0 0 1-2-2v-2.6a.5.5 0 0 1 .5-.5z"/>
                         <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>

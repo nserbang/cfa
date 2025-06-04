@@ -10,7 +10,7 @@
             <span class="timeline-dot"></span>
             <div class="timeline-content">
                 <div class="timeline-cstate">{{ hist.cstate|capfirst }}</div>
-                <div>{{ hist.description }}</div>
+                <div>{{ hist.description|linebreaksbr }}</div>
                 <div class="timeline-date">{{ hist.created|date:"d M Y H:i" }}</div>
             </div>
         </li>

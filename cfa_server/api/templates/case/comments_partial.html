@@ -10,7 +10,7 @@
             <span class="comment-dot"></span>
             <div class="comment-content">
                 <div class="comment-date">{{ comment.created|date:"d M Y H:i" }}</div>
-                <div>{{ comment.content }}</div>
+                <div>{{ comment.content|linebreaksbr }}</div>
                 <div class="comment-date">
                     By: {{ comment.user.role }}
                 </div>

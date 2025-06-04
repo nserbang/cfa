@@ -1,19 +1,65 @@
-{% for media in medias %}
-    <div class="col-auto mb-2">
-        {% if media.mtype == 'photo' %}
-            <a class="image" href="{{ media.path.url }}">
-                <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
-            </a>
-        {% elif media.mtype == 'video' %}
-            <video width="320" height="240" controls>
-                <source src="{{ media.path.url }}">
-            </video>
-        {% else %}
-            <a href="{{ media.path.url }}">
-                <!-- icon or file link -->
-            </a>
+{# Media Section: Photos & Videos #}
+{% with media_count=0 %}
+    {% for media in medias %}
+        {% if media.mtype == 'photo' or media.mtype == 'video' %}
+            {% if media_count == 0 %}
+                <h6 class="fw-bold mb-2">Media</h6>
+                <div class="row g-2 mb-3">
+            {% endif %}
+            {% widthratio media_count 1 1 as media_count %}
+            <div class="col-auto">
+                {% if media.mtype == 'photo' %}
+                    <a href="{{ media.path.url }}" target="_blank">
+                        <img class="rounded shadow-sm border img-thumbnail"
+                             src="{{ media.path.url }}"
+                             alt="Photo"
+                             width="120" height="90"
+                             style="object-fit:cover; width:120px; height:90px;">
+                    </a>
+                {% elif media.mtype == 'video' %}
+                    <a href="{{ media.path.url }}" target="_blank" style="display:block;">
+                        <video width="120" height="90" controls
+                               class="rounded shadow-sm border bg-dark"
+                               style="object-fit:cover; width:120px; height:90px; display:block;">
+                            <source src="{{ media.path.url }}">
+                        </video>
+                    </a>
+                {% endif %}
+            </div>
         {% endif %}
-    </div>
-{% empty %}
+    {% endfor %}
+    {% if media_count > 0 %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+{# Documents Section #}
+{% with doc_count=0 %}
+    {% for media in medias %}
+        {% if media.mtype == 'document' %}
+            {% if doc_count == 0 %}
+                <h6 class="fw-bold mb-2">Documents</h6>
+                <ul class="list-group list-group-flush mb-2">
+            {% endif %}
+            {% widthratio doc_count 1 1 as doc_count %}
+            <li class="list-group-item d-flex align-items-center">
+                <a href="{{ media.path.url }}" download class="me-2 text-decoration-none" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#1976d2" class="me-1" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.6A1 1 0 0 0 2 14h12a1 1 0 0 0 1-1v-2.6a.5.5 0 0 1 1 0v2.6A2 2 0 0 1 14 16H2a2 2 0 0 1-2-2v-2.6a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    Download
+                </a>
+                <span class="text-muted small">{{ media.path.name|default:"Document" }}</span>
+            </li>
+        {% endif %}
+    {% endfor %}
+    {% if doc_count > 0 %}
+        </ul>
+    {% endif %}
+{% endwith %}
+
+{# If nothing exists, show fallback #}
+{% if medias|length == 0 %}
     <div class="text-muted">No media available.</div>
-{% endfor %}
+{% endif %}

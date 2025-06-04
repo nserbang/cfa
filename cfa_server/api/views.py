@@ -972,6 +972,8 @@ def get_media(request):
     return JsonResponse({'html': html})
 
 def get_case_media(request, cid):
+    logger.info(f"Entering get_case_media with cid: {cid}")
     medias = Media.objects.filter(parentId=cid, source='case')
     html = render_to_string('case/case_media_partial.html', {'medias': medias})
+    logger.info(f"Exiting get_cse_media with: {medias.count()} records")
     return JsonResponse({'html': html})

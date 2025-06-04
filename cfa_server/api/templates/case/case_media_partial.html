@@ -5,12 +5,12 @@
                 <img class="rounded img-fluid" src="{{ media.path.url }}" alt="" width="100">
             </a>
         {% elif media.mtype == 'video' %}
-            <video width="320" height="240" controls>
+            <video width="160" height="120" controls>
                 <source src="{{ media.path.url }}">
             </video>
         {% else %}
             <a href="{{ media.path.url }}">
-                <!-- icon or file link -->
+                <span class="badge bg-secondary">File</span>
             </a>
         {% endif %}
     </div>

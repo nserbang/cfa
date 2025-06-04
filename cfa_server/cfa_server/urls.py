@@ -72,7 +72,8 @@ from api.views import (
     dashboard,
     get_case_history,
     get_case_comments,
-    get_media
+    get_media,
+    get_case_media,
     #dboardView,
     #dashboard_view
 )
@@ -305,6 +306,7 @@ urlpatterns = [
     path("api/v1/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path('get/media/', get_media, name='get_media'),
+    path('get/case-media/<int:cid>/', get_case_media, name='get_case_media'),
     path("<str:case_type>/",HomePageView.as_view(), name= "case"),
     # path('', include('api.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

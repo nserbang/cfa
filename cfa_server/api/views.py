@@ -970,3 +970,8 @@ def get_media(request):
     html = render_to_string('case/media_partial.html', {'medias': medias})
     logger.info(f"Returning {medias.count()} media records for source: {source}, cid: {cid}")
     return JsonResponse({'html': html})
+
+def get_case_media(request, cid):
+    medias = Media.objects.filter(parentId=cid, source='case')
+    html = render_to_string('case/case_media_partial.html', {'medias': medias})
+    return JsonResponse({'html': html})

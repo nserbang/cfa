@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize media fetch/toggle
     initializeMediaButtons();
+    initializeCaseCardMediaButtons();
 });
 
 /**
@@ -182,6 +183,45 @@ function initializeMediaButtons() {
                 }
             }
         });
+    });
+}
+
+/**
+ * Initialize media fetch/toggle for case cards
+ */
+function initializeCaseCardMediaButtons() {
+    document.querySelectorAll('.case-card-media-btn').forEach(function(button) {
+        if (button.dataset.listenerAttached === "true") return;
+        button.addEventListener('click', async function() {
+            const cid = button.getAttribute('data-cid');
+            const mediaSection = document.getElementById('case-media-' + cid);
+            if (!mediaSection) return;
+
+            const isHidden = mediaSection.classList.contains('d-none');
+            if (isHidden) {
+                mediaSection.classList.remove('d-none');
+                // Only fetch if not already loaded
+                if (mediaSection.getAttribute('data-loaded') !== 'true') {
+                    const spinner = mediaSection.querySelector('.media-spinner');
+                    const mediaList = mediaSection.querySelector('.case-media-list');
+                    if (spinner) spinner.classList.remove('d-none');
+                    if (mediaList) mediaList.innerHTML = '';
+                    try {
+                        const response = await fetch(`/get/case-media/${cid}/`);
+                        const data = await response.json();
+                        if (mediaList) mediaList.innerHTML = data.html;
+                        mediaSection.setAttribute('data-loaded', 'true');
+                    } catch (e) {
+                        if (mediaList) mediaList.innerHTML = "<div class='text-danger'>Failed to load media.</div>";
+                    } finally {
+                        if (spinner) spinner.classList.add('d-none');
+                    }
+                }
+            } else {
+                mediaSection.classList.add('d-none');
+            }
+        });
+        button.dataset.listenerAttached = "true";
     });
 }
 
@@ -374,3 +414,54 @@ function initializeDashboardCharts(caseData) {
 /**
  * Add any custom JavaScript for the application here
  */
+document.body.addEventListener('click', async function(e) {
+    const button = e.target.closest('.toggle-media');
+    if (!button) return;
+
+    e.preventDefault();
+
+    const source = button.getAttribute('data-source') || 'case';
+    const cid = button.getAttribute('data-cid');
+    let mediaSectionId = '';
+    if (source === 'case') {
+        mediaSectionId = 'media-' + cid;
+    } else {
+        mediaSectionId = `media-${source}-${cid}`;
+    }
+    const mediaSection = document.getElementById(mediaSectionId);
+    if (!mediaSection) return;
+
+    // Toggle visibility
+    const isHidden = mediaSection.classList.contains('d-none');
+
+    if (isHidden) {
+        // Always show the section when button is clicked
+        mediaSection.classList.remove('d-none');
+
+        // Only fetch if not already loaded
+        if (mediaSection.getAttribute('data-loaded') !== 'true') {
+            const spinner = mediaSection.querySelector('.media-spinner');
+            const mediaList = mediaSection.querySelector('.case-media-list');
+            const sourceVal = mediaSection.querySelector('.media-source').value;
+            const cidVal = mediaSection.querySelector('.media-cid').value;
+
+            if (spinner) spinner.classList.remove('d-none');
+            if (mediaList) mediaList.innerHTML = '';
+
+            try {
+                const params = new URLSearchParams({ source: sourceVal, cid: cidVal });
+                const response = await fetch(`/get/media/?${params.toString()}`);
+                const data = await response.json();
+                if (mediaList) mediaList.innerHTML = data.html;
+                mediaSection.setAttribute('data-loaded', 'true');
+            } catch (e) {
+                if (mediaList) mediaList.innerHTML = "<div class='text-danger'>Failed to load media.</div>";
+            } finally {
+                if (spinner) spinner.classList.add('d-none');
+            }
+        }
+    } else {
+        // Hide the section if it's already visible
+        mediaSection.classList.add('d-none');
+    }
+});

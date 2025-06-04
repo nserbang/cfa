@@ -63,13 +63,11 @@
             </li>
             <li>
                 <button type="button"
-                        class="btn btn-link btn-sm toggle-media"
+                        class="btn btn-link btn-sm case-card-media-btn"
                         data-cid="{{ case.cid }}">
                     Medias
                 </button>
-                <div id="media-{{ case.cid }}" class="d-none mt-2" data-loaded="false">
-                    <input type="hidden" class="media-source" value="case">
-                    <input type="hidden" class="media-cid" value="{{ case.cid }}">
+                <div id="case-media-{{ case.cid }}" class="d-none mt-2" data-loaded="false">
                     <div class="media-spinner text-center d-none">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
@@ -115,4 +113,3 @@
         </div>
     </div>
 </div>
-<script src="{% static 'js/script.js' %}" nonce="{{ request.csp_nonce }}"></script>

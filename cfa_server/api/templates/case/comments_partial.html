@@ -14,7 +14,22 @@
                 <div class="comment-date">
                     By: {{ comment.user.role }}
                 </div>
-
+                <button type="button"
+                        class="btn btn-link btn-sm toggle-media"
+                        data-source="comment"
+                        data-cid="{{ comment.cmtid }}">
+                    Media
+                </button>
+                <div id="media-comment-{{ comment.cmtid }}" class="d-none mt-2" data-loaded="false">
+                    <input type="hidden" class="media-source" value="comment">
+                    <input type="hidden" class="media-cid" value="{{ comment.cmtid }}">
+                    <div class="media-spinner text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="case-media-list row"></div>
+                </div>
             </div>
         </li>
     {% empty %}
@@ -23,26 +38,3 @@
         </li>
     {% endfor %}
 </ul>
-{% for comment in comments %}
-    <div class="comment mb-2">
-        <span class="fw-bold">{{ comment.user }}</span>: {{ comment.text }}
-        <button type="button"
-                class="btn btn-link btn-sm toggle-media"
-                data-source="comment"
-                data-cid="{{ comment.id }}">
-            Media
-        </button>
-        <div id="media-comment-{{ comment.id }}" class="d-none mt-2" data-loaded="false">
-            <input type="hidden" class="media-source" value="comment">
-            <input type="hidden" class="media-cid" value="{{ comment.id }}">
-            <div class="media-spinner text-center d-none">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-            <div class="case-media-list row"></div>
-        </div>
-    </div>
-{% empty %}
-    <div class="text-muted">No comments yet.</div>
-{% endfor %}

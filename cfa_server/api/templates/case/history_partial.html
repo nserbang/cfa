@@ -4,28 +4,35 @@
     </svg>
     Case Timeline 
 </div>
-{% for hist in history %}
-    <div class="history mb-2">
-        <div class="timeline-cstate">{{ hist.cstate|capfirst }}</div>
-        <div>{{ hist.description|linebreaksbr }}</div>
-        <div class="timeline-date">{{ hist.created|date:"d M Y H:i" }}</div>
-        <button type="button"
-                class="btn btn-link btn-sm toggle-media"
-                data-source="history"
-                data-cid="{{ hist.id }}">
-            Media
-        </button>
-        <div id="media-history-{{ hist.id }}" class="d-none mt-2" data-loaded="false">
-            <input type="hidden" class="media-source" value="history">
-            <input type="hidden" class="media-cid" value="{{ hist.id }}">
-            <div class="media-spinner text-center d-none">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+<ul class="timeline">
+    {% for hist in history %}
+        <li class="timeline-item{% if forloop.last %} active{% endif %}">
+            <span class="timeline-dot"></span>
+            <div class="timeline-content">
+                <div class="timeline-cstate">{{ hist.cstate|capfirst }}</div>
+                <div>{{ hist.description|linebreaksbr }}</div>
+                <div class="timeline-date">{{ hist.created|date:"d M Y H:i" }}</div>
+                <button type="button"
+                        class="btn btn-link btn-sm toggle-media"
+                        data-source="history"
+                        data-cid="{{ hist.id }}">
+                    Media
+                </button>
+                <div id="media-history-{{ hist.id }}" class="d-none mt-2" data-loaded="false">
+                    <input type="hidden" class="media-source" value="history">
+                    <input type="hidden" class="media-cid" value="{{ hist.id }}">
+                    <div class="media-spinner text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="case-media-list row"></div>
                 </div>
             </div>
-            <div class="case-media-list row"></div>
-        </div>
-    </div>
-{% empty %}
-    <div class="text-muted">No history records yet.</div>
-{% endfor %}
+        </li>
+    {% empty %}
+        <li>
+            <div class="text-muted">No history records yet.</div>
+        </li>
+    {% endfor %}
+</ul>

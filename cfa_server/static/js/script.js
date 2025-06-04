@@ -7,11 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize description toggles
     initializeDescriptionToggles();
-    
-    // Initialize comment buttons
+
+    // Initialize comment and history fetch/toggle
     initializeCommentButtons();
-    
-    // Initialize case history buttons
     initializeCaseHistoryButtons();
 });
 
@@ -62,34 +60,80 @@ function initializeDescriptionToggles() {
 }
 
 /**
- * Toggle comment section visibility
+ * Fetch and toggle comments for a case
  */
 function initializeCommentButtons() {
-    document.querySelectorAll('[data-bs-target^="#comment-"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('data-bs-target');
-            const commentSection = document.querySelector(targetId);
-            if (commentSection) {
-                commentSection.classList.toggle('d-none');
+    document.querySelectorAll('.comment-btn').forEach(function(button) {
+        if (button.dataset.listenerAttached === "true") return;
+        button.addEventListener('click', function () {
+            const caseId = button.getAttribute('data-case-id');
+            const commentContainer = document.getElementById('comment-' + caseId);
+            const commentList = commentContainer.querySelector('.case-comment-list');
+            const historyContainer = document.getElementById('history-' + caseId);
+
+            // If already visible, hide and return
+            if (!commentContainer.classList.contains('d-none')) {
+                commentContainer.classList.add('d-none');
+                return;
             }
+
+            // Hide history if open
+            if (historyContainer && !historyContainer.classList.contains('d-none')) {
+                historyContainer.classList.add('d-none');
+            }
+
+            // Fetch comments from server
+            fetch(`/get/case-comments/${caseId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    commentList.innerHTML = data.html;
+                    commentContainer.classList.remove('d-none');
+                })
+                .catch(error => {
+                    commentList.innerHTML = "<div class='text-danger'>Error loading comments.</div>";
+                    commentContainer.classList.remove('d-none');
+                });
         });
+        button.dataset.listenerAttached = "true";
     });
 }
 
 /**
- * Toggle case history section visibility
+ * Fetch and toggle history for a case
  */
 function initializeCaseHistoryButtons() {
-    document.querySelectorAll('[data-bs-target^="#history-"]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('data-bs-target');
-            const historySection = document.querySelector(targetId);
-            if (historySection) {
-                historySection.classList.toggle('d-none');
+    document.querySelectorAll('.history-btn').forEach(function(button) {
+        if (button.dataset.listenerAttached === "true") return;
+        button.addEventListener('click', function () {
+            const caseId = button.getAttribute('data-case-id');
+            const historyContainer = document.getElementById('history-' + caseId);
+            const historyList = historyContainer.querySelector('.case-history-list');
+            const commentContainer = document.getElementById('comment-' + caseId);
+
+            // If already visible, hide and return
+            if (!historyContainer.classList.contains('d-none')) {
+                historyContainer.classList.add('d-none');
+                return;
             }
+
+            // Hide comment if open
+            if (commentContainer && !commentContainer.classList.contains('d-none')) {
+                commentContainer.classList.add('d-none');
+            }
+
+            // Fetch history from server
+            fetch(`/get/case-history/${caseId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    historyList.innerHTML = data.html;
+                    historyContainer.classList.remove('d-none');
+                })
+                .catch(error => {
+                    historyList.innerHTML = "<div class='text-danger'>Error loading history.</div>";
+                    historyContainer.classList.remove('d-none');
+                });
         });
+        button.dataset.listenerAttached = "true";
     });
 }
 
@@ -279,67 +323,6 @@ function initializeDashboardCharts(caseData) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Attach event listeners to all "Case History" buttons
-    const caseHistoryButtons = document.querySelectorAll('.case-history-btn');
-    caseHistoryButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const caseId = button.getAttribute('data-case-id');
-            getCaseHistory(caseId);
-        });
-    });
-});
-
-function getCaseHistory(caseId) {
-    const historyContainer = document.getElementById('history-' + caseId);
-
-    // Fetch the case history from the server
-    fetch(`/get/case-history/${caseId}/`, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-    })
-    .then(response => response.json())
-    .then(response => {
-        // Update the history container with the fetched HTML
-        historyContainer.innerHTML = response['html'];
-        historyContainer.classList.remove('d-none');
-    })
-    .catch(error => {
-        console.error('Error fetching case history:', error);
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Attach event listeners to all "History" buttons
-    const historyButtons = document.querySelectorAll('.history-btn');
-    historyButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const caseId = button.getAttribute('data-case-id');
-            const historyContainer = document.getElementById('history-' + caseId);
-
-            // Toggle visibility
-            if (!historyContainer.classList.contains('d-none')) {
-                historyContainer.classList.add('d-none');
-                return;
-            }
-
-            // Fetch case history via AJAX
-            fetch(`/get/case-history/${caseId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    const historyList = historyContainer.querySelector('.case-history-list');
-                    historyList.innerHTML = data.html; // Populate the history list
-                    historyContainer.classList.remove('d-none'); // Show the container
-                })
-                .catch(error => {
-                    console.error('Error fetching case history:', error);
-                });
-        });
-    });
-});
 /**
  * Add any custom JavaScript for the application here
  */

@@ -49,6 +49,7 @@ from api.models import (
     PoliceStation,
     PoliceOfficer,
     UserOTPBaseKey,
+    Media,
 )
 
 # from rest_framework.request import Request
@@ -237,29 +238,37 @@ class HomePageView(LoginRequiredMixin, View):
 
         return cases.distinct()
 
-    def get(self, request, *args, **kwargs):
-        logger.info(f"Entering get with request: {request}")
-        logger.info(f"Entering get with request: %s",request)
+    def get(self, request, *unused_args, **unused_kwargs):
+        """
+        Handle GET requests for the home page, including pagination and filtering.
+        """
+        logger.info("Entering get with request: %r", request)
         if request.GET.get("action") == "logout":
             logout(request)
             return redirect(reverse("login"))
         cases = self.get_queryset()
         header = self.get_header()
         template_name = self.get_template_name()
-        
-        # Pagination
-        paginator = Paginator(cases, self.paginate_by)
+
+        # Pagination with input validation to prevent cyber attacks
         page_number = request.GET.get('page', 1)
-        
+        try:
+            page_number = int(page_number)
+            if page_number < 1:
+                page_number = 1
+        except (ValueError, TypeError):
+            page_number = 1
+
+        paginator = Paginator(cases, self.paginate_by)
         try:
             page_obj = paginator.get_page(page_number)
-        except Exception as e:
-            logger.error(f"Pagination error: {str(e)}")
+        except (AttributeError, ValueError):
+            logger.error("Pagination error: invalid page number %r", page_number)
             page_obj = paginator.get_page(1)
-        
+
         # Get page range for pagination controls
         page_range = self.get_page_range(paginator, page_obj)
-            
+
         context = {
             "cases": page_obj,
             "header": header,
@@ -267,9 +276,18 @@ class HomePageView(LoginRequiredMixin, View):
             "page_range": page_range,
             "is_paginated": page_obj.has_other_pages(),
         }
-        
-        logger.info(f"Exiting get with template: {template_name}, page {page_number}, total pages: {paginator.num_pages}")
-        return render(request, template_name, context)
+
+        logger.info(
+            "Exiting get with template: %s, page %s, total pages: %s",
+            template_name,
+            page_number,
+            paginator.num_pages,
+        )
+        return render(
+            request,
+            template_name,
+            context,
+        )
     
     def get_page_range(self, paginator, page_obj):
         """Return a range of page numbers to display in pagination controls."""
@@ -926,3 +944,29 @@ def get_case_history(request, cid):
     logger.info(f"Returning {history.count()} history records for cid {cid}")
     return JsonResponse({'html': html})
     
+def append_case_medias(page_obj):
+    """
+    For each case in page_obj, attach a .medias attribute with the related Medias
+    where parentId=case.cid and source='case'.
+    """
+    case_ids = [case.cid for case in page_obj]
+    # Fetch all relevant medias in one query
+    medias = Media.objects.filter(parentId__in=case_ids, source="case")
+    medias_by_case = {}
+    for media in medias:
+        medias_by_case.setdefault(media.parentId, []).append(media)
+    # Attach medias to each case
+    for case in page_obj:
+        case.medias = medias_by_case.get(case.cid, [])
+    return page_obj
+
+def get_media(request):
+    source = request.GET.get('source')
+    cid = request.GET.get('cid')
+    logger.info(f"Entering get_media with source: {source}, cid: {cid}")
+    if not source or not cid:
+        return JsonResponse({'html': '<div class="text-danger">Missing parameters.</div>'})
+    medias = Media.objects.filter(parentId=cid, source=source)
+    html = render_to_string('case/media_partial.html', {'medias': medias})
+    logger.info(f"Returning {medias.count()} media records for source: {source}, cid: {cid}")
+    return JsonResponse({'html': html})

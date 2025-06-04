@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize comment and history fetch/toggle
     initializeCommentButtons();
     initializeCaseHistoryButtons();
+
+    // Initialize media fetch/toggle
+    initializeMediaButtons();
 });
 
 /**
@@ -134,6 +137,51 @@ function initializeCaseHistoryButtons() {
                 });
         });
         button.dataset.listenerAttached = "true";
+    });
+}
+
+/**
+ * Initialize media fetch/toggle for a case
+ */
+function initializeMediaButtons() {
+    document.querySelectorAll('.toggle-media').forEach(function(button) {
+        button.addEventListener('click', async function() {
+            const source = button.getAttribute('data-source') || 'case';
+            const cid = button.getAttribute('data-cid');
+            let mediaSectionId = '';
+            if (source === 'case') {
+                mediaSectionId = 'media-' + cid;
+            } else {
+                mediaSectionId = `media-${source}-${cid}`;
+            }
+            const mediaSection = document.getElementById(mediaSectionId);
+            if (!mediaSection) return;
+
+            const isHidden = mediaSection.classList.contains('d-none');
+            mediaSection.classList.toggle('d-none');
+
+            if (isHidden && mediaSection.getAttribute('data-loaded') !== 'true') {
+                const spinner = mediaSection.querySelector('.media-spinner');
+                const mediaList = mediaSection.querySelector('.case-media-list');
+                const sourceVal = mediaSection.querySelector('.media-source').value;
+                const cidVal = mediaSection.querySelector('.media-cid').value;
+
+                if (spinner) spinner.classList.remove('d-none');
+                if (mediaList) mediaList.innerHTML = '';
+
+                try {
+                    const params = new URLSearchParams({ source: sourceVal, cid: cidVal });
+                    const response = await fetch(`/get/media/?${params.toString()}`);
+                    const data = await response.json();
+                    if (mediaList) mediaList.innerHTML = data.html;
+                    mediaSection.setAttribute('data-loaded', 'true');
+                } catch (e) {
+                    if (mediaList) mediaList.innerHTML = "<div class='text-danger'>Failed to load media.</div>";
+                } finally {
+                    if (spinner) spinner.classList.add('d-none');
+                }
+            }
+        });
     });
 }
 

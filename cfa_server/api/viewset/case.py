@@ -520,32 +520,32 @@ class CaseUpdaateAPIView(UpdateAPIView):
                 description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
             else:
                 description = f"Case status being changed to {cstate} by : {request.user}"
-
-
-            logger.debug(f" Recorded updated for case id :{updated_case.cid}")
+           
             if cstate == "transfer":
                 # Record transient state Transfer before cstate is set to Pending
                 case_history = CaseHistory.objects.create(
                         case = updated_case,
                         user = request.user,
-                        description = description,
+                        description = description + "\nDescription:"+request.data.get("description"),
                         cstate = cstate,
                         lat = request.data.get("lat",None),
                         long = request.data.get("long",None),
                         distance = distance,
                     )
 
-            # Record actual case history now    
-            case_history = CaseHistory.objects.create(
-                    case = updated_case,
-                    user = request.user,
-                    description = request.data.get("description"),
-                    cstate = updated_case.cstate,
-                    lat = request.data.get("lat",None),
-                    long = request.data.get("long",None),
-                    distance = distance,
-                )
-
+            else :
+                # Record actual case history now    
+                case_history = CaseHistory.objects.create(
+                        case = updated_case,
+                        user = request.user,
+                        description = request.data.get("description"),
+                        cstate = updated_case.cstate,
+                        lat = request.data.get("lat",None),
+                        long = request.data.get("long",None),
+                        distance = distance,
+                    )
+            
+            logger.debug(f" Recorded updated for case id :{updated_case.cid}")
             medias = request.FILES.getlist('medias')
             logger.info(f"Media Received: {medias}")
             for media in medias:

@@ -101,3 +101,7 @@ weasyprint==60.1
 webencodings==0.5.1
 zopfli==0.2.3.post1
 reportlab==3.5.0
+xlrd-2.0.1-py2.py3-none-any.whl==2.0.1
+pdfid==1.4.0
+openpyxl==3.1.2
+oletools==0.3.0

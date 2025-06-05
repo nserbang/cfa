@@ -1,0 +1,35 @@
+{% extends "_base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="mb-4 text-primary">Upload Lost or Abandoned Vehicle Records</h2>
+      <form method="post" enctype="multipart/form-data" class="row g-3 align-items-center">
+        {% csrf_token %}
+        <div class="col-auto flex-grow-1">
+          <label for="xls_file" class="form-label visually-hidden">Select XLS file</label>
+          <input type="file" class="form-control" id="xls_file" name="xls_file" accept=".xls,.xlsx" required>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary px-4">Upload</button>
+        </div>
+      </form>
+      {% if errors %}
+        <div class="alert alert-danger mt-4">
+          <strong>Errors:</strong>
+          <ul class="mb-0">
+            {% for err in errors %}
+              <li>{{ err }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+      {% if success %}
+        <div class="alert alert-success mt-4">
+          {{ success }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

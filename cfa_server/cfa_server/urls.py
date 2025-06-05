@@ -75,6 +75,7 @@ from api.views import (
     get_media,
     get_case_media,
     protected_media,
+    UploadLostVehicleView,
     #dboardView,
     #dashboard_view
 )
@@ -192,6 +193,7 @@ urlpatterns = [
     path("emergency/", emergency, name="emergency"),
     path("information/", information, name="information"),
     path('dashboard/', dashboard, name='dashboard'),
+        path('uploadlostvehicle/', UploadLostVehicleView.as_view(), name='upload_lost_vehicle'),
     path(
         "accounts/login/",
         auth_views.LoginView.as_view(template_name="api/login.html"),
@@ -294,22 +296,20 @@ urlpatterns = [
     ),
     path("api/v1/cases/create/", CaseCreateAPIView.as_view(), name="case_create"),
     path("api/v1/cases/update/<pk>/", CaseUpdaateAPIView.as_view(), name="case_update"),
-    path(
-        "api/v1/cases/update/reporter/<pk>/",
+    path("api/v1/cases/update/reporter/<pk>/",
         CaseUpdaateByReporterAPIView.as_view(),
         name="case_update_by_reporter",
     ),
     path("api/v1/cases/accept/<pk>/", CaseAcceptAPIView.as_view(), name="case_accept"),
-    path("ckeditor/", include("ckeditor_uploader.urls")),
-    path("<str:case_type>/", HomePageView.as_view(), name="case"),
+    path("ckeditor/", include("ckeditor_uploader.urls")),  
     # jwt
     path("api/v1/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/v1/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path('get/media/', get_media, name='get_media'),
     path('get/case-media/<int:cid>/', get_case_media, name='get_case_media'),
-    path("<str:case_type>/",HomePageView.as_view(), name= "case"),
     path('protected_media/<path:path>/', protected_media, name='protected_media'),
+    path("<str:case_type>/",HomePageView.as_view(), name= "case"),
     # path('', include('api.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

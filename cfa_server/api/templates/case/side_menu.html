@@ -18,6 +18,11 @@
         <a href="{% url 'case_export' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
         Get Reords in PDF
         </a>
+        {%if request.user.is_police%}
+        <a href="{% url 'uploadlostvehicle' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">
+        Upload Vehicle Records
+        </a>
+        {%endif%}
     {% endif %}
    {% comment %}
     <a href="{% url 'crime_list' 'missing-children' %}" class="list-group-item list-group-item-action fs-6 py-1 bg-dark-subtle border-secondary" aria-current="true">

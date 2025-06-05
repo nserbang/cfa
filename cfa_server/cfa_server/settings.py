@@ -392,7 +392,10 @@ SPECTACULAR_SETTINGS = {
     },
     "SERVE_PERMISSIONS": [],
 }
-
+ALLOWED_EXTENSIONS = [
+    '.pdf', '.doc', '.docx', '.xlsx',  # existing allowed types
+    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'  # image types
+]
 ALLOWED_VIDEO_TYPES = ["video/mp4", "video/mpeg"]
 ALLOWED_AUDIO_TYPES = ["video/mp3", "video/WebM", "audio/aac"]
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/heic"]
@@ -400,10 +403,26 @@ ALLOWED_DOC_TYPES = [
     "application/pdf",
     "application/msword",  # doc
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # docx
+    'application/vnd.ms-excel', # xls
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', # xlsx
+]
+
+
+ALLOWED_MIME_TYPES = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/bmp',
+    'image/tiff',
+    'image/webp',
 ]
 
 ALLOWED_FILE_TYPES = (
-    ALLOWED_VIDEO_TYPES + ALLOWED_AUDIO_TYPES + ALLOWED_IMAGE_TYPES + ALLOWED_DOC_TYPES
+    ALLOWED_VIDEO_TYPES + ALLOWED_AUDIO_TYPES + ALLOWED_IMAGE_TYPES + ALLOWED_DOC_TYPES + ALLOWED_EXTENSIONS + ALLOWED_MIME_TYPES
 )
 
 CORS_ALLOWED_ORIGINS = [

@@ -509,3 +509,182 @@ def get_local_media_path(path):
     if path and path.startswith("/media/"):
         return "." + path
     return path
+
+
+
+import pdfid
+from oletools.olevba import VBA_Parser, TYPE_OLE, TYPE_OpenXML, TYPE_Word2003_XML, TYPE_MHTML
+import logging
+import os
+
+logger = logging.getLogger(__name__)
+
+def detect_file_suspicious(file_path):
+    """
+    Detects suspicious content in PDF and Microsoft Office files.
+    Returns True if suspicious content is found, else False.
+    Uses allowed types and max size from settings.
+    """
+    ext = os.path.splitext(file_path)[1].lower()
+    allowed_types = [("." + t.split("/")[-1]) if "/" in t else t for t in getattr(settings, "ALLOWED_FILE_TYPES", [])]
+    max_size = getattr(settings, "FILE_UPLOAD_MAX_MEMORY_SIZE", 5 * 1024 * 1024)
+    if allowed_types and ext not in allowed_types:
+        logger.warning(f"File {file_path} has disallowed extension: {ext}")
+        return True
+    if max_size is not None and os.path.getsize(file_path) > max_size:
+        logger.warning(f"File {file_path} exceeds allowed size: {os.path.getsize(file_path)} > {max_size}")
+        return True
+    try:
+        # PDF check
+        if ext == ".pdf":
+            result = pdfid.PDFiD(file_path)
+            suspicious_keys = [
+                '/JavaScript', '/JS', '/AA', '/OpenAction', '/Launch', '/EmbeddedFile', '/RichMedia', '/XFA'
+            ]
+            for key in suspicious_keys:
+                count = result.keywords.get(key, 0)
+                if count > 0:
+                    logger.warning(f"PDF {file_path} contains {count} occurrence(s) of {key}")
+                    return True
+            return False
+
+        # Office document check
+        elif ext in [".doc", ".docm", ".dotm", ".xls", ".xlsm", ".pptm", ".ppt", ".pps", ".ppsx", ".pptx", ".xlsb", ".xls", ".docx"]:
+            vba_parser = VBA_Parser(file_path)
+            if vba_parser.detect_vba_macros():
+                logger.warning(f"Office file {file_path} contains VBA macros.")
+                for (filename, stream_path, vba_filename, vba_code) in vba_parser.extract_macros():
+                    if vba_code:
+                        suspicious_keywords = [
+                            "AutoOpen", "AutoExec", "Document_Open", "Workbook_Open", "Shell", "CreateObject", "Execute", "Eval", "Environ", "Base64Decode"
+                        ]
+                        for keyword in suspicious_keywords:
+                            if keyword.lower() in vba_code.lower():
+                                logger.warning(f"Suspicious keyword '{keyword}' found in macro in {file_path}")
+                                return True
+                return True  # Macros present, even if not obviously malicious
+            return False
+
+        else:
+            logger.info(f"File {file_path} is not a PDF or Office document. Skipping deep scan.")
+            return False
+
+    except Exception as e:
+        logger.error(f"Error scanning file {file_path}: {e}")
+        return True  # If in doubt, treat as suspicious
+
+
+def _detect_malicious_patterns_in_media_core(file_content, filename=None):
+    """
+    Core logic for checking media file content (bytes).
+    Uses allowed types and max size from settings.
+    """
+    import magic
+    from io import BytesIO
+
+    max_size = getattr(settings, "FILE_UPLOAD_MAX_MEMORY_SIZE", 5 * 1024 * 1024)
+    if max_size is not None and len(file_content) > max_size:
+        logger.warning(f"Uploaded file exceeds allowed size: {len(file_content)} > {max_size}")
+        return True
+
+    allowed_types = [("." + t.split("/")[-1]) if "/" in t else t for t in getattr(settings, "ALLOWED_FILE_TYPES", [])]
+    allowed_mime_types = [t for t in getattr(settings, "ALLOWED_FILE_TYPES", []) if "/" in t]
+
+    ext = ""
+    if filename and "." in filename:
+        ext = "." + filename.split(".")[-1].lower()
+
+    mime = magic.Magic(mime=True)
+    mime_type = mime.from_buffer(file_content)
+    logger.info(f"Checking uploaded file with MIME type {mime_type}")
+
+    # Extension check (if filename present)
+    if allowed_types and ext:
+        if ext not in allowed_types and mime_type not in allowed_mime_types:
+            logger.warning(f"Uploaded file has disallowed extension: {ext} and MIME type: {mime_type}")
+            return True
+    else:
+        # No filename: rely on MIME type only
+        if allowed_mime_types and mime_type not in allowed_mime_types:
+            logger.warning(f"Uploaded file has disallowed MIME type: {mime_type}")
+            return True
+
+    # Check images
+    if mime_type.startswith("image/"):
+        try:
+            from PIL import Image
+            img = Image.open(BytesIO(file_content))
+            img.verify()
+            logger.info("Uploaded image verified as safe.")
+            return False
+        except Exception as e:
+            logger.warning(f"Uploaded image failed verification: {e}")
+            return True
+
+    # Check video/audio by MIME type only
+    elif mime_type.startswith("video/") or mime_type.startswith("audio/"):
+        allowed_video = ["video/mp4", "video/x-msvideo", "video/quicktime"]
+        allowed_audio = ["audio/mpeg", "audio/wav", "audio/mp3"]
+        if mime_type in allowed_video or mime_type in allowed_audio:
+            logger.info("Uploaded media allowed by MIME type.")
+            return False
+        else:
+            logger.warning(f"Uploaded media has disallowed MIME type: {mime_type}")
+            return True
+
+    # Check PDF/Office docs
+    elif mime_type == "application/pdf" or mime_type in [
+        "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    ]:
+        import tempfile
+        ext = ""
+        if filename and "." in filename:
+            ext = "." + filename.split(".")[-1]
+        with tempfile.NamedTemporaryFile(delete=True, suffix=ext) as tmp:
+            tmp.write(file_content)
+            tmp.flush()
+            from api.utils import detect_file_suspicious
+            return detect_file_suspicious(tmp.name)
+
+    # For other types, treat as suspicious
+    else:
+        logger.warning(f"Uploaded file has unknown or unsupported MIME type: {mime_type}")
+        return True
+
+def detect_malicious_patterns_in_media(file_path):
+    """
+    Checks if a media file is suspicious (from disk).
+    Uses allowed types and max size from settings.
+    """
+    try:
+        max_size = getattr(settings, "FILE_UPLOAD_MAX_MEMORY_SIZE", 5 * 1024 * 1024)
+        if max_size is not None and os.path.getsize(file_path) > max_size:
+            logger.warning(f"File {file_path} exceeds allowed size: {os.path.getsize(file_path)} > {max_size}")
+            return True
+        allowed_types = [("." + t.split("/")[-1]) if "/" in t else t for t in getattr(settings, "ALLOWED_FILE_TYPES", [])]
+        ext = os.path.splitext(file_path)[1].lower()
+        if allowed_types and ext not in allowed_types:
+            logger.warning(f"File {file_path} has disallowed extension: {ext}")
+            return True
+        with open(file_path, "rb") as f:
+            file_content = f.read()
+        return _detect_malicious_patterns_in_media_core(file_content, filename=os.path.basename(file_path))
+    except Exception as e:
+        logger.error(f"Error checking media file {file_path}: {e}")
+        return True
+
+def detect_malicious_patterns_in_media_fileobj(fileobj, filename=None):
+    """
+    Checks if an uploaded media file (file-like object) is suspicious.
+    Uses allowed types and max size from settings.
+    """
+    try:
+        fileobj.seek(0)
+        file_content = fileobj.read()
+        fileobj.seek(0)
+        return _detect_malicious_patterns_in_media_core(file_content, filename=filename)
+    except Exception as e:
+        logger.error(f"Error checking uploaded media file: {e}")
+        return True

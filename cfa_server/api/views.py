@@ -50,6 +50,7 @@ from api.models import (
     PoliceOfficer,
     UserOTPBaseKey,
     Media,
+    LostVehicle,
 )
 
 # from rest_framework.request import Request
@@ -59,7 +60,11 @@ from api.view.case_view import *
 from api.view.cuser_views import *
 from api.forms.user import AddOfficerForm, RemoveOfficerForm, ChangeDesignationForm
 from api.forms.case import CaseForm, CaseUpdateForm
-from api.utils import get_cases
+from api.utils import get_cases, detect_malicious_patterns_in_media_fileobj
+import magic
+import tempfile
+import mimetypes
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +76,7 @@ def information(request):
     cases = Case.objects.all()
     items = []
     for case in cases:
-        number_of_comments = case.comment_set.count()
+        number of comments = case.comment_set.count()
 
         case = {
             "number": case.cid,
@@ -1007,3 +1012,195 @@ def protected_media(request, path):
     if os.path.exists(file_path):
         return FileResponse(open(file_path, 'rb'))
     raise Http404()
+
+
+import openpyxl
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
+import os
+
+class UploadLostVehicleView(LoginRequiredMixin, View):
+    template_name = "uploadlostvehicle.html"
+
+    def get(self, request):
+        logger.info("UploadLostVehicleView GET: Rendering upload form for user %s", request.user)
+        return render(request, self.template_name)
+
+    def post(self, request):
+        errors = []
+        logger.info("UploadLostVehicleView POST: Received file upload request from user %s", request.user)
+        xls_file = request.FILES.get("xls_file")
+        if not xls_file:
+            logger.warning("No file uploaded in request by user %s", request.user)
+            errors.append("No file uploaded.")
+            return render(request, self.template_name, {"errors": errors})
+
+        # Use detect_malicious_patterns_in_media_fileobj to check file type, size, and security
+        if detect_malicious_patterns_in_media_fileobj(xls_file, xls_file.name):
+            logger.warning("Suspicious or disallowed Excel file uploaded by user %s", request.user)
+            errors.append("Suspicious, disallowed, or too large file detected. Upload rejected.")
+            return render(request, self.template_name, {"errors": errors})
+
+        # Save to temp file for openpyxl
+        xls_file.seek(0)
+        xls_content = xls_file.read()
+        xls_file.seek(0)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
+            tmp.write(xls_content)
+            file_path = tmp.name
+        logger.info("Saved uploaded file to temp file: %s", file_path)
+
+        try:
+            logger.info("Opening uploaded file with openpyxl: %s", file_path)
+            wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+            sheet = wb.active
+            # Read only the first 8 columns from the header
+            header = [str(cell.value).strip() if cell.value else "" for cell in next(sheet.iter_rows(min_row=1, max_row=1, max_col=8))]
+            header_lower = [h.lower() for h in header]
+            rows = list(sheet.iter_rows(min_row=2, max_col=8, values_only=True))
+            user = request.user
+            ouser = cUser.objects.filter(mobile=user.mobile).first()
+            logger.info("Resolved cUser for upload: %s", ouser)
+
+            if not ouser:
+                logger.error("User %s not found in cUser table.", user)
+                errors.append(f"{user}: You are not found in the system.")
+                return render(request, self.template_name, {"errors": errors})
+
+            police_officer = PoliceOfficer.objects.filter(user=ouser).first()
+            if not police_officer:
+                logger.error("User %s has no associated PoliceStation.", user)
+                errors.append(f"{user}: You have no associated PoliceStation.")
+                return render(request, self.template_name, {"errors": errors})
+            pid = police_officer.pid
+
+            officer = PoliceOfficer.objects.filter(pid=pid, report_on_this=True).first()
+            if not officer:
+                logger.error("No reporting officer found for station %s (user %s)", pid.name, user)
+                errors.append(f"{user}: No reporting officer found for station {pid.name}.")
+                return render(request, self.template_name, {"errors": errors})
+
+            lat = pid.lat
+            long = pid.long
+
+            logger.info("Processing %d rows from uploaded file for user %s", len(rows), user)
+            for row_idx, row in enumerate(rows, start=2):
+                # Only use the first 8 columns
+                row = row[:8]
+                if not any(row):
+                    logger.warning("Row %d is empty, skipping.", row_idx)
+                    continue
+                row_data = {header_lower[i]: (row[i] if i < len(row) and row[i] is not None else "") for i in range(len(header_lower))}
+                reg_number = str(row_data.get("regnumber", "")).strip()
+                description = str(row_data.get("description", "")).strip()
+                if not reg_number or not description:
+                    if not reg_number and not description:
+                        logger.warning(
+                            "Row %d: Missing both regNumber and description.",
+                            row_idx
+                        )
+                        errors.append(
+                            f"Row {row_idx}: Both regNumber and description are missing."
+                        )
+                    elif not reg_number:
+                        logger.warning(
+                            "Row %d: Missing regNumber for description: %s.",
+                            row_idx,
+                            description
+                        )
+                        errors.append(
+                            f"Row {row_idx}: regNumber is missing for description: "
+                            f"{description if description else '[empty]'}."
+                        )
+                    elif not description:
+                        logger.warning(
+                            "Row %d: Missing description for regNumber: %s.",
+                            row_idx,
+                            reg_number
+                        )
+                        errors.append(
+                            f"Row {row_idx}: Description is missing for regNumber: "
+                            f"{reg_number if reg_number else '[empty]'}."
+                        )
+                    continue
+
+                if LostVehicle.objects.filter(regNumber=reg_number).exists():
+                    logger.info("Row %d: regNumber %s already exists in LostVehicle.", row_idx, reg_number)
+                    errors.append(f"Row {row_idx}: regNumber {reg_number} already exists.")
+                    continue
+
+                case = Case.objects.create(
+                    user=user,
+                    pid=pid,
+                    oid=officer,
+                    type="vehicle",
+                    cstate="pending",
+                    lat=lat,
+                    long=long,
+                    description=description,
+                )
+                logger.info("Created Case %s for regNumber %s", case.cid, reg_number)
+
+                def safe_text(val, maxlen=100):
+                    val = re.sub(r'[^\w\s\-.,]', '', str(val))
+                    return val[:maxlen]
+
+                chassis_number = safe_text(row_data.get("chassisnumber", ""), 50)
+                engine_number = safe_text(row_data.get("enginenumber", ""), 50)
+                make = safe_text(row_data.get("make", ""), 100)
+                model_name = safe_text(row_data.get("model", ""), 100)
+                vehicle_lost_type = safe_text(row_data.get("losttype", "") or "abandoned", 30)
+                status = str(row_data.get("status", "")).strip().lower()
+
+                lv = LostVehicle.objects.create(
+                    caseId=case,
+                    regNumber=reg_number,
+                    description=description,
+                    chasisNumber=chassis_number,
+                    engineNumber=engine_number,
+                    make=make,
+                    model=model_name,
+                    color="",  # No color column in the 8-column spec
+                    vehicle_lost_type=vehicle_lost_type,
+                )
+                logger.info("Created LostVehicle %s for regNumber %s", lv.pk, reg_number)
+                CaseHistory.objects.create(
+                    case=case,
+                    user=user,
+                    cstate=case.cstate,
+                    description="Records uploaded by police officer"
+                )
+                logger.info("Case history for case %s added", case.cid)
+
+                if status == "found":
+                    case.cstate = status
+                    case.save()
+                    logger.info("Updated case %s status to %s", case.cid, status)
+                    CaseHistory.objects.create(
+                        case=case,
+                        user=user,
+                        cstate=case.cstate,
+                        description=description
+                    )
+                    logger.info("Case history for status update for case %s added", case.cid)
+
+            if errors:
+                logger.warning("Upload completed with errors for user %s: %s", user, errors)
+                return render(request, self.template_name, {
+                    "errors": [f"Following vehicles were not added. Add them separately: {', '.join(errors)}"]
+                })
+            else:
+                logger.info("Upload completed successfully for user %s", user)
+                return render(request, self.template_name, {"success": "All records uploaded successfully."})
+
+        except Exception as e:
+            logger.exception("Failed to process file upload for user %s: %s", request.user, e)
+            errors.append(f"Failed to process file: {e}")
+            return render(request, self.template_name, {"errors": errors})
+        finally:
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    logger.info("Temporary file %s removed after processing.", file_path)
+                except Exception as cleanup_exc:
+                    logger.warning("Failed to remove temporary file %s: %s", file_path, cleanup_exc)

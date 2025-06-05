@@ -46,12 +46,12 @@
         </table>
         <ul class="list-unstyled">
             {% if case.type == 'vehicle' %}
-                <li><span class="fw-bold">Vehicle Lost Type</span>: <span>{{ case.lostvehicle.vehicle_lost_type}}</span></li>
-                <li><span class="fw-bold">Registration no.</span>: <span>{{ case.lostvehicle.regNumber }}</span></li>
-                <li><span class="fw-bold">Chasis no.</span>: <span>{{ case.lostvehicle.chasisNumber }}</span></li>
-                <li><span class="fw-bold">Make</span>: <span>{{ case.lostvehicle.make }}</span></li>
-                <li><span class="fw-bold">Model</span>: <span>{{ case.lostvehicle.model }}</span></li>
-                <li><span class="fw-bold">Color</span>: <span>{{ case.lostvehicle.color }}</span></li>
+                <li><span >Registration no.</span>: <span class="fw-bold">{{ case.lostvehicle.regNumber }}</span></li>
+                <li><span>Lost Type</span>: <span>{{ case.lostvehicle.vehicle_lost_type}}</span></li>  
+                <li><span>Chasis no.</span>: <span>{{ case.lostvehicle.chasisNumber }}</span></li>
+                <li><span>Make</span>: <span>{{ case.lostvehicle.make }}</span></li>
+                <li><span>Model</span>: <span>{{ case.lostvehicle.model }}</span></li>
+                <li><span>Color</span>: <span>{{ case.lostvehicle.color }}</span></li>
             {% endif %}
             <li>
                 <span class="fw-bold">Description</span>:
@@ -89,14 +89,14 @@
             <button type="button"
                     class="comment-btn btn btn-primary btn-sm"
                     data-case-id="{{ case.cid }}">
-                Discussion: {{ case.comment_count }}
+                Discussion {{ case.comment_count }}
             </button>
             <button type="button"
                     class="history-btn btn btn-primary btn-sm"
                     data-case-id="{{ case.cid }}">
-                History
+                Track Case
             </button>
-            {% if case.can_act %}
+            {% if 0 %} {% comment %} add actions if required in future {% endcomment %}
                 <div class="dropdown">
                     <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">Action</button>
                     <ul class="dropdown-menu">

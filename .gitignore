@@ -10,9 +10,11 @@ api.log
 .vscode/
 hello/
 db.sqlite3
-static/
-!static/js/
-!static/css/
+cfa_server/static/*
+!cfa_server/static/js/
+!cfa_server/static/css/
+!cfa_server/static/images/
+!cfa_server/static/images/**
 cfa_server/db.sqlite3
 files/
 media/

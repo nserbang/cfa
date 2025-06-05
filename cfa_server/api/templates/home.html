@@ -5,6 +5,19 @@
 
 {% block content %}
   <div class="container mt-4">
+    <!-- Header -->
+    <h1 class="display-5 mb-4 text-center">{{ header }}</h1>
+    <!-- Centered Search Form -->
+    <div class="row mb-4 justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <form class="d-flex justify-content-center" method="get">
+          <input class="form-control me-2" type="search" name="q" placeholder="Search by case id, registration, chassis, or engine number" 
+                 aria-label="Search" value="{{ request.GET.q|default:'' }}">
+          <button class="btn btn-outline-primary" type="submit">Search</button>
+        </form>
+      </div>
+    </div>
+
     <div class="row">
       <!-- Side Menu Column -->
       <div class="col-lg-3 col-md-3 col-sm-12 mb-4">
@@ -13,20 +26,6 @@
 
       <!-- Main Content Column -->
       <div class="col-lg-9 col-md-9 col-sm-12">
-        <h1 class="display-5 mb-4">{{ header }}</h1>
-        
-        <!-- Search form -->
-        <div class="row mb-4">
-          <div class="col-md-8">
-            <form class="d-flex" method="get">
-              <input class="form-control me-2" type="search" name="q" placeholder="Search by registration, chassis, or engine number" 
-                     aria-label="Search" value="{{ request.GET.q|default:'' }}">
-              <button class="btn btn-outline-primary" type="submit">Search</button>
-            </form>
-          </div>
-	   
-        </div>
-        
         <!-- Case listing -->
         {% if cases %}
           {% for case in cases %}

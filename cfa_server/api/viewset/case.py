@@ -474,6 +474,13 @@ class CaseUpdaateAPIView(UpdateAPIView):
 
         opid = instance.pid.name
 
+        # for case type vehicle, allow other police officers to mark as a found only
+        if instance.type == "vehicle" and cstate != "found":
+            po = PoliceOfficer.objects.filter(user = user).first()
+            if po is None or po != instance.oid:
+                logger.info(f"Officer not allowed to update vehicle type case except for Found")
+                return Response({"details":"You are not the officer of this case. You are not allowed to change the status of this case except Found"}, status=403)
+
         if user.role == "police" and user == instance.user:
             if instance.type != "vehicle" and cstate not in ["transfer","assign"]:
                 logger.info(f"Complaint and police are same")
@@ -520,32 +527,32 @@ class CaseUpdaateAPIView(UpdateAPIView):
                 description = f"Case status being changed from: {instance.cstate} to : {cstate} by : {request.user}"
             else:
                 description = f"Case status being changed to {cstate} by : {request.user}"
-           
+
+
+            logger.debug(f" Recorded updated for case id :{updated_case.cid}")
             if cstate == "transfer":
                 # Record transient state Transfer before cstate is set to Pending
                 case_history = CaseHistory.objects.create(
                         case = updated_case,
                         user = request.user,
-                        description = description + "\nDescription:"+request.data.get("description"),
+                        description = description +"\nDescription: "+  request.data.get("description"),
                         cstate = cstate,
                         lat = request.data.get("lat",None),
                         long = request.data.get("long",None),
                         distance = distance,
                     )
-
-            else :
+            else : 
                 # Record actual case history now    
                 case_history = CaseHistory.objects.create(
-                        case = updated_case,
-                        user = request.user,
-                        description = request.data.get("description"),
-                        cstate = updated_case.cstate,
-                        lat = request.data.get("lat",None),
-                        long = request.data.get("long",None),
-                        distance = distance,
-                    )
-            
-            logger.debug(f" Recorded updated for case id :{updated_case.cid}")
+                    case = updated_case,
+                    user = request.user,
+                    description = request.data.get("description"),
+                    cstate = updated_case.cstate,
+                    lat = request.data.get("lat",None),
+                    long = request.data.get("long",None),
+                    distance = distance,
+                )
+
             medias = request.FILES.getlist('medias')
             logger.info(f"Media Received: {medias}")
             for media in medias:

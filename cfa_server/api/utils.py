@@ -59,23 +59,28 @@ def get_cases(user, base_queryset=None, case_type=None, my_complaints=False):
     3. District-level officers (rank 6-10): See all cases in their district with can_act=False plus all vehicle cases
     4. Senior officers (rank>10) or admins: See all cases with can_act=False
     """
-    logger.info("Entering get_cases for user: %s", user.username)
+    logger.info("Entering get_cases for user: %s", user)
     if base_queryset is None:
         cases = Case.objects.all()
+        logger.info(f" Base query is none. Count : {cases.count()}")
     else:
         cases = base_queryset
+        logger.info(f"Count : {cases.count()}")
 
     # Filter by case type if provided
     if case_type:
-        cases = cases.filter(type=case_type)
+        cases = cases.filter(type=case_type).distinct()
+        logger.info(f"Count : {cases.count()}")
 
     # Filter for my-complaints if requested
-    if my_complaints:
-        cases = cases.filter(user=user)
+    """if my_complaints:
+        cases = cases.filter(user=user).distinct()
+        logger.info(f"Count : {cases.count()} with my complaints = ") """
 
     # Add liked annotation
-    liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)
-    cases = cases.annotate(has_liked=Exists(liked))
+    #liked = Like.objects.filter(case_id=OuterRef("cid"), user=user)
+    #cases = cases.annotate(has_liked=Exists(liked))
+    #logger.info(f"Count : {cases.count()}")
 
     # Role-based filtering
     if hasattr(user, "is_police") and user.is_police:
@@ -85,57 +90,78 @@ def get_cases(user, base_queryset=None, case_type=None, my_complaints=False):
             rank = int(officer.rank)
             # Senior officers (rank > 9): See all cases
             if rank > 9:
+                logger.info(f"Count : {cases.count()}")
                 return cases.distinct()
             # SP level (rank 9)
             elif rank == 9:
                 logger.info(f"Exiting SP level logic for officer: {officer}")
-                return cases.filter(
-                    Q(pid__did_id=officer.pid.did_id) | Q(type="vehicle") |Q(user= user)
-                ).distinct()
+                cases = cases.filter(
+                        Q(pid__did_id=officer.pid.did_id) | Q(type="vehicle") |Q(user= user)
+                    ).distinct()
+                logger.info(f"Count : {cases.count()}")
+                return cases
             # DySP level (rank 6)
             elif rank == 6:
                 logger.info(f"Exiting DySP level logic for officer: {officer}")
                 stations = officer.policestation_supervisor.values("station")
-                return cases.filter(
-                    Q(pid_id__in=stations) | Q(type="vehicle") | Q(user=user)
-                ).distinct()
+                cases = cases.filter(
+                        Q(pid_id__in=stations) | Q(type="vehicle") | Q(user=user)
+                    ).distinct()
+                logger.info(f"Count : {cases.count()}")
+                return cases
             # Inspector level (rank 5)
             elif rank == 5:
                 logger.info(f"Exiting Inspector level logic for officer: {officer}")
-                return cases.filter(
-                    Q(pid_id=officer.pid_id) | Q(type="vehicle") | Q(user = user)
-                ).distinct()
+                cases = cases.filter(
+                        Q(pid_id=officer.pid_id) | Q(type="vehicle") | Q(user = user)
+                    ).distinct()
+                logger.info(f"Count : {cases.count()}")
+                return cases
             # SI level (rank 4)
             elif rank == 4:
                 logger.info(f"Exiting SI level logic for officer: {officer}")
-                return cases.filter(
-                    #(Q(oid=officer) & ~Q(cstate="pending")) | Q(type="vehicle") | Q(user=user)
-                    (Q(oid=officer) | Q(type="vehicle") | Q(user=user))
-                ).distinct()
+                cases= cases.filter(
+                        #(Q(oid=officer) & ~Q(cstate="pending")) | Q(type="vehicle") | Q(user=user)
+                        (Q(oid=officer) | Q(type="vehicle") | Q(user=user))
+                    ).distinct()
+                logger.info(f"Count : {cases.count()}")
+                return cases
             # Junior officers
             else:
                 logger.info(f"Exiting Junior officer logic for officer: {officer}")
-                return cases.filter(
-                    Q(user=user) | Q(type="vehicle")
-                ).distinct()
+                cases = cases.filter(
+                        Q(user=user) | Q(type="vehicle")
+                        ).distinct()
+                logger.info(f"Count : {cases.count()}")
+                return cases
         else:
             # Police role but no officer record
             logger.info(f" Exiting with no officer record for: {user.username}")
-            return cases.filter(
-                Q(user=user) | Q(type="vehicle")
-            ).distinct()
+            cases = cases.filter(
+                    Q(user=user) | Q(type="vehicle")
+                ).distinct()
+
+            logger.info(f"Count : {cases.count()}")
+            return cases
+
     elif getattr(user, "role", None) == "SNO":
         logger.info(f"Exiting SNO user logic for user: {user.username}")
-        return cases.filter(
-            Q(type="drug") | Q(type="vehicle") | Q(user=user)
-        ).distinct()
+        cases = cases.filter(
+                    Q(type="drug") | Q(type="vehicle") | Q(user=user)
+                    ).distinct()
+        logger.info(f"Count : {cases.count()}")
+        return cases
     elif getattr(user, "is_user", False) or getattr(user, "role", None) == "user":
         logger.info(f"Exiting Regular user logic for user: {user.username}")
-        return cases.filter(
-            Q(user=user) | Q(type="vehicle")
-        ).distinct()
+        
+        cases = cases.filter(
+                    Q(user=user) | Q(type="vehicle")
+                    ).distinct()
+        logger.info(f"Count : {cases.count()}")
+        return cases
     elif getattr(user, "role", None) == "admin" or getattr(user, "is_superuser", False):
-        logger.info(f"Exiting Admin user logic for user: {user.username}")
+        logger.info(f"Count : {cases.count()}")
+        logger.info(f"Exiting Admin user logic for user: {user}")
         return cases.distinct()
     # Default: return nothing
     logger.info(f"Exiting with no matching role for user: {user.username}")
@@ -163,7 +189,7 @@ def generate_pdf_from_cases(cases, output_path):
     styles = getSampleStyleSheet()
     Story = []
 
-    Story.append(Paragraph("Case Report", styles["Title"]))
+    Story.append(Paragraph("Case Report ", styles["Title"]))
     Story.append(Spacer(1, 12))
 
     for case in cases:
@@ -171,8 +197,22 @@ def generate_pdf_from_cases(cases, output_path):
         Story.append(Spacer(1, 6))
 
         entry_date = case.get("created") or case.get("entry_date") or case.get("date") or ""
+        formatted_entry_date = ""
+        logger.info(f"DDDDDDDDDDDDDDDDDD :{entry_date}")
         if entry_date:
-            Story.append(Paragraph(f"<b>Reported on:</b> {entry_date}", styles["Normal"]))
+            try:
+                if hasattr(entry_date, "strftime"):
+                    formatted_entry_date = entry_date.strftime('%d/%m/%Y %I:%M %p')
+                else:
+                    from django.utils.dateparse import parse_datetime
+                    dt = parse_datetime(str(entry_date))
+                    if dt:
+                        formatted_entry_date = dt.strftime('%d/%m/%Y %I:%M %p')
+                    else:
+                        formatted_entry_date = str(entry_date)
+            except Exception:
+                formatted_entry_date = str(entry_date)
+            Story.append(Paragraph(f"<b>Reported on:</b> {formatted_entry_date}", styles["Normal"]))
             Story.append(Spacer(1, 6))
 
         # Police Station Name

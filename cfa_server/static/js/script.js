@@ -465,3 +465,29 @@ document.body.addEventListener('click', async function(e) {
         mediaSection.classList.add('d-none');
     }
 });
+
+document.addEventListener('click', function(e) {
+    const trigger = e.target.closest('.open-media-modal');
+    if (trigger) {
+        e.preventDefault();
+        const type = trigger.getAttribute('data-media-type');
+        const url = trigger.getAttribute('data-media-url');
+        const modal = new bootstrap.Modal(document.getElementById('mediaModal'));
+        const img = document.getElementById('modalImage');
+        const vid = document.getElementById('modalVideo');
+        const vidSrc = document.getElementById('modalVideoSource');
+        img.classList.add('d-none');
+        vid.classList.add('d-none');
+        if (type === 'photo') {
+            img.src = url;
+            img.classList.remove('d-none');
+            vid.pause();
+        } else if (type === 'video') {
+            vidSrc.src = url;
+            vid.load();
+            vid.classList.remove('d-none');
+            img.src = '';
+        }
+        modal.show();
+    }
+});

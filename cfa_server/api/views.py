@@ -64,7 +64,8 @@ from api.utils import get_cases
 logger = logging.getLogger(__name__)
 
 def information(request):
-    logger.info("Entering information function")
+    logger.info("Entering information function") 
+    """
     limit = int(request.GET.get("limit", 10))
     page = int(request.GET.get("page", 0))
     cases = Case.objects.all()
@@ -84,7 +85,10 @@ def information(request):
 
     vars = {"items": items, "home": True}
     logger.info("Exiting information function")
-    return render(request, "information.html", vars)
+    """
+    information = Information.objects.all()
+    logger.info(" Exiting information function") 
+    return render(request, "information.html", {'informations':information})
 
 
 from django.shortcuts import render
@@ -164,7 +168,7 @@ class HomePageView(LoginRequiredMixin, View):
             "drug_case": "Drug Case Reported",
             "extortion_case": "Extortion Case Reported",
         }
-        return header_map.get(self.kwargs.get("title"), "Case Listings")
+        return header_map.get(self.kwargs.get("title"), "")
 
     def get_case_type(self):
         logger.info("Entering get_case_type")
@@ -196,7 +200,10 @@ class HomePageView(LoginRequiredMixin, View):
 
         user = self.request.user
 
+        logger.info(f"Total Case in Records in DB :{Case.objects.count()}")
+
         # Start with base queryset and annotate as needed
+        """
         cases = (
             Case.objects.annotate(
                 comment_count=Count("comment", distinct=True),
@@ -212,7 +219,10 @@ class HomePageView(LoginRequiredMixin, View):
             )
             .select_related("pid", "oid", "oid__user", "oid__pid", "oid__pid__did")
             .order_by("-created")
-        )
+        )"""
+        cases = Case.objects.all()
+
+        logger.info(f"Total Case initial count :{cases.count()}")
 
         # Handle search functionality (only this stays in the view)
         if q := self.request.GET.get("q"):
@@ -227,6 +237,7 @@ class HomePageView(LoginRequiredMixin, View):
             except ValueError:
                 pass
             cases = cases.filter(search_filter)
+        logger.info(f"Total Case after search :{cases.count()}")
 
         # Use helper for all other filtering
         #case_type = self.get_case_type()
@@ -234,9 +245,11 @@ class HomePageView(LoginRequiredMixin, View):
         logger.info(f" CASE TYPE REQUEST RECEIVED IS :{case_type}")
 
         my_complaints = self.kwargs.get("case_type") == "my-complaints"
-        cases = get_cases(user, cases, case_type=case_type, my_complaints=my_complaints)
+        logger.info(f"Total Case finally returning :{cases.count()}")
+        ret_cases = get_cases(user, cases, case_type=case_type, my_complaints=my_complaints)
+        logger.info(f"Total Case finally returning :{ret_cases.count()}")
 
-        return cases.distinct()
+        return ret_cases.order_by("-created").distinct()
 
     def get(self, request, *unused_args, **unused_kwargs):
         """
@@ -599,7 +612,13 @@ class ExportCrime(View):
         user = self.request.user
         # Generate detailed data for PDF from cases
         cases = get_cases(user)
-        data = [model_to_dict(case) for case in cases]  # or however you serialize your case objects
+        cases = cases.order_by("created")
+        #data = [model_to_dict(case) for case in cases]  # or however you serialize your case objects
+        data = []
+        for case in cases:
+            d = model_to_dict(case)
+            d["created"] = case.created
+            data.append(d)
         detailed_data = build_case_list_with_details(data)
         
         # Generate PDF file and get the output path.

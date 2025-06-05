@@ -5,21 +5,24 @@
             {% if forloop.first %}
                 <thead>
                 <tr>
-                    <th scope="col">Case No.</th>
+                    <th scope="col" data-bs-toggle="tooltip" data-bs-placement="top" title="Click for route to the place of reported incident">Case No.</th>
                     <th scope="col">Reported</th>
                     <th scope="col">Type</th>
                     {% if case.type == 'drug' %}
                         <th scope="col">Request Type</th>
                     {% endif %}
                     <th scope="col">Status</th>
-                    <th scope="col">Police Station</th>
+                    <th scope="col" data-bs-toggle="tooltip" data-bs-placement="top" title="Click for route to the Police Station">Police Station</th>
                 </tr>
                 </thead>
             {% endif %}
             <tbody>
               <tr>
                 <th scope="row">
-                    <a href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}">
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{case.lat}},{{case.long}}"
+		       data-bs-toggle="tooltip"
+		       data-bs-placement="top"
+		       title="Click for route to the place of reported incident">
                         {{ case.cid }}
                     </a>
                 </th>
@@ -31,7 +34,10 @@
                 <td>{{ case.get_cstate_display }}</td>
                 <td>
                     <a rel="noreferrer"
-                       href="https://www.google.com/maps/dir/?api=1&destination={{ case.pid.lat }},{{ case.pid.long }}">
+                       href="https://www.google.com/maps/dir/?api=1&destination={{ case.pid.lat }},{{ case.pid.long }}"
+		       data-bs-toggle="tooltip"
+		       data-bs-placement="top"
+		       title="Click for route to the police station ">
                         {{ case.pid.name }}
                     </a>
                 </td>

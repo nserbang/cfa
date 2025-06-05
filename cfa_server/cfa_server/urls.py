@@ -81,6 +81,14 @@ from api.views import (
 )
 from api.viewset.privacy import PrivacyViewSet
 from api.viewset.termscondition import TermsConditionViewSet
+from api.viewset.user import (
+    UserRegistrationViewApiView,
+    VerifyOtpAPIView,
+    ResendOtpAPIView,
+    ChangePasswordAPIView,
+    PasswordResetOtpAPIView,
+    PasswordResetAPIView,
+)
 from api.viewset.contact import ContactViewSet
 from api.viewset.banner import BannerViewSet
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
@@ -193,7 +201,7 @@ urlpatterns = [
     path("emergency/", emergency, name="emergency"),
     path("information/", information, name="information"),
     path('dashboard/', dashboard, name='dashboard'),
-        path('uploadlostvehicle/', UploadLostVehicleView.as_view(), name='upload_lost_vehicle'),
+        path('uploadlostvehicle/', UploadLostVehicleView.as_view(), name='uploadlostvehicle'),
     path(
         "accounts/login/",
         auth_views.LoginView.as_view(template_name="api/login.html"),

@@ -1148,8 +1148,11 @@ class UploadLostVehicleView(LoginRequiredMixin, View):
                 chassis_number = safe_text(row_data.get("chassisnumber", ""), 50)
                 engine_number = safe_text(row_data.get("enginenumber", ""), 50)
                 make = safe_text(row_data.get("make", ""), 100)
-                model_name = safe_text(row_data.get("model", ""), 100)
+                model_name = safe_text(row_data.get("model", ""), 100)            
                 vehicle_lost_type = safe_text(row_data.get("losttype", "") or "abandoned", 30)
+                if vehicle_lost_type not in ["abandoned", "stolen"]:
+                    logger.warning("Row %d: Invalid vehicle lost type '%s', defaulting to 'abandoned'.", row_idx, vehicle_lost_type)
+                    vehicle_lost_type = "abandoned"
                 status = str(row_data.get("status", "")).strip().lower()
 
                 lv = LostVehicle.objects.create(

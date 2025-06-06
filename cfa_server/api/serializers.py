@@ -22,6 +22,9 @@ from api.models import (
     Comment,
     LostVehicle,
     CaseHistory,
+    Privacy,
+    TermsCondition,
+    AboutPage,
 )
 from api.npr import detectVehicleNumber
 from api.otp import *
@@ -1355,3 +1358,18 @@ class EmergencyTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmergencyType
         fields = "__all__"
+        
+class PrivacySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Privacy
+        fields = ['id', 'content']
+
+class TermsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TermsCondition
+        fields = ['id', 'content']
+
+class AboutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AboutPage
+        fields = ['id', 'content']  

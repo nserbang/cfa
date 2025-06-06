@@ -1,0 +1,16 @@
+{% extends "_base.html" %}
+{% block title %}Terms and conditions {% endblock %}
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-3">Terms and Conditions</h2>
+    <div class="card">
+        <div class="card-body">
+            {% if terms %}
+                {{ terms.content|safe }}
+            {% else %}
+                <p>No terms and conditions statement available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

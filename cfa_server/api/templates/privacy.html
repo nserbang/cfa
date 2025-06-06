@@ -1,0 +1,16 @@
+{% extends "_base.html" %}
+{% block title %}Privacy Policy{% endblock %}
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-3">Privacy Policy</h2>
+    <div class="card">
+        <div class="card-body">
+            {% if privacy %}
+                {{ privacy.content|safe }}
+            {% else %}
+                <p>No privacy policy statement available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

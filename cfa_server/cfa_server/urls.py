@@ -68,7 +68,7 @@ from api.views import (
     RemovePoliceOfficerListView,
     RemoveOfficerView,
     ChangeDesignation,
-    about,
+    about_page,
     dashboard,
     get_case_history,
     get_case_comments,
@@ -76,10 +76,12 @@ from api.views import (
     get_case_media,
     protected_media,
     UploadLostVehicleView,
+    privacy_page,
+    terms_page,
     #dboardView,
     #dashboard_view
 )
-from api.viewset.privacy import PrivacyViewSet
+from api.viewset.privacy import PrivacyAPIView
 from api.viewset.termscondition import TermsConditionViewSet
 from api.viewset.user import (
     UserRegistrationViewApiView,
@@ -116,9 +118,9 @@ router.register("lost-vehicle", LostVehicleViewSet, basename="lost-vehicle")
 # router.register('comment', CommentViewSet, basename='comments')
 router.register("emergency", EmergencyViewListSet, basename="emergency")
 router.register("information", InformationViewSet, basename="information")
-router.register("dashboard", DashboardViewSet, basename="dashboard")
+#router.register("dashboard", DashboardViewSet, basename="dashboard")
 router.register("victim", VictimViewSet, basename="victim")
-router.register("privacy", PrivacyViewSet, basename="privacy")
+#router.register("privacy", PrivacyViewSet, basename="privacy")
 router.register("terms-condition", TermsConditionViewSet, basename="terms-condition")
 router.register("contact", ContactViewSet, basename="contact")
 router.register("criminal", CriminalViewSet, basename="criminal")
@@ -197,7 +199,7 @@ urlpatterns = [
     path("login/",auth_views.LoginView.as_view(template_name="api/login.html"), name = "login"),
     path("", dashboard, name="dashboard"),
     path("home/", HomePageView.as_view(), name="home"),
-    path("About/", about, name="about"),
+    path("about_page/", about_page, name="about_page"),
     path("emergency/", emergency, name="emergency"),
     path("information/", information, name="information"),
     path('dashboard/', dashboard, name='dashboard'),
@@ -316,6 +318,8 @@ urlpatterns = [
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path('get/media/', get_media, name='get_media'),
     path('get/case-media/<int:cid>/', get_case_media, name='get_case_media'),
+    path('privacy-page/', privacy_page, name='privacy_page'),
+     path('terms-page/', terms_page, name='terms_page'),
     path('protected_media/<path:path>/', protected_media, name='protected_media'),
     path("<str:case_type>/",HomePageView.as_view(), name= "case"),
     # path('', include('api.urls')),

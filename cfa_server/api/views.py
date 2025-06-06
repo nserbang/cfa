@@ -813,15 +813,6 @@ from django.shortcuts import render
 from .models import AboutPage
 
 
-def about(request):
-    logger.info("Entering about function")
-    about_content = (
-        AboutPage.objects.first()
-    )  # Get the first (and only) AboutPage object
-    logger.info("Exiting about function")
-    return render(request, "about.html", {"about_content": about_content})
-
-
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from .models import Case
@@ -1207,3 +1198,23 @@ class UploadLostVehicleView(LoginRequiredMixin, View):
                     logger.info("Temporary file %s removed after processing.", file_path)
                 except Exception as cleanup_exc:
                     logger.warning("Failed to remove temporary file %s: %s", file_path, cleanup_exc)
+                    
+   
+
+from api.models import Privacy, TermsCondition, AboutPage
+
+def privacy_page(request):
+    privacy = Privacy.objects.order_by('-id').first()
+    return render(request, "privacy.html", {"privacy": privacy})
+
+def terms_page(request):
+    terms = TermsCondition.objects.order_by('-id').first()
+    return render(request, "terms.html", {"terms": terms})
+
+def about_page(request):
+    logger.info("Entering about function")
+    about_content = (
+        AboutPage.objects.first()
+    )  # Get the first (and only) AboutPage object
+    logger.info("Exiting about function")
+    return render(request, "about.html", {"about_content": about_content})              

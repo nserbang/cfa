@@ -447,106 +447,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
         logger.debug(f"Selected officer: {officer.oid}")     
         case.oid = officer
         case.user = request.user
-        caseId = case.save()  # save this at the end
-
-        # create first case history
-
-
-        """
-        from django.db import transaction
-        files = validated_data.pop("medias", [])
-        logger.debug(f" Case Record: {case}")     
-        if files:
-            logger.info(f"Adding {len(files)} media items")
-            from urllib.parse import urlparse
-            import os
-            from django.core.files.uploadedfile import InMemoryUploadedFile
-            with transaction.atomic():
-
-               # media_objects = [
-                #    Media(
-                 #       mtype=file["mtype"],
-                  #      path=file["path"],
-                   #     description=file.get("description", ""),
-                   # )
-                   # for file in files
-                #]
-               # Media.objects.bulk_create(media_objects)
-                #logger.debug(f"Created {len(media_objects)} media items")
-               # case.medias.add(*media_objects)
-                for media in files:
-                    logger.info(f" Iterating Media File ")
-                    try:
-                        media_serializer = MediaSerializer(data = media,
-                                context={
-                                    'request': request, 
-                                    'cntx': case
-                                    }
-                                )
-                        if media_serializer.is_valid():
-                            logger.info(f" Media file is valid ")
-                            media = media_serializer.save()
-                            logger.info(f" Media saved : {media.path}")
-                        else:
-                            case.delete()
-                            logger.info(f" Media file is invalid : {media_serializer.errors}")
-                            raise serializers.ValidationError(
-                                {"Media file error"}
-                            )
-                    except Exception as e:
-                        logger.info(f" Validity error : {str(e)}")
-
-                   logger.info(f" Media name : {media['file']}, uri : {media[file]}")
-                   parsed_uri = urlparse(media['file'])
-                   file_path = parsed_uri.path
-                   logger.info(f" FILE PATH : {file_path}")
-                   for k, v in media.items():
-                        logger.info(f" Media key : {k}, value : {v}")
-                   if detect_malicious_patterns_in_media(file_path):
-                       logger.error(
-                               f"SECURITY ALERT : Malicious media detected in case {case.cid}, file : {media['uri']}"
-                               )
-                       raise ValidationError("Malicious media file detected ")
-                   mtype = media.type
-                   if 'image' in mtype.split('/'):
-                       mtype = "photo"
-                   if 'video' in mtype.split('/'):
-                       mtype="video"
-                   #if mtype == document:
-                   if 'application' in mtype.split('/'):
-                       mtype="document"
-                
-                   logger.info(f" ADDING FILE : {file_path}")
-                   if 'file' in media and isinstance(media['file'], InMemoryUploadFile):
-                        logger.info(f" ADDING FILE with file : {file_path}")
-                        Media.objects.create(
-                                source="case",
-                                parentId=case.cid,
-                                mtype=mtype,
-                                path=file_path
-                            )
-                   elif 'uri' in media:
-                        logger.info(f" ADDING FILE with uri : {file_path}")
-                        try:
-                            response = request.get(media['uri'])
-                            if response.status_code == 200:
-                                file_name = os.path.basename(media['uri'])
-                                file_content = ContentFIle(response.content, name=file_name)
-                                Media.objects.create(
-                                        source="case",
-                                        parentId=case.cid,
-                                        mtype=mtype,
-                                        path=file_content
-                                    )
-                        except Exception as e:
-                            logger.error(f" Failed to download media from uri : {media['uri']}, error : {str(e)}")
-
-                
-                #case.medias.add(*media)
-                logger.info("Media file added")
-                #logger.debug(f"Created {len(media_objects)} media items")
-                """
-
+        case.save()  # save this at the end
 
         from django.db import transaction
 
@@ -554,15 +455,23 @@ class CaseSerializerCreate(serializers.ModelSerializer):
             #caseId = case  # save this at the end
             #logger.info(f"Case saved with ID: {case.cid}")
             # Create the case history
-            history = CaseHistory(
-                case=case,
-                cstate=case.cstate,
-                description="New Case created",
-                user=request.user,
-                lat=validated_data["lat"],
-                long=validated_data["long"],
-            )
-            history.save()  # Save the history object to the database
+            try:
+                history = CaseHistory(
+                    case=case,
+                    cstate=case.cstate,
+                    description="New Case created",
+                    user=case.user,
+                    lat=validated_data["lat"],
+                    long=validated_data["long"],
+                )
+                history.save()  # Save the history object to the database
+                logger.info(f"Initial Case history created with ID: {history.id}")
+            except Exception as e:
+                logger.error(f"Error creating case history: {str(e)}")
+                raise serializers.ValidationError(
+                    {"details": "Failed to create case history."}
+                )
+
             #logger.info(f"Initial Case history created with ID: {history.id}")
             type = validated_data.get("type")
             if type == "vehicle":
@@ -585,15 +494,23 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                     #logger.info(f"Case saved with ID: {case.cid}")
                     #history.save()
                     #logger.info(f"Initial Case history created with ID: {history.id}")
-                    lv = LostVehicle.objects.create(caseId=case, **vehicle_detail_data)
-                    logger.info(f" Lost vehicle case created with ID : {lv.id} ")
+                    try:                        
+                        lv = LostVehicle.objects.create(caseId=case, **vehicle_detail_data)
+                        logger.info(f" Lost vehicle case created with ID : {lv.id} ")
+                    except Exception as e:
+                        logger.error(f"Error creating lost vehicle case: {str(e)}")
+                        history.delete()
+                        case.delete()
+                        raise serializers.ValidationError(
+                            {"details": "Failed to create lost vehicle case."}
+                        )
                 else:
                     history.delete()
-                    case.delete();
+                    case.delete()
                     raise serializers.ValidationError(
-                        {"vehicle_detail": "At lest registration number required."}
-                    )       
-   
+                        {"details": "At least registration number required."}
+                    )
+
         noti_title = f"New case No. {case.cid} of type {case.type} reported at {case.pid}"
         case.send_notification(noti_title, [case.oid.user_id])
         logger.debug(f"Sent app notification to officer :{case.oid.user.mobile}")
@@ -615,14 +532,19 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                 logger.debug(f"Sent app notification to supervisors : {supervisor_user_ids}")
             except Exception as e:
                 logger.debug(f" Error for supervisor : {str(e)}")
-        msg = f"Your case No {case.cid} status is changed to {case.cstate}. For details, please visit Arunachal Crime Report app. From AP Crime Team"
+        #msg = f"Your case No {case.cid} status is changed to {case.cstate}. For details, please visit Arunachal Crime Report app. From AP Crime Team"
+        logger.debug(f"Trying to send sms notification to supervisors")
         for supervisor in supervisors:
+            logger.debug(f"Sending sms to supervisor : {supervisor}")
             send_new_case_sms(supervisor["user__mobile"], case.cid, case.type, case.pid.name,d,t) 
-            logger.debug(f" Sent sms notification to supervisor : {supervisor.user.mobile}")
-        
+            sup_mob = supervisor["user__mobile"]
+            logger.debug(f" Sent sms notification to supervisor : {sup_mob}")
+
+        logger.debug(f"Querying SNO users")
         sno_users = cUser.objects.filter(role="SNO")
+        logger.debug(f"Trying SMS to SNO users")
         if case.type == "drug" and sno_users is not None:
-            msg = f"Your case No {case.cid} status is changed to {case.cstate}. For details, please visit Arunachal Crime Report app. From AP Crime Team"
+            #msg = f"Your case No {case.cid} status is changed to {case.cstate}. For details, please visit Arunachal Crime Report app. From AP Crime Team"
             # TO DO: find correct user id for sending app notification
             #user_sno = cUser.objects.filter(id__in = sno_users.values_list("id", flat = True)).values("id","mobile")
             #logger.info(f" USER SNO found :{user_sno}")
@@ -636,7 +558,7 @@ class CaseSerializerCreate(serializers.ModelSerializer):
                 #send_update_sms(sno_user.mobile,msg)
                     logger.debug(f"Sent sms to SNO : {sno_user.mobile}")
                     send_new_case_sms(sno_user.mobile, case.cid, case.type, case.pid.name,d,t) 
-                except Exeption as e:
+                except Exception as e:
                     logger.debug(f" Error :{str(e)}")
 
         logger.info(f"Created case id: {case.cid} and exiting")

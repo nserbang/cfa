@@ -393,7 +393,7 @@ class CaseCreateAPIView(APIView):
                     if not case_instance:
                         logger.error("Case creation failed")
                         return Response(
-                            {"detail": "Case creation failed."}, status=400
+                            {"details": "Case creation failed."}, status=400
                         )
 
                     # Handle media files
@@ -437,7 +437,7 @@ class CaseCreateAPIView(APIView):
             except Exception as e:
                 logger.error(f"Case creation failed with exception: {str(e)}")
                 return Response(
-                    {"detail": f"Case creation failed: {str(e)}"}, status=400
+                    {"details": f"Case creation failed: {str(e)}"}, status=400
                 )
         else:
             logger.error(f"Case data validation failed: {case_serializer.errors}")
